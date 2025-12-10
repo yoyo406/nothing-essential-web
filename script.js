@@ -1,4 +1,5 @@
-import { GoogleGenAI } from "https://cdn.jsdelivr.net/npm/@google/genai@0.2.1/dist/index.min.js";
+// On utilise la version stable via esm.run qui est très fiable pour les navigateurs
+import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
 // --- Sélection des éléments du DOM ---
 const apiKeyInput = document.getElementById('api-key-input');
@@ -9,9 +10,10 @@ const sendButton = document.getElementById('send-btn');
 const loadingIndicator = document.getElementById('loading-indicator');
 
 // --- Variables d'état ---
-let ai = null;
-let chat = null;
-const model = "gemini-2.5-flash"; // Modèle rapide et efficace
+let genAI = null;
+let chatSession = null;
+// On utilise le modèle 1.5 Flash, très rapide et stable pour les comptes gratuits
+const MODEL_NAME = "gemini-1.5-flash"; 
 
 // --- Fonctions Utilitaires ---
 
@@ -20,13 +22,15 @@ function appendMessage(sender, text) {
     const messageDiv = document.createElement('div');
     messageDiv.classList.add('message', sender);
     
-    // Conversion des sauts de ligne (\n) en balises HTML <br>
-    const formattedText = text.replace(/\n/g, '<br>');
+    // Conversion des sauts de ligne (\n) en balises HTML <br> et protection basique XSS
+    const cleanText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const formattedText = cleanText.replace(/\n/g, '<br>');
+    
     messageDiv.innerHTML = `<p>${formattedText}</p>`;
     
     chatContainer.appendChild(messageDiv);
     
-    // Défilement automatique vers le bas pour voir le dernier message
+    // Défilement automatique vers le bas
     chatContainer.scrollTop = chatContainer.scrollHeight; 
 }
 
@@ -35,20 +39,23 @@ function toggleChat(enable) {
     userInput.disabled = !enable;
     sendButton.disabled = !enable;
     
-    // On désactive la configuration de la clé une fois validée pour éviter les changements en cours de route
     if (enable) {
         apiKeyInput.disabled = true;
         setApiKeyBtn.disabled = true;
         setApiKeyBtn.textContent = "Connecté";
-        setApiKeyBtn.style.backgroundColor = "#4CAF50"; // Vert pour indiquer le succès
+        setApiKeyBtn.style.backgroundColor = "#4CAF50";
+        setApiKeyBtn.style.color = "#fff";
         userInput.focus();
+    } else {
+        // Si on désactive (chargement), on garde le style mais on empêche le clic
+        setApiKeyBtn.disabled = true;
     }
 }
 
 // --- Événements et Logique ---
 
 // 1. Initialisation de la clé API
-setApiKeyBtn.addEventListener('click', () => {
+setApiKeyBtn.addEventListener('click', async () => {
     const key = apiKeyInput.value.trim();
     if (key === '') {
         alert("Veuillez entrer une clé API Gemini valide.");
@@ -56,21 +63,36 @@ setApiKeyBtn.addEventListener('click', () => {
     }
 
     try {
-        // Initialisation du SDK Google GenAI
-        ai = new GoogleGenAI({ apiKey: key });
+        // Initialisation de la librairie
+        genAI = new GoogleGenerativeAI(key);
         
-        // Création de la session de chat
-        chat = ai.chats.create({ model });
+        // Configuration du modèle
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+        
+        // Démarrage de la session de chat (historique vide au début)
+        chatSession = model.startChat({
+            history: [
+                {
+                    role: "user",
+                    parts: [{ text: "Bonjour, es-tu opérationnel ?" }],
+                },
+                {
+                    role: "model",
+                    parts: [{ text: "Bonjour ! Je suis opérationnel et prêt à discuter avec vous." }],
+                },
+            ],
+            generationConfig: {
+                maxOutputTokens: 1000,
+            },
+        });
 
-        // Si aucune erreur immédiate, on active le chat
+        // Si on arrive ici sans erreur, on active le chat
         toggleChat(true);
-        
-        // Petit message système discret pour confirmer
-        appendMessage('ai', "Système initialisé. Je suis prêt à discuter.");
+        appendMessage('ai', "Système connecté. Je suis prêt !");
 
     } catch (error) {
         console.error("Erreur d'initialisation:", error);
-        alert("Impossible d'initialiser l'IA avec cette clé. Vérifiez la console (F12) pour plus de détails.");
+        alert("Erreur: Impossible de configurer l'IA. Vérifiez que votre clé est correcte.");
     }
 });
 
@@ -78,16 +100,15 @@ setApiKeyBtn.addEventListener('click', () => {
 async function sendMessage() {
     const prompt = userInput.value.trim();
     
-    // Vérifications de base
     if (prompt === '') return;
-    if (!chat) {
+    if (!chatSession) {
         alert("Veuillez d'abord valider votre clé API.");
         return;
     }
 
     // Affichage immédiat du message utilisateur
     appendMessage('user', prompt);
-    userInput.value = ''; // Vider le champ
+    userInput.value = ''; 
     
     // État de chargement
     userInput.disabled = true;
@@ -95,18 +116,19 @@ async function sendMessage() {
     loadingIndicator.style.display = 'block';
 
     try {
-        // Appel à l'API Gemini
-        const response = await chat.sendMessage({ message: prompt });
-        const responseText = response.text;
+        // Envoi à Gemini
+        const result = await chatSession.sendMessage(prompt);
+        const response = await result.response;
+        const text = response.text();
 
         // Affichage de la réponse
-        appendMessage('ai', responseText);
+        appendMessage('ai', text);
         
     } catch (error) {
         console.error("Erreur Gemini API:", error);
-        appendMessage('ai', "⚠️ Erreur de transmission. Vérifiez votre connexion ou votre clé API.");
+        appendMessage('ai', "⚠️ Erreur : " + error.message);
     } finally {
-        // Restauration de l'état normal
+        // Restauration
         userInput.disabled = false;
         sendButton.disabled = false;
         loadingIndicator.style.display = 'none';
@@ -116,6 +138,7 @@ async function sendMessage() {
 
 // Écouteurs d'événements pour l'envoi
 sendButton.addEventListener('click', sendMessage);
+
 userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         sendMessage();
