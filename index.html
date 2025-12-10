@@ -1,52 +1,43 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PulsarAI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulsarAI - Chat avec Gemini</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/genai@0.2.1/dist/index.min.js"></script>
 </head>
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="logo" aria-label="PulsarAI">
-        <h1>PulsarAI</h1>
-      </div>
-      <button id="theme-toggle" class="theme-toggle" aria-label="Changer le thème">
-        <svg class="icon sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-        <svg class="icon moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-    </aside>
 
-    <main class="main-content">
-      <div id="api-setup" class="api-setup">
-        <div class="card">
-          <h2>🔑 Accès à l’IA</h2>
-          <p>Entrez votre clé API Gemini pour utiliser <strong>PulsarAI</strong>.</p>
-          <input type="password" id="api-key" placeholder="AIzaSyB..." aria-label="Clé API Gemini" />
-          <button id="save-key" class="btn primary">Démarrer le chat</button>
-          <p class="help">
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Obtenir une clé gratuite</a>
-          </p>
-        </div>
-      </div>
+    <div class="container">
+        <header>
+            <h1>PulsarAI</h1>
+            <p>Propulsé par Gemini</p>
+        </header>
 
-      <div id="chat-container" class="chat-container hidden">
-        <div id="chat-messages" class="chat-messages"></div>
-        <div class="input-area">
-          <textarea id="user-input" placeholder="Message à PulsarAI…" rows="1" aria-label="Votre message"></textarea>
-          <button id="send-btn" class="btn send-btn" aria-label="Envoyer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 2L11 12"/><path d="M22 2L15 22L11 12L2 9L22 2Z"/>
-            </svg>
-          </button>
-        </div>
-        <button id="reset-btn" class="btn text-btn">Changer de clé</button>
-      </div>
-    </main>
-  </div>
+        <main id="main-content">
+            <div class="api-key-setup">
+                <input type="password" id="api-key-input" placeholder="Entrez votre clé API Gemini (ne sera pas enregistrée)..." required>
+                <button id="set-api-key-btn">Initialiser le Chat</button>
+            </div>
 
-  <script src="script.js"></script>
+            <div id="chat-messages" class="chat-messages">
+                <div class="message ai welcome">
+                    <p>Bienvenue sur PulsarAI. Veuillez entrer et initialiser votre clé API Gemini ci-dessus pour commencer la conversation.</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="user-input" placeholder="Écrivez votre message..." disabled>
+                <button id="send-btn" disabled>Envoyer</button>
+            </div>
+            <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                ... PulsarAI réfléchit ...
+            </div>
+        </main>
+        
+    </div>
+
+    <script type="module" src="script.js"></script>
 </body>
 </html>
