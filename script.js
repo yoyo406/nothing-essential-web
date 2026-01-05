@@ -7,31 +7,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const memoryList = document.getElementById('memoryList');
     const addBtn = document.getElementById('addBtn');
     
-    // Add Modal
+    // Add Modal Elements
     const addModal = document.getElementById('addModal');
     const closeAddModal = document.getElementById('closeAddModal');
     const saveNoteBtn = document.getElementById('saveNoteBtn');
-    const noteType = document.getElementById('noteType');
+    const noteTypeInput = document.getElementById('noteType'); // Hidden input
+    const typeTabs = document.querySelectorAll('.type-tab'); // New Tabs
     const noteContent = document.getElementById('noteContent');
-    const noteImage = document.getElementById('noteImage');
+    
+    // Sections
     const imageUploadGroup = document.getElementById('imageUploadGroup');
+    const voiceRecorder = document.getElementById('voiceRecorder');
+    const eventFields = document.getElementById('eventFields');
+    
+    // Inputs
+    const noteImage = document.getElementById('noteImage');
     const imagePreviewContainer = document.getElementById('imagePreviewContainer');
     const imagePreview = document.getElementById('imagePreview');
-    const eventFields = document.getElementById('eventFields');
-    const eventDate = document.getElementById('eventDate');
-    const micBtn = document.getElementById('micBtn');
     const aiStatus = document.getElementById('aiStatus');
+    const eventDate = document.getElementById('eventDate');
     const addTagInput = document.getElementById('addTagInput');
     const addTagsList = document.getElementById('addTagsList');
 
-    // Voice Recorder Elements
-    const voiceRecorder = document.getElementById('voiceRecorder');
+    // Recorder
     const recordBtn = document.getElementById('recordBtn');
     const stopBtn = document.getElementById('stopBtn');
     const playPreviewBtn = document.getElementById('playPreviewBtn');
     const deleteRecordingBtn = document.getElementById('deleteRecordingBtn');
     const transcriptionPreview = document.getElementById('transcriptionPreview');
-    const recorderStatus = document.querySelector('.recorder-status');
+    const recorderUi = document.querySelector('.recorder-ui');
     const recorderTimer = document.querySelector('.recorder-timer');
 
     // View Modal
@@ -45,12 +49,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const viewAudioContainer = document.getElementById('viewAudioContainer');
     const viewAudioPlayBtn = document.getElementById('viewAudioPlayBtn');
     const viewAudioElement = document.getElementById('viewAudioElement');
+    const playerProgress = document.querySelector('.player-progress');
     const deleteNoteBtn = document.getElementById('deleteNoteBtn');
     const pinNoteBtn = document.getElementById('pinNoteBtn');
     const viewTagInput = document.getElementById('viewTagInput');
     const viewTagsList = document.getElementById('viewTagsList');
 
-    // Widgets & Sidebar
+    // Sidebar & Widgets
     const recentPreview = document.getElementById('recentPreview');
     const recentText = document.getElementById('recentText');
     const recentTime = document.getElementById('recentTime');
@@ -59,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const upcomingTime = document.getElementById('upcomingTime');
     const tagFilterList = document.getElementById('tagFilterList');
 
-    // Variables
+    // Global Vars
     let currentAddTags = [];
     let currentViewTags = [];
     let currentViewId = null;
@@ -67,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentFilter = null;
     let classifier = null;
 
-    // Recorder Variables
+    // Recorder Vars
     let mediaRecorder;
     let audioChunks = [];
     let audioBlob = null;
@@ -118,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // --- SIDEBAR FILTERS ---
+    // --- FILTERS ---
     async function updateFilterSidebar() {
         const tags = await db.getUniqueTags();
         tagFilterList.innerHTML = `<li class="${currentFilter === null ? 'active' : ''}" data-tag="all">ALL</li>`;
@@ -145,12 +150,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             let preview = item.imageData ? `<img src="${item.imageData}" class="item-image-preview">` : '';
             
-            // Text logic
             let displayText = item.content;
             if (item.type === '[VOICE]') displayText = item.transcript ? `"${item.transcript}"` : 'Voice Memo';
             if (!displayText && item.imageData) displayText = 'Image Attachment';
-            if (!displayText) displayText = 'Empty Note';
-
+            if (!displayText && item.type === '[EVENT]') displayText = 'Upcoming Event';
+            
             el.innerHTML = `
                 ${preview}
                 <div class="item-content-wrapper">
@@ -163,25 +167,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- ADD MODAL LOGIC ---
+    // --- ADD MODAL LOGIC (New Tab System) ---
     addBtn.addEventListener('click', () => {
         addModal.classList.add('active');
-        // Reset Form
-        noteContent.value = '';
-        noteImage.value = '';
-        noteType.value = '[NOTE]';
-        eventDate.value = '';
-        imagePreview.src = '';
-        imagePreviewContainer.classList.add('hidden');
-        imageUploadGroup.style.display = 'none';
-        eventFields.style.display = 'none';
-        voiceRecorder.style.display = 'none';
-        
-        currentAddTags = [];
-        renderTags(addTagsList, currentAddTags, 'add');
-        aiStatus.textContent = '';
-        
-        resetVoiceRecorderState();
+        resetAddForm();
     });
 
     closeAddModal.addEventListener('click', () => {
@@ -189,21 +178,45 @@ document.addEventListener('DOMContentLoaded', async () => {
         resetVoiceRecorderState();
     });
 
-    // Handle Type Toggle (THE BUG FIX)
-    noteType.addEventListener('change', () => {
-        imageUploadGroup.style.display = 'none';
-        eventFields.style.display = 'none';
-        voiceRecorder.style.display = 'none';
-        
-        // Reset Voice if switching away
-        if (isRecording) stopBtn.click();
+    // Tab Switching Logic
+    typeTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // UI Update
+            typeTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Logic Update
+            const type = tab.dataset.type;
+            noteTypeInput.value = type;
 
-        if (noteType.value === '[PHOTO]') imageUploadGroup.style.display = 'block';
-        else if (noteType.value === '[EVENT]') eventFields.style.display = 'block';
-        else if (noteType.value === '[VOICE]') voiceRecorder.style.display = 'block';
+            // Reset visibility
+            imageUploadGroup.style.display = 'none';
+            voiceRecorder.style.display = 'none';
+            eventFields.style.display = 'none';
+            if (isRecording) stopBtn.click(); // Safety
+
+            // Show relevant section
+            if (type === '[PHOTO]') imageUploadGroup.style.display = 'block';
+            else if (type === '[VOICE]') voiceRecorder.style.display = 'block';
+            else if (type === '[EVENT]') eventFields.style.display = 'block';
+        });
     });
 
-    // Image Preview
+    function resetAddForm() {
+        noteContent.value = '';
+        noteImage.value = '';
+        eventDate.value = '';
+        imagePreview.src = '';
+        imagePreviewContainer.classList.add('hidden');
+        currentAddTags = [];
+        renderTags(addTagsList, currentAddTags, 'add');
+        aiStatus.textContent = '';
+        resetVoiceRecorderState();
+        // Reset to first tab
+        typeTabs[0].click();
+    }
+
+    // Image Handling
     noteImage.addEventListener('change', async (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -211,33 +224,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             imagePreview.src = base64;
             imagePreviewContainer.classList.remove('hidden');
             
-            // AI Auto Tag
             const model = await getClassifier();
             if (model) {
                 aiStatus.textContent = 'Scanning...';
-                const output = await model(base64);
-                aiStatus.textContent = 'Tagged';
-                if (output && output.length) {
-                    output.slice(0, 2).forEach(p => addTag(p.label, 'add'));
-                }
+                try {
+                    const output = await model(base64);
+                    aiStatus.textContent = 'Tagged';
+                    if (output && output.length) output.slice(0, 2).forEach(p => addTag(p.label, 'add'));
+                } catch(err) { aiStatus.textContent = ''; }
             }
         }
     });
 
     // SAVE LOGIC
     saveNoteBtn.addEventListener('click', async () => {
-        const type = noteType.value;
+        const type = noteTypeInput.value;
         const content = noteContent.value;
         let imageData = null;
         let eDate = null;
 
-        if (type === '[PHOTO]' && noteImage.files[0]) {
-            imageData = await convertToBase64(noteImage.files[0]);
-        }
+        if (type === '[PHOTO]' && noteImage.files[0]) imageData = await convertToBase64(noteImage.files[0]);
         if (type === '[EVENT]') {
             eDate = eventDate.value;
-            if (!eDate) return alert('Date required for event');
+            if (!eDate) return alert('Date required');
         }
+        if (type === '[VOICE]' && !audioBlob) return alert('Record something first');
 
         const newNote = {
             type,
@@ -250,11 +261,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         if (type === '[VOICE]') {
-            if (!audioBlob) return alert('No recording found');
             newNote.audioBlob = audioBlob;
             newNote.transcript = transcript;
-        } else if (!content && !imageData && type !== '[EVENT]') {
-            return; // Empty note
         }
 
         await db.addNote(newNote);
@@ -262,35 +270,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         refreshAll();
     });
 
-    // --- VIEW MODAL LOGIC ---
+    // --- VIEW MODAL ---
     function openViewModal(item) {
         currentViewId = item.id;
         currentNote = item;
         viewType.textContent = item.type;
         viewTime.textContent = new Date(item.timestamp).toLocaleString();
         
-        // Reset View
         viewImageContainer.innerHTML = '';
         viewAudioContainer.style.display = 'none';
         viewAudioElement.pause();
         viewAudioPlayBtn.textContent = '▶';
+        playerProgress.style.width = '0%';
 
-        // Content
         viewContent.textContent = item.content;
 
-        // Image
         if (item.imageData) {
             const img = document.createElement('img');
             img.src = item.imageData;
+            img.className = 'item-image-preview';
             viewImageContainer.appendChild(img);
         }
 
-        // Voice
         if (item.type === '[VOICE]' && item.audioBlob) {
             viewAudioContainer.style.display = 'flex';
             viewAudioElement.src = URL.createObjectURL(item.audioBlob);
             
-            // Fix Audio Button Logic
+            viewAudioElement.ontimeupdate = () => {
+                const pct = (viewAudioElement.currentTime / viewAudioElement.duration) * 100;
+                playerProgress.style.width = `${pct}%`;
+            };
+            viewAudioElement.onended = () => {
+                viewAudioPlayBtn.textContent = '▶';
+                playerProgress.style.width = '0%';
+            };
             viewAudioPlayBtn.onclick = () => {
                 if (viewAudioElement.paused) {
                     viewAudioElement.play();
@@ -300,23 +313,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     viewAudioPlayBtn.textContent = '▶';
                 }
             };
-            viewAudioElement.onended = () => {
-                viewAudioPlayBtn.textContent = '▶';
-            };
-
-            if (item.transcript) {
-                viewContent.innerHTML = `<em style="color:#666">"${item.transcript}"</em><br><br>${item.content}`;
-            }
+            if (item.transcript) viewContent.innerHTML = `<em style="opacity:0.7">"${item.transcript}"</em>`;
         }
 
-        // Event
         viewEventDetails.textContent = (item.type === '[EVENT]' && item.eventDate) 
-            ? `Due: ${new Date(item.eventDate).toLocaleString()}` : '';
+            ? `TARGET: ${new Date(item.eventDate).toLocaleString()}` : '';
 
-        // Tags
         currentViewTags = item.tags || [];
         renderTags(viewTagsList, currentViewTags, 'view');
-        
         pinNoteBtn.textContent = item.isPinned ? 'UNPIN' : 'PIN';
         viewModal.classList.add('active');
     }
@@ -327,7 +331,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     deleteNoteBtn.addEventListener('click', async () => {
-        if(confirm('Delete this entry?')) {
+        if(confirm('Delete?')) {
             await db.deleteNote(currentViewId);
             viewModal.classList.remove('active');
             refreshAll();
@@ -340,7 +344,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         refreshAll();
     });
 
-    // --- VOICE RECORDER ENGINE ---
+    // --- AUDIO RECORDER LOGIC (Animation & Func) ---
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
         recognition.continuous = true;
@@ -375,8 +379,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (recognition) recognition.start();
             
             isRecording = true;
-            recorderStatus.textContent = "REC";
-            recorderStatus.style.color = "var(--accent-color)";
+            recorderUi.classList.add('recording'); // Triggers CSS Animation
             recordBtn.disabled = true;
             stopBtn.disabled = false;
             
@@ -388,9 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 recorderTimer.textContent = `${min}:${sec}`;
             }, 1000);
 
-        } catch (err) {
-            alert("Mic permission denied");
-        }
+        } catch (err) { alert("Mic required"); }
     });
 
     stopBtn.addEventListener('click', () => {
@@ -398,8 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         mediaRecorder.stop();
         if (recognition) recognition.stop();
         isRecording = false;
-        recorderStatus.textContent = "DONE";
-        recorderStatus.style.color = "var(--text-secondary)";
+        recorderUi.classList.remove('recording'); // Stops Animation
         recordBtn.disabled = false;
         stopBtn.disabled = true;
         clearInterval(timerInterval);
@@ -417,12 +417,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         transcript = "";
         transcriptionPreview.textContent = "";
         recorderTimer.textContent = "00:00";
-        recorderStatus.textContent = "READY";
+        recorderUi.classList.remove('recording');
         playPreviewBtn.disabled = true;
         deleteRecordingBtn.disabled = true;
     }
 
-    // --- UTILS & TAGS ---
+    // --- UTILS ---
     function renderTags(container, tags, mode) {
         container.innerHTML = '';
         tags.forEach(tag => {
@@ -459,46 +459,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     viewTagInput.addEventListener('keydown', e => { if(e.key==='Enter') { e.preventDefault(); addTag(viewTagInput.value, 'view'); viewTagInput.value=''; }});
 
     function convertToBase64(file) {
-        return new Promise((resolve, reject) => {
+        return new Promise((r, j) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+            reader.onload = () => r(reader.result);
+            reader.onerror = e => j(e);
         });
     }
 
     async function getClassifier() {
         if (!classifier) {
-            aiStatus.textContent = 'Loading AI...';
-            try {
-                classifier = await pipeline('image-classification', 'Xenova/resnet-50');
-                aiStatus.textContent = '';
-            } catch (e) { aiStatus.textContent = 'AI Error'; }
+            try { classifier = await pipeline('image-classification', 'Xenova/resnet-50'); } 
+            catch (e) { console.log(e); }
         }
         return classifier;
     }
 
-    // Settings Toggle Logic
+    // --- SETTINGS TOGGLE LOGIC (FIXED) ---
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsMenu = document.getElementById('settingsMenu');
     
-    settingsBtn.addEventListener('click', (e) => { e.stopPropagation(); settingsMenu.classList.toggle('active'); });
-    document.addEventListener('click', (e) => { if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) settingsMenu.classList.remove('active'); });
+    settingsBtn.addEventListener('click', (e) => { 
+        e.stopPropagation(); 
+        settingsMenu.classList.toggle('active'); 
+    });
+    
+    document.addEventListener('click', (e) => { 
+        if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) 
+            settingsMenu.classList.remove('active'); 
+    });
     
     document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const setting = btn.dataset.setting;
             const value = btn.dataset.value;
+            
+            // UI Toggle
             btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
+            // Logic Toggle
             if (setting === 'theme') {
-                document.documentElement.setAttribute('data-theme', value);
-                localStorage.setItem('theme', value);
-            } else if (setting === 'accent') {
-                document.documentElement.style.setProperty('--accent-color', value === 'grey' ? '#A0A0A0' : '#D71921');
-            }
-        });
-    });
-
-    // Load saved theme
+                document.documen
