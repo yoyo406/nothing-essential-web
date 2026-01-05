@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             recentTime.textContent = new Date(recent.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } else {
             recentPreview.style.backgroundImage = 'none';
-            recentText.textContent = 'No recent media';
+            recentText.textContent = 'Empty';
             recentTime.textContent = '--:--';
         }
 
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             upcomingDesc.textContent = new Date(nextEvent.eventDate).toLocaleDateString();
             upcomingTime.textContent = new Date(nextEvent.eventDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         } else {
-            upcomingTitle.textContent = 'No upcoming events';
+            upcomingTitle.textContent = 'No Events';
             upcomingDesc.textContent = '';
             upcomingTime.textContent = '--:--';
         }
@@ -143,23 +143,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 previewHtml = `<img src="${item.imageData}" class="item-image-preview">`;
             }
 
-            let pinHtml = item.isPinned ? '<div class="pinned-badge">PINNED</div>' : '';
+            let pinHtml = item.isPinned ? '<div class="pinned-badge"></div>' : '';
 
+            // Cleaned up innerHTML for new Look
             itemEl.innerHTML = `
                 ${pinHtml}
                 ${previewHtml}
-                <div class="item-left">
+                <div class="item-content-wrapper">
                     <span class="item-type">${item.type}</span>
                     ${item.type === '[VOICE]' && item.audioBlob ? `
                         <div class="audio-player-custom">
-                            <button class="audio-play-btn" onclick="event.stopPropagation(); const audio = this.nextElementSibling; audio.paused ? audio.play() : audio.pause();">▶</button>
-                            <audio src="${URL.createObjectURL(item.audioBlob)}" onended="this.previousElementSibling.textContent='▶'" onplay="this.previousElementSibling.textContent='⏸'" onpause="this.previousElementSibling.textContent='▶'"></audio>
-                            <div class="audio-wave"></div>
+                             <button class="audio-play-btn" onclick="event.stopPropagation(); const audio = this.nextElementSibling; audio.paused ? audio.play() : audio.pause();">▶</button>
+                             <audio src="${URL.createObjectURL(item.audioBlob)}" onended="this.previousElementSibling.textContent='▶'" onplay="this.previousElementSibling.textContent='⏸'" onpause="this.previousElementSibling.textContent='▶'"></audio>
+                             <div class="audio-wave"></div>
                         </div>
-                        ${item.transcript ? `<button class="transcribe-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('visible')">Transcribe</button><div class="transcript-text">${item.transcript}</div>` : ''}
-                    ` : `<span class="item-content">${item.content || (item.imageData ? 'Image Attachment' : 'Empty')}</span>`}
+                    ` : `<p class="item-content">${item.content || (item.imageData ? 'Image' : 'Empty')}</p>`}
+                    
+                    <span class="item-time">${timeString}</span>
                 </div>
-                <span class="item-time">${timeString}</span>
             `;
 
             memoryList.appendChild(itemEl);
@@ -167,23 +168,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- AI Integration ---
-
-    // Lazy load classifier
     async function getClassifier() {
         if (!classifier) {
-            aiStatus.textContent = 'Loading AI Model...';
+            aiStatus.textContent = 'Loading AI...';
             try {
                 classifier = await pipeline('image-classification', 'Xenova/resnet-50');
-                aiStatus.textContent = 'AI Ready';
+                aiStatus.textContent = 'Ready';
             } catch (e) {
                 console.error("AI Load Error", e);
-                aiStatus.textContent = 'AI Failed';
+                aiStatus.textContent = 'Error';
             }
         }
         return classifier;
     }
 
-    // Image Auto-Tagging
     noteImage.addEventListener('change', async (e) => {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
@@ -191,15 +189,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             reader.onload = async (event) => {
                 const imgData = event.target.result;
-
-                // Run AI
                 const model = await getClassifier();
                 if (model) {
-                    aiStatus.textContent = 'Analyzing...';
+                    aiStatus.textContent = 'Processing...';
                     const output = await model(imgData);
                     aiStatus.textContent = 'Done';
-
-                    // Add top 3 tags
                     if (output && output.length > 0) {
                         output.slice(0, 3).forEach(prediction => {
                             addTag(prediction.label, 'add');
@@ -211,58 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Voice Dictation
-    if ('webkitSpeechRecognition' in window) {
-        const dictationRecognition = new webkitSpeechRecognition();
-        dictationRecognition.continuous = true;
-        dictationRecognition.interimResults = true;
-        let isDictating = false;
-
-        micBtn.addEventListener('click', () => {
-            if (isDictating) {
-                dictationRecognition.stop();
-                isDictating = false;
-                micBtn.classList.remove('recording');
-            } else {
-                dictationRecognition.start();
-                isDictating = true;
-                micBtn.classList.add('recording');
-            }
-        });
-
-        dictationRecognition.onresult = (event) => {
-            let interimTranscript = '';
-            let finalTranscript = '';
-
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-
-            if (finalTranscript) {
-                noteContent.value += (noteContent.value ? ' ' : '') + finalTranscript;
-            }
-        };
-
-        dictationRecognition.onerror = (event) => {
-            console.error("Speech error", event);
-            micBtn.classList.remove('recording');
-            isDictating = false;
-        };
-
-        dictationRecognition.onend = () => {
-            micBtn.classList.remove('recording');
-            isDictating = false;
-        };
-    } else {
-        micBtn.style.display = 'none'; // Hide if not supported
-    }
-
     // --- Tag Management ---
-
     function renderTags(container, tags, mode) {
         container.innerHTML = '';
         tags.forEach(tag => {
@@ -291,7 +234,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!currentViewTags.includes(cleanTag)) {
                 currentViewTags.push(cleanTag);
                 renderTags(viewTagsList, currentViewTags, 'view');
-                // Auto-save for view mode
                 if (currentNote) {
                     currentNote.tags = currentViewTags;
                     db.updateNote(currentNote).then(refreshAll);
@@ -308,7 +250,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             currentViewTags = currentViewTags.filter(t => t !== tag);
             renderTags(viewTagsList, currentViewTags, 'view');
-            // Auto-save for view mode
             if (currentNote) {
                 currentNote.tags = currentViewTags;
                 db.updateNote(currentNote).then(refreshAll);
@@ -330,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Add Modal Logic
+    // --- Modal Logic ---
     addBtn.addEventListener('click', () => {
         addModal.classList.add('active');
         noteContent.value = '';
@@ -339,13 +280,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         eventDate.value = '';
         imageUploadGroup.style.display = 'none';
         eventFields.style.display = 'none';
-
-        // Reset Tags
+        
         currentAddTags = [];
         renderTags(addTagsList, currentAddTags, 'add');
         aiStatus.textContent = '';
-
-        // Reset Voice Recorder
+        
         if (window.resetVoiceRecorder) window.resetVoiceRecorder();
         document.getElementById('voiceRecorder').style.display = 'none';
     });
@@ -354,11 +293,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         addModal.classList.remove('active');
     });
 
+    // --- CORE LOGIC FIX FOR VISIBILITY ---
     noteType.addEventListener('change', () => {
-        // Correction ici : on cache tout par défaut, y compris le vocal
         imageUploadGroup.style.display = 'none';
         eventFields.style.display = 'none';
-        document.getElementById('voiceRecorder').style.display = 'none';
+        document.getElementById('voiceRecorder').style.display = 'none'; // The crucial fix
 
         if (noteType.value === '[PHOTO]') {
             imageUploadGroup.style.display = 'block';
@@ -382,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (type === '[EVENT]') {
             eDate = eventDate.value;
             if (!eDate) {
-                alert('Please select a date for the event.');
+                alert('Please select a date');
                 return;
             }
         }
@@ -403,13 +342,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (voiceData.audioBlob) {
                 newNote.audioBlob = voiceData.audioBlob;
                 newNote.transcript = voiceData.transcript;
-                // Voice notes might not have text content, so allow empty content
             } else {
-                alert('Please record a voice note.');
+                alert('Please record something.');
                 return;
             }
-        } else if (!content && !imageData && type !== '[EVENT]') {
-            return;
         }
 
         await db.addNote(newNote);
@@ -417,7 +353,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         refreshAll();
     });
 
-    // View Modal Logic
     function openViewModal(item) {
         currentViewId = item.id;
         currentNote = item;
@@ -429,15 +364,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="audio-player-custom">
                     <button class="audio-play-btn" onclick="const audio = this.nextElementSibling; audio.paused ? audio.play() : audio.pause();">▶</button>
                     <audio src="${URL.createObjectURL(item.audioBlob)}" onended="this.previousElementSibling.textContent='▶'" onplay="this.previousElementSibling.textContent='⏸'" onpause="this.previousElementSibling.textContent='▶'"></audio>
-                    <div class="audio-wave" style="width: 200px;"></div>
+                    <div style="flex-grow:1; height:2px; background:#333;"></div>
                 </div>
-                ${item.transcript ? `<div style="margin-top:15px; font-style:italic; color:#888;">"${item.transcript}"</div>` : ''}
+                ${item.transcript ? `<div style="margin-top:15px; color:#666;">"${item.transcript}"</div>` : ''}
              `;
         } else {
             viewContent.textContent = item.content;
         }
 
-        // Tags
         currentViewTags = item.tags || [];
         renderTags(viewTagsList, currentViewTags, 'view');
 
@@ -449,25 +383,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (item.type === '[EVENT]' && item.eventDate) {
-            viewEventDetails.textContent = `Event Date: ${new Date(item.eventDate).toLocaleString()}`;
+            viewEventDetails.textContent = `Date: ${new Date(item.eventDate).toLocaleString()}`;
         } else {
             viewEventDetails.textContent = '';
         }
 
         pinNoteBtn.textContent = item.isPinned ? 'UNPIN' : 'PIN';
-
         viewModal.classList.add('active');
     }
 
     closeViewModal.addEventListener('click', () => {
         viewModal.classList.remove('active');
-        currentViewId = null;
-        currentNote = null;
     });
 
     deleteNoteBtn.addEventListener('click', async () => {
         if (currentViewId) {
-            if (confirm('Are you sure you want to delete this entry?')) {
+            if (confirm('Delete?')) {
                 await db.deleteNote(currentViewId);
                 viewModal.classList.remove('active');
                 refreshAll();
@@ -484,7 +415,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Utilities
     function convertToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -494,44 +424,138 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Close modals on outside click
-    window.addEventListener('click', (e) => {
-        if (e.target === addModal) addModal.classList.remove('active');
-        if (e.target === viewModal) viewModal.classList.remove('active');
-    });
-
-    // --- Settings & Theme Logic ---
+    // --- Settings & Theme ---
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsMenu = document.getElementById('settingsMenu');
     const toggleBtns = document.querySelectorAll('.toggle-btn');
 
-    // Toggle Settings Menu
     settingsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         settingsMenu.classList.toggle('active');
     });
 
-    // Close menu when clicking outside
     document.addEventListener('click', (e) => {
         if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) {
             settingsMenu.classList.remove('active');
         }
     });
 
-    // Handle Toggles
     toggleBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const setting = btn.dataset.setting;
             const value = btn.dataset.value;
-
-            // Update UI
-            const group = btn.parentElement;
-            group.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+            btn.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Apply Setting
             if (setting === 'theme') {
-                applyTheme(value);
+                document.documentElement.setAttribute('data-theme', value === 'light' ? 'light' : '');
+                localStorage.setItem('essential_theme', value);
             } else if (setting === 'accent') {
-                applyAccent(value);
+                document.documentElement.style.setProperty('--accent-color', value === 'yellow' ? '#A0A0A0' : '#D71921');
             }
+        });
+    });
+
+    // --- Voice Logic (Same as before) ---
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob = null;
+    let recognition;
+    let transcript = "";
+    let isRecording = false;
+    let recordingStartTime;
+    let timerInterval;
+
+    const recorderStatus = document.querySelector('.recorder-status');
+    const recorderTimer = document.querySelector('.recorder-timer');
+    const recordBtn = document.getElementById('recordBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const playPreviewBtn = document.getElementById('playPreviewBtn');
+    const deleteRecordingBtn = document.getElementById('deleteRecordingBtn');
+    const transcriptionPreview = document.getElementById('transcriptionPreview');
+
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
+                else interimTranscript += event.results[i][0].transcript;
+            }
+            transcriptionPreview.textContent = transcript + interimTranscript;
+        };
+    }
+
+    recordBtn.addEventListener('click', async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            transcript = "";
+            transcriptionPreview.textContent = "";
+
+            mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
+            mediaRecorder.onstop = () => {
+                audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                playPreviewBtn.disabled = false;
+                deleteRecordingBtn.disabled = false;
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            if (recognition) recognition.start();
+
+            isRecording = true;
+            recorderStatus.textContent = "REC";
+            recorderStatus.classList.add('recording');
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+            
+            recordingStartTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                recorderTimer.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        } catch (err) {
+            alert("Mic permission required");
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if (mediaRecorder && isRecording) {
+            mediaRecorder.stop();
+            if (recognition) recognition.stop();
+            isRecording = false;
+            recorderStatus.textContent = "IDLE";
+            recorderStatus.classList.remove('recording');
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            clearInterval(timerInterval);
+        }
+    });
+
+    playPreviewBtn.addEventListener('click', () => {
+        if (audioBlob) {
+            new Audio(URL.createObjectURL(audioBlob)).play();
+        }
+    });
+
+    deleteRecordingBtn.addEventListener('click', () => {
+        audioBlob = null;
+        transcript = "";
+        transcriptionPreview.textContent = "";
+        recorderTimer.textContent = "00:00";
+        playPreviewBtn.disabled = true;
+        deleteRecordingBtn.disabled = true;
+    });
+
+    window.getVoiceNoteData = () => ({ audioBlob, transcript });
+    window.resetVoiceRecorder = () => {
+        if (isRecording) stopBtn.click();
+        deleteRecordingBtn.click();
+    };
+});
