@@ -689,30 +689,6 @@ input[type="file"] {
     border-radius: 3px;
 }
 
-/* Responsive ahh I love making ai write comments it saves us sooooo much time. This is why we have ai, To document humanities progress. Ad astra per aspera et ultra. */
-@media (max-width: 768px) {
-    .main-wrapper {
-        flex-direction: column;
-    }
-
-    .filter-sidebar {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid var(--border-color);
-        padding-left: 0;
-        padding-top: 20px;
-    }
-
-    .widgets-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .fab {
-        right: 20px;
-        bottom: 20px;
-    }
-}
-
 /* Voice Recorder UI */
 .recorder-container {
     background-color: #000;
@@ -916,4 +892,140 @@ input[type="file"] {
 
 .transcript-text.visible {
     display: block;
+}
+
+/* Responsive Mobile Optimization */
+@media (max-width: 768px) {
+    body {
+        padding-left: 0;
+        padding: 0;
+    }
+
+    .app-container {
+        width: 100%;
+        padding: 20px 15px;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .brand {
+        font-size: 20px;
+    }
+
+    .main-wrapper {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .filter-sidebar {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 15px 0;
+        text-align: left;
+    }
+
+    #tagFilterList {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    #tagFilterList li {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+    }
+
+    .widgets-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 30px;
+        max-width: 100%;
+    }
+
+    .widget {
+        height: auto;
+        min-height: 120px;
+    }
+
+    .memory-list {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding-bottom: 120px;
+    }
+
+    .fab-container {
+        bottom: 20px;
+        right: 20px;
+        flex-direction: column-reverse;
+        gap: 10px;
+    }
+
+    .settings-menu {
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 100%;
+        width: 90vw;
+        max-width: 300px;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        padding: 15px;
+        max-height: 85vh;
+    }
+
+    .modal-header h3 {
+        font-size: 16px;
+    }
+
+    textarea {
+        font-size: 16px;
+    }
+
+    .form-group label {
+        font-size: 11px;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modal-footer button {
+        width: 100%;
+    }
+
+    .modal-actions-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-danger {
+        width: 100%;
+    }
+
+    .recorder-container {
+        padding: 15px;
+    }
+
+    .recorder-timer {
+        font-size: 28px;
+    }
+
+    .audio-player-custom {
+        flex-direction: column;
+        gap: 8px;
+    }
 }
