@@ -42,18 +42,18 @@ class StorageService {
 
     async getAllNotes(filterTag = null) {
         return new Promise((resolve, reject) => {
+            if (!this.db) { resolve([]); return; }
             const transaction = this.db.transaction(["notes"], "readonly");
             const objectStore = transaction.objectStore("notes");
             const request = objectStore.getAll();
 
             request.onsuccess = (event) => {
-                let notes = event.target.result;
+                let notes = event.target.result || [];
                 if (filterTag) {
                     notes = notes.filter(note => note.tags && note.tags.includes(filterTag));
                 }
                 notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
-                // Pin logic
                 const pinned = notes.filter(n => n.isPinned);
                 const unpinned = notes.filter(n => !n.isPinned);
                 resolve([...pinned, ...unpinned]);
@@ -80,9 +80,13 @@ class StorageService {
 
             request.onsuccess = (event) => {
                 const note = event.target.result;
-                note.isPinned = !note.isPinned;
-                objectStore.put(note);
-                resolve(note.isPinned);
+                if (note) {
+                    note.isPinned = !note.isPinned;
+                    objectStore.put(note);
+                    resolve(note.isPinned);
+                } else {
+                    resolve(false);
+                }
             };
             request.onerror = () => reject(request.error);
         });
@@ -100,12 +104,13 @@ class StorageService {
 
     async getUpcomingEvents() {
         return new Promise((resolve, reject) => {
+            if (!this.db) { resolve([]); return; }
             const transaction = this.db.transaction(["notes"], "readonly");
             const objectStore = transaction.objectStore("notes");
             const request = objectStore.getAll();
 
             request.onsuccess = (event) => {
-                const notes = event.target.result;
+                const notes = event.target.result || [];
                 const now = new Date();
                 const events = notes.filter(n => n.type === '[EVENT]' && n.eventDate && new Date(n.eventDate) > now);
                 events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
@@ -117,12 +122,13 @@ class StorageService {
 
     async getRecentMedia() {
         return new Promise((resolve, reject) => {
+            if (!this.db) { resolve(null); return; }
             const transaction = this.db.transaction(["notes"], "readonly");
             const objectStore = transaction.objectStore("notes");
             const request = objectStore.getAll();
 
             request.onsuccess = (event) => {
-                const notes = event.target.result;
+                const notes = event.target.result || [];
                 const media = notes.filter(n => n.imageData);
                 media.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 resolve(media[0] || null);
@@ -133,12 +139,13 @@ class StorageService {
 
     async getUniqueTags() {
         return new Promise((resolve, reject) => {
+            if (!this.db) { resolve([]); return; }
             const transaction = this.db.transaction(["notes"], "readonly");
             const objectStore = transaction.objectStore("notes");
             const request = objectStore.getAll();
 
             request.onsuccess = (event) => {
-                const notes = event.target.result;
+                const notes = event.target.result || [];
                 const tags = new Set();
                 notes.forEach(note => {
                     if (note.tags && Array.isArray(note.tags)) {
