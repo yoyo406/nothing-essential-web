@@ -3,289 +3,219 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Mémoire // Ultra_Fluid</title>
-
+<title>Mémoire</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
 <style>
 :root {
   --md-primary: #6750A4;
   --md-surface: #FFFBFE;
-  --md-surface-2: #F3EDF7;
-  --md-outline: #79747E;
-  --accent-red: #B3261E;
-  /* Courbe de transition Nothing OS / Material */
+  --md-surface-variant: #E7E0EC;
+  --md-on-surface: #1C1B1F;
+  --md-outline-variant: #CAC4D0;
   --fluid-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --fast-curve: cubic-bezier(0.2, 0, 0, 1);
+  --glass: rgba(255, 251, 254, 0.8);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Inter', sans-serif; background: var(--md-surface); color: var(--md-on-surface); overflow-x: hidden; }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--md-surface);
-  color: #1C1B1F;
-  overflow-x: hidden;
-}
-
-/* ── ANIMATIONS DE CHARGEMENT ── */
-.fade-in { animation: fadeIn 0.6s var(--fast-curve) both; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* ── ANIMATIONS ── */
+@keyframes fluidUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.fade-in { animation: fluidUp 0.5s var(--fluid-curve) both; }
 
 /* ── HEADER & SEARCH ── */
 .app-header {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(255, 251, 254, 0.85);
-  backdrop-filter: blur(20px);
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  background: var(--glass); backdrop-filter: blur(20px);
+  padding: 12px 20px; border-bottom: 1px solid var(--md-outline-variant);
 }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 
-.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-
-/* ── DRAWER (PARAMÈTRES) ── */
-.drawer-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  z-index: 500; display: none; backdrop-filter: blur(4px);
-}
-.drawer-overlay.active { display: block; animation: fadeIn 0.3s ease; }
-
-.drawer {
+/* ── SETTINGS DRAWER ── */
+#settings-drawer {
   position: fixed; top: 0; right: 0; bottom: 0; width: 300px;
   background: var(--md-surface); z-index: 501;
-  transform: translateX(100%); transition: transform 0.4s var(--fast-curve);
+  transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
   padding: 24px; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
 }
-.drawer.active { transform: translateX(0); }
-
-/* ── CARDS GRID ── */
-.main-content { padding: 20px; max-width: 1200px; margin: 0 auto; }
-.cards-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+#settings-drawer.active { transform: translateX(0); }
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  z-index: 500; display: none; backdrop-filter: blur(4px);
 }
 
+/* ── CARDS ── */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 20px; }
 .card {
-  background: white; border-radius: 24px; padding: 20px;
-  border: 1px solid #E7E0EC;
-  transition: all 0.3s var(--fluid-curve);
-  cursor: pointer; position: relative;
+  background: white; border-radius: 24px; padding: 20px; border: 1px solid var(--md-outline-variant);
+  transition: all 0.3s var(--fluid-curve); cursor: pointer;
 }
-.card:hover { 
-  transform: scale(1.02) translateY(-5px); 
-  box-shadow: 0 12px 24px rgba(0,0,0,0.08); 
-}
+.card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
 
-/* ── FAB ── */
-.fab {
-  position: fixed; bottom: 30px; right: 24px;
-  background: var(--md-primary); color: white;
-  width: 64px; height: 64px; border-radius: 20px;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 16px rgba(103, 80, 164, 0.3);
-  cursor: pointer; z-index: 200;
-  transition: all 0.3s var(--fluid-curve);
-}
-.fab:hover { transform: rotate(90deg) scale(1.1); }
-
-/* ── MODAL ── */
-.modal-overlay {
+/* ── POPUP CHOIX (SELECTEUR) ── */
+#choice-popup {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-  z-index: 1000; display: none; align-items: flex-end;
+  backdrop-filter: blur(8px); z-index: 1000;
+  display: none; align-items: center; justify-content: center;
 }
-.modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+.choice-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  width: 90%; max-width: 340px; animation: fluidUp 0.4s var(--fluid-curve);
+}
+.choice-card {
+  aspect-ratio: 1/1; background: white; border-radius: 32px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; cursor: pointer; transition: transform 0.2s;
+}
+.choice-card:active { transform: scale(0.9); }
+.choice-card .material-icons-round { font-size: 40px; color: var(--md-primary); }
+.choice-card span { font-weight: 700; font-family: 'Nunito'; font-size: 14px; }
 
+/* ── MODAL FORM ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 1100; display: none; align-items: flex-end;
+}
 .modal-sheet {
-  background: white; width: 100%; border-radius: 32px 32px 0 0;
-  padding: 32px 24px; transform: translateY(100%);
+  background: white; width: 100%; max-width: 600px; border-radius: 32px 32px 0 0;
+  padding: 24px; margin: 0 auto; transform: translateY(100%);
   transition: transform 0.4s var(--fluid-curve);
 }
+.modal-overlay.active { display: flex; }
 .modal-overlay.active .modal-sheet { transform: translateY(0); }
 
-/* Style des boutons paramètres */
-.setting-item {
-  display: flex; align-items: center; gap: 16px;
-  padding: 16px; border-radius: 16px;
-  cursor: pointer; transition: background 0.2s;
-  color: #49454F; font-weight: 600; margin-bottom: 8px;
+/* FAB */
+.fab {
+  position: fixed; bottom: 30px; right: 24px;
+  background: var(--md-primary-container, #EADDFF); color: var(--md-primary);
+  padding: 16px 24px; border-radius: 24px; display: flex; align-items: center; gap: 8px;
+  font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; z-index: 200;
+  transition: all 0.3s var(--fluid-curve);
 }
-.setting-item:hover { background: var(--md-surface-2); }
-.setting-item.danger { color: var(--accent-red); }
-
+.fab:hover { transform: scale(1.05); }
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="header-row">
-    <h1 style="font-family: 'Nunito'; font-weight: 800; color: var(--md-primary);">Mémoire</h1>
-    <button class="icon-btn" onclick="toggleDrawer(true)" style="background:none; border:none; cursor:pointer;">
-      <span class="material-icons-round">settings</span>
-    </button>
+  <div class="header-top">
+    <div style="font-family:'Nunito'; font-weight:800; font-size:24px; color:var(--md-primary)">Mémoire</div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="toggleSettings(true)" style="background:none; border:none; cursor:pointer;"><span class="material-icons-round">settings</span></button>
+        <div id="user-avatar" style="width:32px; height:32px; background:var(--md-primary); border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; font-weight:700">?</div>
+    </div>
   </div>
-  <div class="search-bar" style="background: var(--md-surface-2); padding: 12px 16px; border-radius: 16px; display: flex; align-items: center; gap: 12px;">
-    <span class="material-icons-round" style="color: var(--md-outline)">search</span>
-    <input type="text" placeholder="Rechercher..." style="border:none; background:none; outline:none; width:100%; font-size:16px;" oninput="search(this.value)">
+  <div style="background:var(--md-surface-variant); padding:10px 16px; border-radius:14px; display:flex; align-items:center; gap:10px;">
+    <span class="material-icons-round">search</span>
+    <input type="text" placeholder="Rechercher..." style="background:none; border:none; outline:none; width:100%" oninput="search(this.value)">
   </div>
 </header>
 
-<main class="main-content">
-  <div class="cards-grid" id="container">
-    </div>
-</main>
+<div class="cards-grid" id="container"></div>
 
-<div class="fab" onclick="openModal()">
-  <span class="material-icons-round" style="font-size: 32px;">add</span>
+<div class="fab" onclick="toggleChoice(true)">
+  <span class="material-icons-round">add</span>
+  Nouveau
 </div>
 
-<div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer(false)"></div>
-<div class="drawer" id="drawer">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
-    <h2 style="font-family:'Nunito'">Paramètres</h2>
-    <button onclick="toggleDrawer(false)" style="background:none; border:none;"><span class="material-icons-round">close</span></button>
+<div id="choice-popup" onclick="toggleChoice(false)">
+  <div class="choice-grid" onclick="event.stopPropagation()">
+    <div class="choice-card" onclick="openForm('note')">
+      <span class="material-icons-round">edit_note</span>
+      <span>TEXTE</span>
+    </div>
+    <div class="choice-card" onclick="openForm('image')">
+      <span class="material-icons-round">image</span>
+      <span>IMAGE</span>
+    </div>
+    <div class="choice-card" onclick="openForm('link')">
+      <span class="material-icons-round">link</span>
+      <span>LIEN</span>
+    </div>
+    <div class="choice-card" onclick="toggleChoice(false)">
+      <span class="material-icons-round">close</span>
+      <span>FERMER</span>
+    </div>
   </div>
-  
-  <div class="setting-item" onclick="exportData()">
-    <span class="material-icons-round">download</span> Exporter (.json)
+</div>
+
+<div class="drawer-overlay" id="overlay" onclick="toggleSettings(false)"></div>
+<div id="settings-drawer">
+  <h2 style="font-family:'Nunito'; margin-bottom:20px">Paramètres</h2>
+  <div onclick="exportData()" style="padding:15px; border-radius:12px; background:#F3EDF7; margin-bottom:10px; cursor:pointer; display:flex; gap:10px">
+    <span class="material-icons-round">download</span> Exporter JSON
   </div>
-  <div class="setting-item" onclick="importData()">
-    <span class="material-icons-round">upload</span> Importer
-  </div>
-  <div class="setting-item danger" onclick="factoryReset()">
-    <span class="material-icons-round">delete_forever</span> Réinitialiser tout
-  </div>
-  
-  <div style="position:absolute; bottom:24px; left:24px; font-size:12px; color:var(--md-outline)">
-    Version 2.0 // Fluid_UI
+  <div onclick="logout()" style="padding:15px; border-radius:12px; color:red; cursor:pointer; display:flex; gap:10px">
+    <span class="material-icons-round">logout</span> Déconnexion
   </div>
 </div>
 
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-sheet">
-    <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
-      <h2 id="modal-title">Nouveau souvenir</h2>
-      <button onclick="closeModal()" style="background:none; border:none;"><span class="material-icons-round">close</span></button>
-    </div>
-    
-    <input type="text" id="m-title" placeholder="Titre" style="width:100%; padding:16px; border-radius:12px; border:1px solid #CAC4D0; margin-bottom:16px; font-size:16px;">
-    <textarea id="m-content" placeholder="Notez ici..." rows="5" style="width:100%; padding:16px; border-radius:12px; border:1px solid #CAC4D0; margin-bottom:24px; font-size:16px;"></textarea>
-    
-    <button onclick="save()" style="width:100%; padding:16px; border-radius:100px; background:var(--md-primary); color:white; border:none; font-weight:700; font-size:16px; cursor:pointer;">
-      ENREGISTRER
-    </button>
+    <h3 id="form-title" style="margin-bottom:15px; font-family:'Nunito'">Nouveau souvenir</h3>
+    <input type="text" id="title" placeholder="Titre" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; margin-bottom:10px">
+    <textarea id="content" placeholder="Contenu..." rows="4" style="width:100%; padding:12px; border-radius:12px; border:1px solid #ccc; margin-bottom:15px"></textarea>
+    <button onclick="save()" style="width:100%; padding:15px; background:var(--md-primary); color:white; border:none; border-radius:100px; font-weight:700">ENREGISTRER</button>
+    <button onclick="closeForm()" style="width:100%; padding:10px; background:none; border:none; margin-top:5px">Annuler</button>
   </div>
 </div>
 
 <script>
-let items = JSON.parse(localStorage.getItem('memoire_v2')) || [];
-let editingId = null;
+let items = JSON.parse(localStorage.getItem('notes')) || [];
+let currentType = 'note';
 
-function toggleDrawer(open) {
-  document.getElementById('drawer-overlay').classList.toggle('active', open);
-  document.getElementById('drawer').classList.toggle('active', open);
+function toggleChoice(show) {
+  document.getElementById('choice-popup').style.display = show ? 'flex' : 'none';
 }
 
-function openModal(id = null) {
-  editingId = id;
-  if(id) {
-    const item = items.find(i => i.id === id);
-    document.getElementById('m-title').value = item.title;
-    document.getElementById('m-content').value = item.content;
-    document.getElementById('modal-title').innerText = "Modifier l'entrée";
-  } else {
-    document.getElementById('m-title').value = "";
-    document.getElementById('m-content').value = "";
-    document.getElementById('modal-title').innerText = "Nouveau souvenir";
-  }
+function toggleSettings(show) {
+  document.getElementById('settings-drawer').classList.toggle('active', show);
+  document.getElementById('overlay').style.display = show ? 'block' : 'none';
+}
+
+function openForm(type) {
+  currentType = type;
+  toggleChoice(false);
+  document.getElementById('form-title').innerText = "Ajouter " + type;
   document.getElementById('modal-overlay').classList.add('active');
 }
 
-function closeModal() {
+function closeForm() {
   document.getElementById('modal-overlay').classList.remove('active');
 }
 
 function save() {
-  const title = document.getElementById('m-title').value;
-  const content = document.getElementById('m-content').value;
-  
-  if(editingId) {
-    const idx = items.findIndex(i => i.id === editingId);
-    items[idx] = {...items[idx], title, content};
-  } else {
-    items.unshift({ id: Date.now(), title, content, date: new Date().toLocaleDateString() });
-  }
-  
-  localStorage.setItem('memoire_v2', JSON.stringify(items));
+  const title = document.getElementById('title').value;
+  const content = document.getElementById('content').value;
+  items.unshift({ title, content, type: currentType, date: new Date().toLocaleDateString() });
+  localStorage.setItem('notes', JSON.stringify(items));
   render();
-  closeModal();
-}
-
-function deleteItem(id, e) {
-  e.stopPropagation();
-  if(confirm("Supprimer ?")) {
-    items = items.filter(i => i.id !== id);
-    localStorage.setItem('memoire_v2', JSON.stringify(items));
-    render();
-  }
+  closeForm();
 }
 
 function render(data = items) {
   const container = document.getElementById('container');
-  container.innerHTML = data.map((item, index) => `
-    <div class="card fade-in" style="animation-delay: ${index * 0.05}s" onclick="openModal(${item.id})">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-        <h3 style="font-family:'Nunito'; font-size:18px;">${item.title || 'Sans titre'}</h3>
-        <button onclick="deleteItem(${item.id}, event)" style="background:none; border:none; color:var(--accent-red); cursor:pointer;">
-          <span class="material-icons-round" style="font-size:20px;">delete</span>
-        </button>
-      </div>
-      <p style="font-size:14px; color:#49454F; line-height:1.5;">${item.content}</p>
-      <div style="margin-top:16px; font-size:11px; color:var(--md-outline); font-weight:600;">${item.date}</div>
+  container.innerHTML = data.map((item, i) => `
+    <div class="card fade-in" style="animation-delay: ${i * 0.05}s">
+      <div style="font-size:11px; color:var(--md-primary); font-weight:800; text-transform:uppercase; margin-bottom:5px">${item.type}</div>
+      <div style="font-family:'Nunito'; font-weight:700; font-size:16px">${item.title || 'Sans titre'}</div>
+      <div style="font-size:13px; color:#49454F; margin-top:8px">${item.content}</div>
+      <div style="margin-top:12px; font-size:10px; opacity:0.5">${item.date}</div>
     </div>
   `).join('');
 }
 
-function search(val) {
-  const filtered = items.filter(i => 
-    i.title.toLowerCase().includes(val.toLowerCase()) || 
-    i.content.toLowerCase().includes(val.toLowerCase())
-  );
-  render(filtered);
+function search(q) {
+  const f = items.filter(i => i.title.toLowerCase().includes(q.toLowerCase()));
+  render(f);
 }
 
-// PARAMÈTRES LOGIQUE
 function exportData() {
   const blob = new Blob([JSON.stringify(items)], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'memoire_backup.json';
-  a.click();
-}
-
-function importData() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.onchange = e => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      items = JSON.parse(ev.target.result);
-      localStorage.setItem('memoire_v2', JSON.stringify(items));
-      render();
-      toggleDrawer(false);
-    };
-    reader.readAsText(e.target.files[0]);
-  };
-  input.click();
-}
-
-function factoryReset() {
-  if(confirm("Tout effacer définitivement ?")) {
-    items = [];
-    localStorage.clear();
-    render();
-    toggleDrawer(false);
-  }
+  a.href = url; a.download = 'sauvegarde.json'; a.click();
 }
 
 render();
