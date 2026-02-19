@@ -2,383 +2,450 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>Mémoire - Vos Souvenirs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MÉMOIRE // NOTHING OS</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
 <style>
 :root {
-  --md-primary:           #6750A4;
-  --md-on-primary:        #FFFFFF;
-  --md-primary-container: #EADDFF;
-  --md-on-primary-container: #21005D;
-  --md-secondary-container: #E8DEF8;
-  --md-on-secondary-container: #1D192B;
-  --md-surface:           #FFFBFE;
-  --md-surface-variant:   #E7E0EC;
-  --md-on-surface:        #1C1B1F;
-  --md-on-surface-variant:#49454F;
-  --md-outline-variant:   #CAC4D0;
-  --md-error:             #B3261E;
-  
-  --md-elevation-1: 0 1px 2px rgba(0,0,0,.1);
-  --md-elevation-3: 0 4px 8px 3px rgba(0,0,0,.07);
+  --nt-black: #000000;
+  --nt-white: #FFFFFF;
+  --nt-grey-900: #121212;
+  --nt-grey-800: #1C1C1C;
+  --nt-grey-700: #2C2C2C;
+  --nt-grey-400: #888888;
+  --nt-red: #EB0000;
+  --nt-border: 1px solid #2C2C2C;
+  --nt-radius-lg: 28px;
+  --nt-radius-sm: 12px;
+  --font-dot: 'IBM Plex Mono', monospace; /* Simulation Dot Matrix */
+  --font-main: 'Inter', sans-serif;
 }
 
-/* --- RESET & BASE --- */
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+* { 
+  box-sizing: border-box; 
+  margin: 0; padding: 0; 
+  -webkit-tap-highlight-color: transparent; 
+}
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--md-surface);
-  color: var(--md-on-surface);
+  font-family: var(--font-main);
+  background: var(--nt-black);
+  color: var(--nt-white);
   min-height: 100vh;
-  /* Support des encoches/barres système sur mobile */
-  padding: env(safe-area-inset-top) 0 0 0;
+  letter-spacing: -0.01em;
 }
 
-/* --- CHARGEMENT --- */
+/* ── LOADING ── */
 #loading-screen {
-  position: fixed; inset: 0; background: var(--md-surface);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 20px; z-index: 9999;
+  position: fixed; inset: 0;
+  background: var(--nt-black);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999;
 }
-.loader { width: 48px; height: 48px; border: 4px solid var(--md-primary-container); border-top: 4px solid var(--md-primary); border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.loading-logo {
+  font-family: var(--font-dot);
+  font-size: 24px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.loading-dots { display: flex; gap: 8px; margin-top: 20px; }
+.dot { width: 4px; height: 4px; background: var(--nt-white); border-radius: 50%; animation: dotPulse 1.5s infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotPulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
 
-/* --- AUTHENTIFICATION --- */
+/* ── AUTH ── */
 #auth-screen {
-  min-height: 100vh; display: none; align-items: center; justify-content: center; padding: 20px;
-  background: linear-gradient(135deg, #F0EAFB 0%, #FDE8F2 100%);
+  min-height: 100vh; display: none;
+  align-items: center; justify-content: center;
+  padding: 24px; background: var(--nt-black);
 }
 .auth-card {
-  background: var(--md-surface); border-radius: 28px; width: 100%; max-width: 400px;
-  box-shadow: var(--md-elevation-3); overflow: hidden;
+  width: 100%; max-width: 400px;
 }
-.auth-header { padding: 32px 24px; text-align: center; background: var(--md-primary-container); }
-.auth-tabs { display: flex; padding: 8px; gap: 8px; }
-.auth-tab { flex: 1; padding: 12px; border: none; border-radius: 9999px; background: transparent; cursor: pointer; font-weight: 600; }
-.auth-tab.active { background: var(--md-primary); color: white; }
+.auth-header { text-align: center; margin-bottom: 40px; }
+.auth-title { font-family: var(--font-dot); font-size: 32px; text-transform: uppercase; margin-bottom: 8px; }
+.auth-subtitle { color: var(--nt-grey-400); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
 
-/* --- LAYOUT PRINCIPAL --- */
-#app-screen { display: none; }
+.auth-tabs {
+  display: flex; border: var(--nt-border);
+  border-radius: 40px; padding: 4px; margin-bottom: 30px;
+}
+.auth-tab {
+  flex: 1; padding: 12px; border-radius: 40px; border: none;
+  background: transparent; color: var(--nt-grey-400);
+  font-family: var(--font-dot); font-size: 13px; cursor: pointer;
+}
+.auth-tab.active { background: var(--nt-white); color: var(--nt-black); }
 
+/* ── INPUTS & BUTTONS ── */
+.m3-field { margin-bottom: 20px; }
+.m3-field label { display: block; font-size: 11px; text-transform: uppercase; color: var(--nt-grey-400); margin-left: 16px; margin-bottom: 8px; }
+.m3-field input, .m3-field textarea {
+  width: 100%; padding: 16px 20px;
+  background: var(--nt-grey-900); border: var(--nt-border);
+  border-radius: var(--nt-radius-sm); color: var(--nt-white);
+  font-family: var(--font-main); font-size: 15px; outline: none;
+}
+.m3-field input:focus { border-color: var(--nt-white); }
+
+.btn-filled {
+  width: 100%; padding: 18px; border-radius: 40px; border: none;
+  background: var(--nt-white); color: var(--nt-black);
+  font-family: var(--font-dot); font-size: 14px; font-weight: 700;
+  text-transform: uppercase; cursor: pointer; transition: 0.2s;
+}
+.btn-filled:active { transform: scale(0.98); background: var(--nt-grey-400); }
+
+/* ── APP HEADER ── */
 .app-header {
-  position: sticky; top: 0; z-index: 100; background: rgba(255,251,254,0.9);
-  backdrop-filter: blur(10px); padding: 12px 16px; border-bottom: 1px solid var(--md-outline-variant);
+  padding: 40px 24px 20px;
+  position: sticky; top: 0; background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(20px); z-index: 100;
 }
-.header-content { display: flex; align-items: center; justify-content: space-between; max-width: 1200px; margin: 0 auto; gap: 16px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; }
+.app-title { font-family: var(--font-dot); font-size: 28px; text-transform: uppercase; }
+.app-title-count { color: var(--nt-red); font-size: 16px; margin-left: 4px; }
 
 .search-bar {
-  flex: 1; display: flex; align-items: center; gap: 8px; background: var(--md-surface-variant);
-  padding: 8px 16px; border-radius: 9999px;
+  display: flex; align-items: center;
+  background: var(--nt-grey-900); border-radius: 100px; padding: 12px 20px;
+  border: var(--nt-border);
 }
-.search-bar input { border: none; background: transparent; outline: none; width: 100%; font-size: 16px; }
+.search-bar input { background: transparent; border: none; color: white; margin-left: 10px; flex: 1; outline: none; }
 
-.app-container { display: flex; max-width: 1200px; margin: 0 auto; width: 100%; }
+/* ── GRID & CARDS ── */
+.main-content { padding: 20px 24px 120px; }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 
-/* Navigation Latérale (Desktop) */
-.side-nav { width: 280px; padding: 24px 16px; position: sticky; top: 70px; height: calc(100vh - 70px); }
-.nav-btn {
-  display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 24px;
-  border: none; background: transparent; border-radius: 9999px; cursor: pointer;
-  font-family: 'Nunito', sans-serif; font-weight: 600; margin-bottom: 4px;
-}
-.nav-btn.active { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
-
-/* Zone de contenu */
-.main-feed { flex: 1; padding: 20px; min-width: 0; }
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: 16px;
-}
-
-/* --- CARTES --- */
 .card {
-  background: var(--md-surface); border: 1px solid var(--md-outline-variant);
-  border-radius: 16px; padding: 16px; transition: transform 0.2s; position: relative;
+  background: var(--nt-grey-900); border: var(--nt-border);
+  border-radius: var(--nt-radius-lg); padding: 24px;
+  transition: 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+  position: relative; overflow: hidden;
 }
-.card:hover { transform: translateY(-2px); box-shadow: var(--md-elevation-1); }
-.card-tag { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--md-primary); margin-bottom: 8px; display: block; }
-.card-title { font-family: 'Nunito', sans-serif; font-weight: 700; margin-bottom: 8px; }
-.card-image { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin: 8px 0; }
-.card-text { font-size: 14px; color: var(--md-on-surface-variant); line-height: 1.5; }
+.card:hover { border-color: var(--nt-white); }
+.card-type-chip { font-family: var(--font-dot); font-size: 10px; text-transform: uppercase; color: var(--nt-grey-400); margin-bottom: 12px; display: block; }
+.card-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+.card-content { font-size: 14px; color: var(--nt-grey-400); line-height: 1.5; margin-bottom: 16px; }
+.card-image { width: 100%; border-radius: 16px; margin-bottom: 12px; border: var(--nt-border); }
 
-/* --- BOUTON FLOTTANT (FAB) --- */
-.fab {
-  position: fixed; bottom: 32px; right: 24px; z-index: 200;
-  display: flex; align-items: center; gap: 8px; padding: 16px 24px;
-  background: var(--md-primary-container); color: var(--md-on-primary-container);
-  border: none; border-radius: 16px; font-weight: 700; box-shadow: var(--md-elevation-3); cursor: pointer;
-}
+.card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.card-tag { font-size: 11px; color: var(--nt-white); background: var(--nt-grey-700); padding: 4px 10px; border-radius: 20px; margin-right: 4px; }
+.card-date { font-family: var(--font-dot); font-size: 10px; color: var(--nt-grey-400); }
 
-/* --- NAVIGATION BASSE (MOBILE) --- */
-.bottom-nav {
-  display: none; position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--md-surface); border-top: 1px solid var(--md-outline-variant);
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 150; justify-content: space-around;
-}
-.bn-item { border: none; background: transparent; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--md-on-surface-variant); }
-.bn-item.active { color: var(--md-primary); font-weight: 700; }
-
-/* --- RESPONSIVITÉ --- */
-@media (max-width: 768px) {
-  .side-nav { display: none; }
-  .bottom-nav { display: flex; }
-  .main-feed { padding-bottom: 100px; }
-  .fab { bottom: calc(85px + env(safe-area-inset-bottom)); right: 16px; }
-  .app-title { font-size: 20px; }
+/* ── FAB ── */
+.fab-container { position: fixed; bottom: 30px; right: 30px; z-index: 200; }
+.fab-extended {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--nt-red); color: white; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 8px 24px rgba(235, 0, 0, 0.3);
 }
 
-/* --- MODALE --- */
+/* ── MODAL ── */
 .modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
-  display: none; align-items: flex-end; justify-content: center; z-index: 300;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+  display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000;
 }
 .modal-overlay.open { display: flex; }
 .modal-sheet {
-  background: var(--md-surface); width: 100%; max-width: 550px;
-  border-radius: 28px 28px 0 0; padding: 24px; padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  background: var(--nt-grey-900); border: var(--nt-border);
+  border-radius: var(--nt-radius-lg); width: 100%; max-width: 500px;
+  padding: 30px; position: relative;
+}
+.sheet-title { font-family: var(--font-dot); font-size: 20px; text-transform: uppercase; margin-bottom: 24px; }
+
+.type-selector { display: flex; gap: 10px; margin-bottom: 24px; }
+.type-btn {
+  flex: 1; padding: 12px; border-radius: 12px; border: var(--nt-border);
+  background: transparent; color: var(--nt-grey-400); font-family: var(--font-dot);
+  cursor: pointer; font-size: 11px;
+}
+.type-btn.active { background: var(--nt-white); color: var(--nt-black); border-color: var(--nt-white); }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--nt-grey-700); border-radius: 10px; }
+
+@media (max-width: 600px) {
+  .app-title { font-size: 22px; }
+  .cards-grid { grid-template-columns: 1fr; }
 }
 
-/* Formulaire */
-.field { margin-bottom: 16px; }
-.field label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--md-primary); }
-.field input, .field textarea {
-  width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--md-outline-variant); font-size: 16px;
-}
-.btn-save { background: var(--md-primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 9999px; font-weight: 700; cursor: pointer; }
-
-#toast {
-  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-  background: #322F35; color: white; padding: 12px 24px; border-radius: 8px;
-  opacity: 0; transition: 0.3s; z-index: 1000;
-}
-#toast.show { opacity: 1; }
+/* Erreur/Succès Nothing Style */
+.error-msg { color: var(--nt-red); font-family: var(--font-dot); font-size: 12px; text-align: center; margin-top: 10px; }
 </style>
 </head>
 <body>
 
-<div id="loading-screen"><div class="loader"></div><p>Chargement de vos souvenirs...</p></div>
+<div id="loading-screen">
+  <div class="loading-logo">MÉMOIRE</div>
+  <div class="loading-dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+</div>
 
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-header">
-      <h1 style="font-family:'Nunito';">Mémoire</h1>
+      <div class="auth-title">MÉMOIRE</div>
+      <div class="auth-subtitle">Système de Pensée (01)</div>
     </div>
     <div class="auth-tabs">
-      <button class="auth-tab active" id="t-login" onclick="setAuthMode('login')">Connexion</button>
-      <button class="auth-tab" id="t-reg" onclick="setAuthMode('reg')">Inscription</button>
+      <button class="auth-tab active" onclick="switchAuthTab('login')">LOGIN</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">JOIN</button>
     </div>
-    <div style="padding:24px;">
-      <div class="field"><label>Email</label><input type="email" id="auth-email"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="auth-pass"></div>
-      <button class="btn-save" id="auth-btn" onclick="handleAuth()">Continuer</button>
-      <p id="auth-err" style="color:var(--md-error); font-size:12px; margin-top:12px; text-align:center;"></p>
+    <div class="auth-body">
+      <div id="login-form">
+        <div class="m3-field">
+          <label>EMAIL_ADDR</label>
+          <input type="email" id="login-email" placeholder="USER@NOTHING.IO" />
+        </div>
+        <div class="m3-field">
+          <label>PASS_KEY</label>
+          <input type="password" id="login-password" placeholder="••••••••" />
+        </div>
+        <button class="btn-filled" onclick="login()">ACCÉDER // LOGIN</button>
+        <div id="login-msg"></div>
+      </div>
+      <div id="register-form" style="display:none">
+        <div class="m3-field">
+          <label>NEW_EMAIL</label>
+          <input type="email" id="reg-email" placeholder="USER@NOTHING.IO" />
+        </div>
+        <div class="m3-field">
+          <label>NEW_PASS_KEY</label>
+          <input type="password" id="reg-password" placeholder="••••••••" />
+        </div>
+        <button class="btn-filled" onclick="register()">CRÉER // SYSTÈME</button>
+        <div id="reg-msg"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <div id="app-screen">
   <header class="app-header">
-    <div class="header-content">
-      <h2 class="app-title" style="font-family:'Nunito'; color:var(--md-primary);">Mémoire</h2>
-      <div class="search-bar">
-        <span class="material-icons-round">search</span>
-        <input type="text" placeholder="Rechercher..." oninput="doSearch(this.value)">
+    <div class="header-top">
+      <div class="app-title">MÉMOIRE<span class="app-title-count" id="header-count">0</span></div>
+      <div style="cursor: pointer;" onclick="logout()">
+        <span class="material-icons-round">power_settings_new</span>
       </div>
-      <button onclick="logout()" style="border:none; background:none; cursor:pointer;"><span class="material-icons-round">logout</span></button>
+    </div>
+    <div class="search-bar">
+      <span class="material-icons-round" style="color:var(--nt-grey-400)">search</span>
+      <input type="text" placeholder="RECHERCHER DANS LE SYSTÈME..." oninput="searchItems(this.value)" />
     </div>
   </header>
 
-  <div class="app-container">
-    <nav class="side-nav">
-      <button class="nav-btn active" onclick="setFilter('all')"><span class="material-icons-round">grid_view</span> Tout</button>
-      <button class="nav-btn" onclick="setFilter('note')"><span class="material-icons-round">description</span> Notes</button>
-      <button class="nav-btn" onclick="setFilter('link')"><span class="material-icons-round">link</span> Liens</button>
-      <button class="nav-btn" onclick="setFilter('image')"><span class="material-icons-round">image</span> Images</button>
-    </nav>
+  <main class="main-content">
+    <div class="cards-grid" id="cards-container"></div>
+  </main>
 
-    <main class="main-feed">
-      <div class="cards-grid" id="grid"></div>
-    </main>
+  <div class="fab-container">
+    <button class="fab-extended" onclick="openModal()">
+      <span class="material-icons-round">add</span>
+    </button>
   </div>
-
-  <button class="fab" onclick="openAdd()">
-    <span class="material-icons-round">add</span> Nouveau
-  </button>
-
-  <nav class="bottom-nav">
-    <button class="bn-item active" onclick="setFilter('all')"><span class="material-icons-round">grid_view</span>Tout</button>
-    <button class="bn-item" onclick="setFilter('note')"><span class="material-icons-round">description</span>Notes</button>
-    <button class="bn-item" onclick="setFilter('link')"><span class="material-icons-round">link</span>Liens</button>
-    <button class="bn-item" onclick="setFilter('image')"><span class="material-icons-round">image</span>Images</button>
-  </nav>
 </div>
 
-<div class="modal-overlay" id="modal" onclick="if(event.target==this) closeAdd()">
+<div class="modal-overlay" id="modal">
   <div class="modal-sheet">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <h3 style="font-family:'Nunito';">Ajouter un souvenir</h3>
-      <button onclick="closeAdd()" style="border:none; background:none;"><span class="material-icons-round">close</span></button>
+    <div class="sheet-title" id="modal-title">NOUVEL_ENTRÉE</div>
+    
+    <div class="type-selector">
+      <button class="type-btn active" onclick="selectType('note')" id="type-note">NOTE</button>
+      <button class="type-btn" onclick="selectType('link')" id="type-link">LINK</button>
+      <button class="type-btn" onclick="selectType('image')" id="type-image">IMG</button>
     </div>
 
-    <div class="field">
-      <label>Type</label>
-      <select id="item-type" onchange="toggleFields(this.value)" style="width:100%; padding:12px; border-radius:12px;">
-        <option value="note">Note</option>
-        <option value="link">Lien</option>
-        <option value="image">Image</option>
-      </select>
+    <div class="m3-field">
+      <label>TITRE_OBJET</label>
+      <input type="text" id="item-title" placeholder="NOMMER L'ÉLÉMENT..." />
     </div>
 
-    <div class="field"><label>Titre</label><input type="text" id="item-title"></div>
-    <div class="field" id="f-content"><label>Contenu</label><textarea id="item-text" rows="4"></textarea></div>
-    <div class="field" id="f-url" style="display:none"><label>URL</label><input type="url" id="item-url"></div>
-    <div class="field" id="f-img" style="display:none">
-      <label>Photo</label>
-      <input type="file" accept="image/*" onchange="handleImg(event)">
+    <div id="note-fields">
+      <div class="m3-field">
+        <label>DATA_CONTENU</label>
+        <textarea id="item-content" placeholder="ÉCRIRE ICI..." rows="4"></textarea>
+      </div>
     </div>
 
-    <button class="btn-save" onclick="save()">Enregistrer</button>
+    <div id="link-fields" style="display:none">
+      <div class="m3-field">
+        <label>URL_SOURCE</label>
+        <input type="url" id="item-url" placeholder="HTTPS://" />
+      </div>
+    </div>
+
+    <div id="image-fields" style="display:none">
+      <div class="m3-field" onclick="document.getElementById('image-upload').click()" style="cursor:pointer; border:1px dashed var(--nt-grey-400); padding:20px; border-radius:12px; text-align:center;">
+        <input type="file" id="image-upload" accept="image/*" style="display:none" onchange="handleImageUpload(event)" />
+        <span class="material-icons-round">upload</span>
+        <div style="font-size:10px; margin-top:8px; font-family:var(--font-dot)">SÉLECTIONNER_IMG</div>
+      </div>
+      <img id="image-preview" style="width:100%; border-radius:12px; margin-bottom:15px; display:none" />
+    </div>
+
+    <div class="m3-field">
+      <label>TAGS_SYSTÈME</label>
+      <input type="text" id="item-tags" placeholder="TAG1, TAG2..." />
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:30px;">
+      <button class="btn-filled" style="background:transparent; color:var(--nt-white); border:var(--nt-border);" onclick="closeModal()">ANNULER</button>
+      <button class="btn-filled" onclick="saveItem()">ENREGISTRER</button>
+    </div>
   </div>
 </div>
 
-<div id="toast"></div>
+<div id="toast" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--nt-white); color:var(--nt-black); padding:10px 20px; border-radius:40px; font-family:var(--font-dot); font-size:12px; display:none; z-index:2000;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// --- CONFIG SUPABASE ---
-const S_URL = 'https://yunjmlmzepbsahsavibb.supabase.co';
-const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmptbG16ZXBic2Foc2F2aWJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0ODg3MzUsImV4cCI6MjA4NzA2NDczNX0.xqooMTdVJH_ZH-Cdb4BIQgxNTIuJCA1r7yhOMGwoVvk';
-const sb = supabase.createClient(S_URL, S_KEY);
+// Tes configurations Supabase (gardées telles quelles)
+const SUPA_URL = 'https://yunjmlmzepbsahsavibb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmptbG16ZXBic2Foc2F2aWJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0ODg3MzUsImV4cCI6MjA4NzA2NDczNX0.xqooMTdVJH_ZH-Cdb4BIQgxNTIuJCA1r7yhOMGwoVvk';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-let user = null, items = [], filter = 'all', search = '', authMode = 'login', tempImg = null;
+let currentUser = null, allItems = [], currentFilter = 'all', searchQuery = '', editingId = null, currentType = 'note', imageData = null;
 
+// Fonctions d'initialisation et Auth (similaires à ton code mais avec mise à jour UI)
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
-  if(session) startApp(session.user); else show('auth');
-  
-  sb.auth.onAuthStateChange((ev, sess) => {
-    if(sess) startApp(sess.user); else show('auth');
+  if (session?.user) { loginUser(session.user); } else { showScreen('auth'); }
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') loginUser(session.user);
+    if (event === 'SIGNED_OUT') showScreen('auth');
   });
 }
 
-function show(s) {
+function showScreen(s) {
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = s === 'auth' ? 'flex' : 'none';
   document.getElementById('app-screen').style.display = s === 'app' ? 'block' : 'none';
 }
 
-// --- AUTH ---
-function setAuthMode(m) {
-  authMode = m;
-  document.getElementById('t-login').classList.toggle('active', m === 'login');
-  document.getElementById('t-reg').classList.toggle('active', m === 'reg');
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.toggle('active', t.innerText.toLowerCase().includes(tab)));
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
 }
 
-async function handleAuth() {
-  const email = document.getElementById('auth-email').value;
-  const pass = document.getElementById('auth-pass').value;
-  const btn = document.getElementById('auth-btn');
-  btn.disabled = true;
-
-  const { data, error } = (authMode === 'login') 
-    ? await sb.auth.signInWithPassword({ email, password: pass })
-    : await sb.auth.signUp({ email, password: pass });
-
-  if(error) document.getElementById('auth-err').textContent = error.message;
-  btn.disabled = false;
+async function loginUser(user) {
+  currentUser = user;
+  showScreen('app');
+  loadItems();
 }
 
-async function startApp(u) { user = u; show('app'); load(); }
 async function logout() { await sb.auth.signOut(); }
 
-// --- LOGIQUE DATA ---
-async function load() {
+async function loadItems() {
   const { data } = await sb.from('items').select('*').order('created_at', { ascending: false });
-  items = data || [];
-  render();
+  allItems = data || [];
+  renderCards();
 }
 
-function render() {
-  const grid = document.getElementById('grid');
-  const filtered = items.filter(i => {
-    const mType = filter === 'all' || i.type === filter;
-    const mSearch = i.title.toLowerCase().includes(search.toLowerCase()) || (i.content || '').toLowerCase().includes(search.toLowerCase());
-    return mType && mSearch;
-  });
+function renderCards() {
+  const container = document.getElementById('cards-container');
+  const filtered = allItems.filter(i => i.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  document.getElementById('header-count').innerText = filtered.length;
 
-  grid.innerHTML = filtered.map(i => `
-    <div class="card">
-      <span class="card-tag">${i.type}</span>
-      <div class="card-title">${i.title}</div>
-      ${i.image_data ? `<img src="${i.image_data}" class="card-image">` : ''}
-      <div class="card-text">${i.content || ''}</div>
-      ${i.url ? `<a href="${i.url}" target="_blank" style="font-size:12px; color:var(--md-primary); text-decoration:none; display:block; margin-top:8px;">Ouvrir le lien →</a>` : ''}
-      <button onclick="del('${i.id}')" style="position:absolute; top:12px; right:12px; border:none; background:none; color:#ccc; cursor:pointer;"><span class="material-icons-round" style="font-size:18px;">delete</span></button>
+  container.innerHTML = filtered.map(item => `
+    <div class="card" onclick="openModal('${item.id}')">
+      <span class="card-type-chip">${item.type} // 0${allItems.indexOf(item) + 1}</span>
+      <div class="card-title">${item.title || 'SANS_TITRE'}</div>
+      ${item.image_data ? `<img src="${item.image_data}" class="card-image">` : ''}
+      <div class="card-content">${item.content || ''}</div>
+      <div class="card-footer">
+        <div>${(item.tags || []).map(t => `<span class="card-tag">${t}</span>`).join('')}</div>
+        <div class="card-date">${new Date(item.created_at).toLocaleDateString('fr-FR')}</div>
+      </div>
+      <button onclick="event.stopPropagation(); deleteItem('${item.id}')" style="position:absolute; top:20px; right:20px; background:none; border:none; color:var(--nt-red); cursor:pointer">
+        <span class="material-icons-round" style="font-size:18px">close</span>
+      </button>
     </div>
   `).join('');
 }
 
-// --- UI ACTIONS ---
-function setFilter(f) {
-  filter = f;
-  document.querySelectorAll('.nav-btn, .bn-item').forEach(b => {
-    const isMatch = b.textContent.toLowerCase().includes(f === 'all' ? 'tout' : f);
-    b.classList.toggle('active', isMatch);
-  });
-  render();
+// Modal & Save Logic
+function openModal(id = null) {
+  editingId = id;
+  if (id) {
+    const item = allItems.find(i => i.id === id);
+    document.getElementById('item-title').value = item.title;
+    document.getElementById('item-content').value = item.content || '';
+    document.getElementById('item-tags').value = (item.tags || []).join(', ');
+    selectType(item.type);
+  } else {
+    document.getElementById('item-title').value = '';
+    document.getElementById('item-content').value = '';
+    document.getElementById('item-tags').value = '';
+  }
+  document.getElementById('modal').classList.add('open');
 }
 
-function doSearch(v) { search = v; render(); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-function openAdd() { document.getElementById('modal').classList.add('open'); }
-function closeAdd() { document.getElementById('modal').classList.remove('open'); tempImg = null; }
-
-function toggleFields(v) {
-  document.getElementById('f-content').style.display = v === 'note' ? 'block' : 'none';
-  document.getElementById('f-url').style.display = v === 'link' ? 'block' : 'none';
-  document.getElementById('f-img').style.display = v === 'image' ? 'block' : 'none';
+function selectType(type) {
+  currentType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.id.includes(type)));
+  document.getElementById('note-fields').style.display = type === 'note' ? 'block' : 'none';
+  document.getElementById('link-fields').style.display = type === 'link' ? 'block' : 'none';
+  document.getElementById('image-fields').style.display = type === 'image' ? 'block' : 'none';
 }
 
-function handleImg(e) {
-  const file = e.target.files[0];
+function handleImageUpload(e) {
   const reader = new FileReader();
-  reader.onload = (ev) => tempImg = ev.target.result;
-  reader.readAsDataURL(file);
+  reader.onload = (ev) => {
+    imageData = ev.target.result;
+    document.getElementById('image-preview').src = imageData;
+    document.getElementById('image-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(e.target.files[0]);
 }
 
-async function save() {
-  const type = document.getElementById('item-type').value;
-  const title = document.getElementById('item-title').value;
-  const content = document.getElementById('item-text').value;
-  const url = document.getElementById('item-url').value;
+async function saveItem() {
+  const payload = {
+    title: document.getElementById('item-title').value,
+    content: document.getElementById('item-content').value,
+    type: currentType,
+    tags: document.getElementById('item-tags').value.split(',').map(t => t.trim()),
+    image_data: currentType === 'image' ? imageData : null,
+    user_id: currentUser.id
+  };
 
-  const { error } = await sb.from('items').insert([{
-    user_id: user.id, type, title, content, url, image_data: tempImg
-  }]);
-
-  if(!error) { closeAdd(); load(); toast("Souvenir enregistré !"); }
+  if (editingId) {
+    await sb.from('items').update(payload).eq('id', editingId);
+  } else {
+    await sb.from('items').insert([payload]);
+  }
+  closeModal();
+  loadItems();
+  showToast("SYSTÈME_MIS_À_JOUR");
 }
 
-async function del(id) {
-  if(confirm("Supprimer ?")) {
+async function deleteItem(id) {
+  if(confirm("SUPPRIMER DÉFINITIVEMENT ?")) {
     await sb.from('items').delete().eq('id', id);
-    load();
+    loadItems();
   }
 }
 
-function toast(m) {
-  const t = document.getElementById('toast'); t.textContent = m; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+function searchItems(q) { searchQuery = q; renderCards(); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerText = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
 }
 
-init();
+// Start
+setTimeout(init, 1500); // Petit délai pour voir l'anim de chargement
 </script>
 </body>
 </html>
