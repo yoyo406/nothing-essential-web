@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MÉMOIRE // NOTHING_OS_V2</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+<style>
+:root {
+  --nt-black: #000000;
+  --nt-white: #FFFFFF;
+  --nt-grey-900: #121212;
+  --nt-grey-800: #1C1C1C;
+  --nt-grey-400: #888888;
+  --nt-red: #EB0000;
+  --nt-border: 1px solid #2C2C2C;
+  --font-dot: 'IBM Plex Mono', monospace;
+  --font-main: 'Inter', sans-serif;
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--nt-black);
+  color: var(--nt-white);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* HEADER RESPONSIVE */
+.app-header {
+  padding: 30px 20px 15px;
+  position: sticky; top: 0; 
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(20px); z-index: 100;
+  border-bottom: var(--nt-border);
+}
+
+.header-top { 
+  display: flex; justify-content: space-between; align-items: center; 
+  margin-bottom: 20px; max-width: 1200px; margin-left: auto; margin-right: auto;
+}
+
+.app-title { font-family: var(--font-dot); font-size: clamp(18px, 5vw, 24px); letter-spacing: 1px; }
+.app-title span { color: var(--nt-red); font-size: 0.6em; vertical-align: top; margin-left: 4px; }
+
+.search-bar {
+  display: flex; align-items: center;
+  background: var(--nt-grey-900); border-radius: 100px; padding: 12px 18px;
+  border: var(--nt-border); max-width: 1200px; margin: 0 auto;
+}
+
+.search-bar input { 
+  background: transparent; border: none; color: white; 
+  margin-left: 10px; flex: 1; outline: none; font-size: 16px; /* 16px évite le zoom auto sur iOS */
+}
+
+/* GRID ADAPTATIVE */
+.main-content { 
+  padding: 20px; 
+  max-width: 1200px; margin: 0 auto;
+  min-height: calc(100vh - 160px);
+}
+
+.cards-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); 
+  gap: 20px; 
+}
+
+/* CARD DESIGN */
+.card {
+  background: var(--nt-grey-900); border: var(--nt-border);
+  border-radius: 28px; padding: 24px;
+  position: relative; transition: transform 0.2s, border-color 0.2s;
+  display: flex; flex-direction: column;
+  word-wrap: break-word; overflow: hidden;
+}
+
+.card:hover { border-color: var(--nt-grey-400); }
+
+.card-type { font-family: var(--font-dot); font-size: 10px; color: var(--nt-grey-400); margin-bottom: 8px; text-transform: uppercase; }
+.card-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; line-height: 1.2; }
+.card-text { font-size: 0.95rem; color: var(--nt-grey-400); margin-bottom: 16px; flex-grow: 1; }
+
+.card-img-container {
+  width: calc(100% + 48px); margin-left: -24px; margin-top: -10px; margin-bottom: 15px;
+  height: 200px; overflow: hidden; border-bottom: var(--nt-border);
+}
+.card-img { width: 100%; height: 100%; object-fit: cover; }
+
+.card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #1c1c1c; pt: 12px; margin-top: 10px; padding-top: 12px;}
+.card-date { font-family: var(--font-dot); font-size: 10px; color: var(--nt-grey-400); }
+
+.delete-btn {
+  background: var(--nt-grey-800); border: none; color: var(--nt-white);
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* FAB */
+.fab {
+  position: fixed; bottom: var(--safe-area-inset-bottom); right: 20px;
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--nt-red); color: white; border: none;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 24px rgba(235, 0, 0, 0.3); cursor: pointer; z-index: 200;
+}
+
+/* MODAL FULLY RESPONSIVE */
+.modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+  display: none; align-items: center; justify-content: center; padding: 15px; z-index: 1000;
+}
+.modal.active { display: flex; }
+.modal-content {
+  background: var(--nt-grey-900); border: var(--nt-border);
+  border-radius: 32px; width: 100%; max-width: 500px; padding: clamp(20px, 5vw, 32px);
+  max-height: 90vh; overflow-y: auto;
+}
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-family: var(--font-dot); font-size: 11px; color: var(--nt-grey-400); margin-bottom: 6px; }
+.field input, .field textarea {
+  width: 100%; padding: 14px; background: var(--nt-black); border: var(--nt-border);
+  border-radius: 16px; color: white; font-family: var(--font-main); outline: none; font-size: 16px;
+}
+
+.btn-group { display: flex; gap: 10px; margin-top: 20px; }
+.btn {
+  flex: 1; padding: 16px; border-radius: 100px; border: none;
+  font-family: var(--font-dot); font-weight: 700; cursor: pointer; font-size: 13px;
+}
+.btn-main { background: var(--nt-white); color: var(--nt-black); }
+.btn-sec { background: transparent; color: var(--nt-white); border: var(--nt-border); }
+
+#empty-state {
+  grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+  color: var(--nt-grey-400); font-family: var(--font-dot); font-size: 14px;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--nt-black); }
+::-webkit-scrollbar-thumb { background: var(--nt-grey-800); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-top">
+    <div class="app-title">MÉMOIRE<span id="count">(0)</span></div>
+    <span class="material-icons-round" style="font-size: 20px; color: #333;">security</span>
+  </div>
+  <div class="search-bar">
+    <span class="material-icons-round" style="color: var(--nt-grey-400)">search</span>
+    <input type="text" id="search" placeholder="RECHERCHER_UNITÉ..." oninput="render()">
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="cards-grid" id="grid"></div>
+</main>
+
+<button class="fab" onclick="toggleModal(true)" aria-label="Ajouter">
+  <span class="material-icons-round">add</span>
+</button>
+
+<div class="modal" id="modal" onclick="if(event.target === this) toggleModal(false)">
+  <div class="modal-content">
+    <div class="field">
+      <label>UNIT_TITLE</label>
+      <input type="text" id="title" placeholder="Titre de la note...">
+    </div>
+    <div class="field">
+      <label>DATA_STREAM</label>
+      <textarea id="content" rows="5" placeholder="Contenu..."></textarea>
+    </div>
+    <div class="field">
+      <label>IMG_SOURCE_URL</label>
+      <input type="text" id="img-url" placeholder="https://image.png (optionnel)">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-sec" onclick="toggleModal(false)">ANNULER</button>
+      <button class="btn btn-main" onclick="save()">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Initialisation propre
+let items = [];
+try {
+  items = JSON.parse(localStorage.getItem('nothing_memo_v2')) || [];
+} catch (e) {
+  items = [];
+}
+
+function toggleModal(show) {
+  const modal = document.getElementById('modal');
+  modal.classList.toggle('active', show);
+  if(!show) { 
+    document.getElementById('title').value = ''; 
+    document.getElementById('content').value = '';
+    document.getElementById('img-url').value = '';
+  }
+}
+
+function save() {
+  const titleInput = document.getElementById('title');
+  const contentInput = document.getElementById('content');
+  const imgInput = document.getElementById('img-url');
+
+  if(!titleInput.value.trim() && !contentInput.value.trim()) {
+    alert("Veuillez remplir au moins un champ.");
+    return;
+  }
+
+  const newItem = {
+    id: Date.now(),
+    title: titleInput.value.trim() || 'SANS_TITRE',
+    content: contentInput.value.trim(),
+    img: imgInput.value.trim(),
+    date: new Date().toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'})
+  };
+
+  items.unshift(newItem);
+  syncAndRender();
+  toggleModal(false);
+}
+
+function deleteItem(id) {
+  if(confirm("Confirmer la suppression ?")) {
+    items = items.filter(i => i.id !== id);
+    syncAndRender();
+  }
+}
+
+function syncAndRender() {
+  localStorage.setItem('nothing_memo_v2', JSON.stringify(items));
+  render();
+}
+
+function render() {
+  const query = document.getElementById('search').value.toLowerCase();
+  const grid = document.getElementById('grid');
+  const count = document.getElementById('count');
+
+  const filtered = items.filter(i => 
+    i.title.toLowerCase().includes(query) || 
+    i.content.toLowerCase().includes(query)
+  );
+  
+  count.innerText = `(${filtered.length})`;
+  
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div id="empty-state">AUCUNE_DONNÉE_DÉTECTÉE<br><span style="font-size:10px; opacity:0.5; margin-top:10px; display:block;">SYSTÈME EN ATTENTE D'ENTRÉE</span></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => `
+    <div class="card">
+      <div class="card-type">NODE_ID_${item.id.toString().slice(-4)}</div>
+      ${item.img ? `<div class="card-img-container"><img src="${item.img}" class="card-img" onerror="this.parentElement.style.display='none'"></div>` : ''}
+      <div class="card-title">${escapeHtml(item.title)}</div>
+      <div class="card-text">${escapeHtml(item.content)}</div>
+      <div class="card-footer">
+        <span class="card-date">${item.date}</span>
+        <button class="delete-btn" onclick="deleteItem(${item.id})" aria-label="Supprimer">
+          <span class="material-icons-round" style="font-size:16px">delete_outline</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Sécurité contre les injections XSS
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Lancement au chargement
+window.onload = render;
+</script>
+
+</body>
+</html>
