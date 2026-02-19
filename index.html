@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MÉMOIRE // OS_ULTRA</title>
+<title>MÉMOIRE // OS_ULTRA_EDIT</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -15,7 +15,7 @@
   --surface-2: #161616;
   --text: #FFFFFF;
   --text-dim: #888888;
-  --accent: #EB0000; /* Rouge Nothing */
+  --accent: #EB0000;
   --border: 1px solid #262626;
   --font-dot: 'IBM Plex Mono', monospace;
   --font-main: 'Inter', sans-serif;
@@ -40,7 +40,6 @@ body {
   transition: background 0.3s;
 }
 
-/* ── HEADER ── */
 header {
   padding: 30px 20px;
   position: sticky; top: 0;
@@ -51,7 +50,7 @@ header {
 }
 
 .top-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1000px; margin: 0 auto; }
-.logo { font-family: var(--font-dot); font-size: 20px; font-weight: 700; letter-spacing: -1px; }
+.logo { font-family: var(--font-dot); font-size: 20px; font-weight: 700; }
 
 .controls { display: flex; gap: 10px; }
 .icon-btn {
@@ -60,7 +59,6 @@ header {
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-/* ── GRID ── */
 .main-content { padding: 20px; max-width: 1000px; margin: 0 auto; }
 .grid { 
   display: grid; 
@@ -68,7 +66,6 @@ header {
   gap: 15px; 
 }
 
-/* ── CARDS ── */
 .card {
   background: var(--surface); border: var(--border);
   border-radius: 24px; padding: 20px;
@@ -87,15 +84,11 @@ header {
 .card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
 .card-body { color: var(--text-dim); font-size: 14px; margin-bottom: 15px; white-space: pre-wrap; flex-grow: 1; }
 
-.card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+.card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(128,128,128,0.1); }
 .card-date { font-family: var(--font-dot); font-size: 10px; color: var(--text-dim); }
 
-.pin-indicator {
-  position: absolute; top: 15px; right: 15px;
-  color: var(--accent); font-size: 18px;
-}
+.pin-indicator { position: absolute; top: 15px; right: 15px; color: var(--accent); font-size: 18px; }
 
-/* ── DRAWER & MODAL ── */
 .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; z-index: 1000; }
 .drawer-overlay.active { display: block; }
 
@@ -118,7 +111,6 @@ header {
     width: 100%; max-width: 450px; padding: 25px; max-height: 90vh; overflow-y: auto;
 }
 
-/* ── INPUTS ── */
 .field { margin-bottom: 15px; }
 .field label { display: block; font-family: var(--font-dot); font-size: 10px; color: var(--text-dim); margin-bottom: 5px; }
 input, textarea {
@@ -126,7 +118,6 @@ input, textarea {
   border-radius: 12px; color: var(--text); outline: none; font-size: 15px;
 }
 
-/* Bouton d'upload */
 .upload-btn {
     border: 1px dashed var(--text-dim); padding: 15px; border-radius: 12px;
     text-align: center; cursor: pointer; font-size: 12px; color: var(--text-dim);
@@ -145,8 +136,7 @@ input, textarea {
   display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
 
-#img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
-
+#img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; max-height: 150px; object-fit: contain; }
 </style>
 </head>
 <body>
@@ -171,6 +161,7 @@ input, textarea {
 
 <div class="modal" id="modal">
   <div class="modal-content">
+    <h3 id="modal-title" style="font-family:var(--font-dot); font-size:14px; margin-bottom:20px;">NOUVELLE_ENTRÉE</h3>
     <div class="field">
         <label>TITLE_UNIT</label>
         <input type="text" id="m-title" placeholder="...">
@@ -186,10 +177,11 @@ input, textarea {
         </div>
         <input type="file" id="file-input" hidden accept="image/*" onchange="previewImage(this)">
         <img id="img-preview" src="">
+        <button id="remove-img" style="display:none; color:var(--accent); background:none; border:none; font-size:10px; margin-top:5px; cursor:pointer;" onclick="removeCurrentImg()">[ EFFACER_L'IMAGE ]</button>
     </div>
     <div style="display:flex; gap:10px;">
         <button class="btn-full" onclick="closeModal()">ANNULER</button>
-        <button class="btn-full" style="background:var(--text); color:var(--bg);" onclick="save()">ENREGISTRER</button>
+        <button class="btn-full" style="background:var(--text); color:var(--bg);" id="save-btn" onclick="save()">ENREGISTRER</button>
     </div>
   </div>
 </div>
@@ -205,6 +197,7 @@ input, textarea {
 <script>
 let notes = JSON.parse(localStorage.getItem('nothing_notes_v3')) || [];
 let currentImage = null;
+let editingId = null; // Stocke l'ID de la note en cours de modification
 
 function toggleDrawer(s) {
     document.getElementById('drawer').classList.toggle('active', s);
@@ -217,13 +210,48 @@ function toggleTheme() {
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
 }
 
-function openModal() { document.getElementById('modal').classList.add('active'); }
+function openModal(noteId = null) { 
+    editingId = noteId;
+    const modalTitle = document.getElementById('modal-title');
+    
+    if (editingId) {
+        modalTitle.innerText = "MODIFIER_UNITÉ";
+        const note = notes.find(n => n.id === editingId);
+        document.getElementById('m-title').value = note.title;
+        document.getElementById('m-content').value = note.content;
+        if(note.img) {
+            currentImage = note.img;
+            document.getElementById('img-preview').src = currentImage;
+            document.getElementById('img-preview').style.display = 'block';
+            document.getElementById('remove-img').style.display = 'block';
+        }
+    } else {
+        modalTitle.innerText = "NOUVELLE_ENTRÉE";
+        resetForm();
+    }
+    document.getElementById('modal').classList.add('active'); 
+}
+
 function closeModal() { 
     document.getElementById('modal').classList.remove('active');
+    resetForm();
+}
+
+function resetForm() {
     document.getElementById('m-title').value = '';
     document.getElementById('m-content').value = '';
     document.getElementById('img-preview').style.display = 'none';
+    document.getElementById('remove-img').style.display = 'none';
+    document.getElementById('file-input').value = '';
     currentImage = null;
+    editingId = null;
+}
+
+function removeCurrentImg() {
+    currentImage = null;
+    document.getElementById('img-preview').style.display = 'none';
+    document.getElementById('remove-img').style.display = 'none';
+    document.getElementById('file-input').value = '';
 }
 
 function previewImage(input) {
@@ -233,26 +261,37 @@ function previewImage(input) {
             currentImage = e.target.result;
             document.getElementById('img-preview').src = currentImage;
             document.getElementById('img-preview').style.display = 'block';
+            document.getElementById('remove-img').style.display = 'block';
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
 function save() {
-    const t = document.getElementById('m-title').value;
-    const c = document.getElementById('m-content').value;
+    const t = document.getElementById('m-title').value.trim();
+    const c = document.getElementById('m-content').value.trim();
     if(!t && !c && !currentImage) return;
 
-    const note = {
-        id: Date.now(),
-        title: t || "SANS_TITRE",
-        content: c,
-        img: currentImage,
-        pinned: false,
-        date: new Date().toLocaleDateString('fr-FR')
-    };
+    if (editingId) {
+        // Mode Modification
+        const idx = notes.findIndex(n => n.id === editingId);
+        notes[idx].title = t || "SANS_TITRE";
+        notes[idx].content = c;
+        notes[idx].img = currentImage;
+        // On ne change pas la date de création originale
+    } else {
+        // Mode Création
+        const note = {
+            id: Date.now(),
+            title: t || "SANS_TITRE",
+            content: c,
+            img: currentImage,
+            pinned: false,
+            date: new Date().toLocaleDateString('fr-FR')
+        };
+        notes.unshift(note);
+    }
 
-    notes.unshift(note);
     sync();
     closeModal();
 }
@@ -260,13 +299,12 @@ function save() {
 function togglePin(id) {
     const idx = notes.findIndex(n => n.id === id);
     notes[idx].pinned = !notes[idx].pinned;
-    // Trier : les épinglés en premier
     notes.sort((a, b) => b.pinned - a.pinned || b.id - a.id);
     sync();
 }
 
 function deleteNote(id) {
-    if(confirm("SUPPRIMER ?")) {
+    if(confirm("SUPPRIMER DÉFINITIVEMENT ?")) {
         notes = notes.filter(n => n.id !== id);
         sync();
     }
@@ -283,15 +321,18 @@ function render() {
         <div class="card ${n.pinned ? 'pinned' : ''}">
             ${n.pinned ? '<span class="material-icons-round pin-indicator">push_pin</span>' : ''}
             ${n.img ? `<img src="${n.img}" class="card-img">` : ''}
-            <div class="card-title">${n.title}</div>
-            <div class="card-body">${n.content}</div>
+            <div class="card-title">${escapeHtml(n.title)}</div>
+            <div class="card-body">${escapeHtml(n.content)}</div>
             <div class="card-footer">
                 <span class="card-date">${n.date}</span>
-                <div style="display:flex; gap:5px;">
-                    <button class="icon-btn" style="width:32px; height:32px; background:none;" onclick="togglePin(${n.id})">
+                <div style="display:flex; gap:8px;">
+                    <button class="icon-btn" style="width:30px; height:30px; background:none; border:none;" onclick="togglePin(${n.id})" title="Épingler">
                         <span class="material-icons-round" style="font-size:18px; color:${n.pinned ? 'var(--accent)' : 'var(--text-dim)'}">push_pin</span>
                     </button>
-                    <button class="icon-btn" style="width:32px; height:32px; background:none;" onclick="deleteNote(${n.id})">
+                    <button class="icon-btn" style="width:30px; height:30px; background:none; border:none;" onclick="openModal(${n.id})" title="Modifier">
+                        <span class="material-icons-round" style="font-size:18px; color:var(--text-dim)">edit</span>
+                    </button>
+                    <button class="icon-btn" style="width:30px; height:30px; background:none; border:none;" onclick="deleteNote(${n.id})" title="Supprimer">
                         <span class="material-icons-round" style="font-size:18px; color:var(--text-dim)">delete</span>
                     </button>
                 </div>
@@ -300,7 +341,12 @@ function render() {
     `).join('');
 }
 
-// BACKUP UTILS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 function exportData() {
     const blob = new Blob([JSON.stringify(notes)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
@@ -318,7 +364,7 @@ function importData() {
             try {
                 notes = JSON.parse(ev.target.result);
                 sync();
-            } catch(e) { alert("ERREUR_FICHIER"); }
+            } catch(e) { alert("ERREUR_FICHIER_INVALIDE"); }
         };
         reader.readAsText(e.target.files[0]);
     };
@@ -326,10 +372,9 @@ function importData() {
 }
 
 function reset() {
-    if(confirm("TOUT EFFACER ?")) { notes = []; sync(); }
+    if(confirm("RESTAURATION D'USINE ? TOUT SERA EFFACÉ.")) { notes = []; sync(); }
 }
 
-// Start
 if(localStorage.getItem('theme') === 'light') toggleTheme();
 render();
 </script>
