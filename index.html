@@ -20,53 +20,57 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: 120px; touch-action: pan-y; }
 
-/* ── HEADER ── */
+/* ── HEADER & SEARCH ── */
 .app-header { position: sticky; top: 0; z-index: 1000; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .logo { font-family: var(--dot-font); font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
-
-/* ── SEARCH ── */
 .search-container { padding: 16px 20px 0 20px; }
 .search-bar { background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
 .search-bar input { background: none; border: none; outline: none; color: white; width: 100%; font-size: 14px; }
 
 /* ── GRID & CARDS ── */
 .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 20px; }
-.card {
-  background: var(--card); border-radius: 28px; padding: 20px; border: 1px solid var(--border);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background 0.2s;
-  display: flex; flex-direction: column; justify-content: space-between; min-height: 160px;
-  position: relative; overflow: hidden;
-}
+.card { background: var(--card); border-radius: 28px; padding: 20px; border: 1px solid var(--border); transition: transform 0.2s, background 0.2s; display: flex; flex-direction: column; justify-content: space-between; min-height: 160px; position: relative; overflow: hidden; }
 .card.pressing { transform: scale(0.94); background: #1a1a1a; }
 .card.pinned { border: 1px solid #444; }
 .pin-dot { position: absolute; top: 15px; right: 15px; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%; box-shadow: 0 0 10px var(--accent-red); }
 
 .card-type { font-family: var(--dot-font); font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
-.card-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.card-content { font-size: 13px; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-content { font-size: 13px; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
 .card-date { font-family: var(--dot-font); font-size: 9px; color: var(--text-dim); margin-top: 15px; }
+
+/* Media styling inside cards */
+.card-image { width: 100%; height: 80px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; filter: grayscale(20%); }
+.card-audio { width: 100%; height: 30px; margin-top: 8px; filter: invert(1) hue-rotate(180deg); }
 
 /* ── CONTEXT MENU ── */
 .context-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 3000; display: none; align-items: center; justify-content: center; }
 .context-menu { background: #1a1a1a; border: 1px solid var(--border); border-radius: 28px; width: 220px; padding: 10px; }
 .menu-item { padding: 15px; display: flex; align-items: center; gap: 12px; color: white; font-size: 15px; border-radius: 20px; }
-.menu-item:active { background: #333; }
 .menu-item.delete { color: var(--accent-red); }
 
-/* ── MODALS ── */
+/* ── POPUPS & MODALS ── */
 .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; }
 .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 85%; }
 .choice-item { background: var(--card); border: 1px solid var(--border); border-radius: 32px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
 .choice-item span { font-family: var(--dot-font); font-size: 11px; text-transform: uppercase; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; display: none; align-items: flex-end; }
-.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transition: transform 0.3s ease-out; transform: translateY(100%); }
+.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transition: transform 0.3s ease-out; transform: translateY(100%); max-height: 90vh; overflow-y: auto; }
 .modal-overlay.active .modal-sheet { transform: translateY(0); }
-.modal-sheet input, .modal-sheet textarea { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 16px; padding: 16px; color: white; margin-bottom: 12px; outline: none; font-size: 16px; }
 
-.save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); }
+.modal-sheet input[type="text"], .modal-sheet textarea { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 16px; padding: 16px; color: white; margin-bottom: 12px; outline: none; font-size: 16px; font-family: 'Inter', sans-serif;}
+.save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); margin-top: 10px;}
+.record-btn { width: 100%; padding: 20px; background: var(--accent-red); color: white; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.record-btn.recording { animation: pulse 1.5s infinite; background: #800000; }
+
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.98); } 100% { transform: scale(1); } }
 
 .fab { position: fixed; bottom: 30px; right: 24px; background: white; color: black; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+/* Image Preview */
+#preview-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 16px; display: none; margin-bottom: 12px; border: 1px solid var(--border); }
+#audio-preview { width: 100%; display: none; margin-bottom: 12px; filter: invert(1); }
 </style>
 </head>
 <body>
@@ -79,7 +83,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 <div class="search-container">
     <div class="search-bar">
         <span class="material-icons-round" style="color:var(--text-dim)">search</span>
-        <input type="text" id="search-input" placeholder="Rechercher..." oninput="search(this.value)">
+        <input type="text" placeholder="Rechercher..." oninput="search(this.value)">
     </div>
 </div>
 
@@ -89,41 +93,57 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   <span class="material-icons-round" style="font-size: 32px;">add</span>
 </div>
 
+<input type="file" id="image-input" accept="image/*" style="display: none;">
+
 <div class="popup-overlay" id="choice-popup" onclick="toggleChoice(false)">
   <div class="choice-grid" onclick="event.stopPropagation()">
     <div class="choice-item" onclick="openForm('écrit')"><span class="material-icons-round">edit</span><span>Écrit</span></div>
     <div class="choice-item" onclick="openForm('lien')"><span class="material-icons-round">link</span><span>Lien</span></div>
-    <div class="choice-item" onclick="openForm('image')"><span class="material-icons-round">image</span><span>Image</span></div>
+    <div class="choice-item" onclick="handleImageClick()"><span class="material-icons-round">image</span><span>Image</span></div>
     <div class="choice-item" onclick="openForm('vocale')"><span class="material-icons-round" style="color:var(--accent-red)">mic</span><span>Vocale</span></div>
   </div>
 </div>
 
 <div class="context-overlay" id="context-overlay" onclick="closeContextMenu()">
     <div class="context-menu" onclick="event.stopPropagation()">
-        <div class="menu-item" onclick="handleMenuAction('edit')"><span class="material-icons-round">edit</span> Modifier</div>
         <div class="menu-item" id="pin-text" onclick="handleMenuAction('pin')"><span class="material-icons-round">push_pin</span> Épingler</div>
         <div class="menu-item delete" onclick="handleMenuAction('delete')"><span class="material-icons-round">delete</span> Supprimer</div>
     </div>
 </div>
 
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal-sheet">
+  <div class="modal-sheet" id="modal-sheet">
     <div id="form-title" style="font-family: var(--dot-font); margin-bottom: 20px; text-transform: uppercase; font-size: 11px; color: var(--text-dim)">Nouveau</div>
+    
     <input type="text" id="title" placeholder="Titre (optionnel)">
-    <textarea id="content" placeholder="Contenu de la note..." rows="4"></textarea>
+    
+    <img id="preview-img" src="" alt="Aperçu">
+    
+    <button id="record-btn" class="record-btn" style="display: none;" onclick="toggleRecording()">
+        <span class="material-icons-round">mic</span> Démarrer l'enregistrement
+    </button>
+    <audio id="audio-preview" controls></audio>
+    
+    <textarea id="content" placeholder="Ajouter une note ou un lien..." rows="4"></textarea>
+    
     <button class="save-btn" onclick="save()">ENREGISTRER</button>
     <button onclick="closeForm()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px; font-size: 11px; font-family: var(--dot-font)">ANNULER</button>
   </div>
 </div>
 
 <script>
-let items = JSON.parse(localStorage.getItem('nothing_memoire_final')) || [];
+let items = JSON.parse(localStorage.getItem('nothing_media_v1')) || [];
 let currentType = 'écrit';
 let selectedIndex = null;
 let pressTimer = null;
 let isScrolling = false;
 
-// Correction : Détection du scroll pour annuler l'appui long
+// Variables pour les médias
+let currentMediaData = null; // Stockera l'image Base64 ou l'audio Base64
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
 window.addEventListener('touchmove', () => { isScrolling = true; clearTimeout(pressTimer); }, {passive: true});
 window.addEventListener('touchstart', () => { isScrolling = false; }, {passive: true});
 
@@ -133,23 +153,39 @@ function render(data = items) {
         container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 50px; color: var(--text-dim); font-family: var(--dot-font); font-size:12px;">AUCUNE NOTE</div>`;
         return;
     }
-    container.innerHTML = data.map((item, i) => `
-        <div class="card ${item.pinned ? 'pinned' : ''}" 
+    container.innerHTML = data.map((item, i) => {
+        let mediaHtml = '';
+        if (item.type === 'image' && item.media) {
+            mediaHtml = `<img src="${item.media}" class="card-image" alt="Note image">`;
+        } else if (item.type === 'vocale' && item.media) {
+            mediaHtml = `<audio src="${item.media}" class="card-audio" controls></audio>`;
+        }
+
+        // Les notes vocales/images prennent souvent plus de place
+        const spanClass = (item.type === 'image' || item.type === 'vocale') ? 'style="grid-column: span 2;"' : '';
+
+        return `
+        <div class="card ${item.pinned ? 'pinned' : ''}" ${spanClass}
              onmousedown="handlePressStart(${i}, event)" onmouseup="handlePressEnd(event)" 
              ontouchstart="handlePressStart(${i}, event)" ontouchend="handlePressEnd(event)">
             ${item.pinned ? '<div class="pin-dot"></div>' : ''}
             <div>
                 <div class="card-type">${item.type}</div>
-                <div class="card-title">${item.title || 'Sans titre'}</div>
-                <div class="card-content">${item.content}</div>
+                ${item.title ? `<div class="card-title">${item.title}</div>` : ''}
+                ${mediaHtml}
+                ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
             </div>
             <div class="card-date">${item.date}</div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // --- GESTION APPUI LONG ---
 function handlePressStart(index, e) {
+    // Ne pas déclencher si on clique sur l'audio player
+    if(e.target.tagName.toLowerCase() === 'audio' || e.target.tagName.toLowerCase() === 'input') return;
+    
     if (isScrolling) return;
     const card = e.currentTarget;
     card.classList.add('pressing');
@@ -167,9 +203,7 @@ function handlePressEnd(e) {
 function openContextMenu(index) {
     selectedIndex = index;
     const isPinned = items[index].pinned;
-    document.getElementById('pin-text').innerHTML = isPinned ? 
-        `<span class="material-icons-round">push_pin</span> Détacher` : 
-        `<span class="material-icons-round">push_pin</span> Épingler`;
+    document.getElementById('pin-text').innerHTML = isPinned ? `<span class="material-icons-round">push_pin</span> Détacher` : `<span class="material-icons-round">push_pin</span> Épingler`;
     document.getElementById('context-overlay').style.display = 'flex';
     if (window.navigator.vibrate) window.navigator.vibrate(50);
 }
@@ -182,72 +216,158 @@ function handleMenuAction(action) {
         items.splice(selectedIndex, 1);
     } else if (action === 'pin') {
         items[selectedIndex].pinned = !items[selectedIndex].pinned;
-        // Tri : Épinglés en premier, puis par date
         items.sort((a, b) => b.pinned - a.pinned);
-    } else if (action === 'edit') {
-        const item = items[selectedIndex];
-        openForm(item.type, true);
-        document.getElementById('title').value = item.title;
-        document.getElementById('content').value = item.content;
-        return;
     }
     saveAndRefresh();
 }
 
+// --- GESTION DES FICHIERS ET MEDIAS ---
+function handleImageClick() {
+    toggleChoice(false);
+    document.getElementById('image-input').click();
+}
+
+document.getElementById('image-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        currentMediaData = event.target.result;
+        openForm('image');
+    };
+    reader.readAsDataURL(file);
+});
+
+// --- ENREGISTREMENT AUDIO ---
+async function toggleRecording() {
+    const btn = document.getElementById('record-btn');
+    
+    if (!isRecording) {
+        // Demander accès au micro et démarrer
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentMediaData = event.target.result;
+                    const audioPreview = document.getElementById('audio-preview');
+                    audioPreview.src = currentMediaData;
+                    audioPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(audioBlob);
+                stream.getTracks().forEach(track => track.stop()); // Couper le micro
+            };
+            
+            mediaRecorder.start();
+            isRecording = true;
+            btn.classList.add('recording');
+            btn.innerHTML = `<span class="material-icons-round">stop</span> Arrêter l'enregistrement`;
+        } catch (err) {
+            alert("Accès au microphone refusé ou introuvable.");
+        }
+    } else {
+        // Arrêter l'enregistrement
+        mediaRecorder.stop();
+        isRecording = false;
+        btn.classList.remove('recording');
+        btn.innerHTML = `<span class="material-icons-round">mic</span> Réenregistrer`;
+    }
+}
+
+
 // --- FORMULAIRE ---
 function toggleChoice(show) { document.getElementById('choice-popup').style.display = show ? 'flex' : 'none'; }
 
-function openForm(type, isEdit = false) {
+function openForm(type) {
     currentType = type;
-    if (!isEdit) {
-        selectedIndex = null;
-        document.getElementById('title').value = '';
-        document.getElementById('content').value = '';
-    }
     toggleChoice(false);
-    document.getElementById('form-title').innerText = isEdit ? "Modifier " + type : "Nouveau " + type;
+    
+    // Reset UI
+    document.getElementById('title').value = '';
+    document.getElementById('content').value = '';
+    document.getElementById('preview-img').style.display = 'none';
+    document.getElementById('record-btn').style.display = 'none';
+    document.getElementById('audio-preview').style.display = 'none';
+    if(type !== 'image' && type !== 'vocale') currentMediaData = null;
+    
+    // Configuration UI selon le type
+    if (type === 'image' && currentMediaData) {
+        document.getElementById('preview-img').src = currentMediaData;
+        document.getElementById('preview-img').style.display = 'block';
+        document.getElementById('content').placeholder = "Ajouter une légende...";
+    } else if (type === 'vocale') {
+        document.getElementById('record-btn').style.display = 'flex';
+        document.getElementById('record-btn').innerHTML = `<span class="material-icons-round">mic</span> Démarrer l'enregistrement`;
+        document.getElementById('content').placeholder = "Notes sur cet audio...";
+        isRecording = false;
+    } else {
+        document.getElementById('content').placeholder = "Contenu de la note...";
+    }
+
+    document.getElementById('form-title').innerText = "Nouveau " + type;
     document.getElementById('modal-overlay').style.display = 'flex';
     setTimeout(() => document.getElementById('modal-overlay').classList.add('active'), 10);
 }
 
 function closeForm() {
+    if(isRecording && mediaRecorder) mediaRecorder.stop(); // Sécurité
     document.getElementById('modal-overlay').classList.remove('active');
     setTimeout(() => document.getElementById('modal-overlay').style.display = 'none', 300);
+    // Reset file input
+    document.getElementById('image-input').value = '';
 }
 
 function save() {
     const title = document.getElementById('title').value.trim();
     const content = document.getElementById('content').value.trim();
     
-    if (!title && !content) return alert("La note est vide !");
+    if (!title && !content && !currentMediaData) return alert("La note est vide !");
+    if (currentType === 'vocale' && !currentMediaData) return alert("Veuillez enregistrer un audio d'abord.");
 
     const now = new Date();
     const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear().toString().slice(-2)}`;
 
-    if (selectedIndex !== null) {
-        items[selectedIndex] = { ...items[selectedIndex], title, content };
-    } else {
-        items.unshift({ title, content, type: currentType, date: dateStr, pinned: false });
-    }
+    items.unshift({ 
+        title, 
+        content, 
+        type: currentType, 
+        date: dateStr, 
+        pinned: false,
+        media: currentMediaData // Sauvegarde de la Base64 ici
+    });
     
     saveAndRefresh();
     closeForm();
 }
 
 function saveAndRefresh() {
-    localStorage.setItem('nothing_memoire_final', JSON.stringify(items));
-    render();
+    try {
+        localStorage.setItem('nothing_media_v1', JSON.stringify(items));
+        render();
+    } catch (e) {
+        // Le LocalStorage a une limite de 5MB. Les images peuvent vite la remplir.
+        if (e.name === 'QuotaExceededError') {
+            alert("L'espace de stockage est plein ! Supprimez d'anciennes images pour faire de la place.");
+            items.shift(); // Retire la note qui vient de faire crasher
+        }
+    }
 }
 
 function search(q) {
     const filtered = items.filter(i => 
-        i.title.toLowerCase().includes(q.toLowerCase()) || 
-        i.content.toLowerCase().includes(q.toLowerCase())
+        (i.title && i.title.toLowerCase().includes(q.toLowerCase())) || 
+        (i.content && i.content.toLowerCase().includes(q.toLowerCase()))
     );
     render(filtered);
 }
 
-// Initialisation
 render();
 </script>
 </body>
