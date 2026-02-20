@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Essential Space</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+
+<style>
+:root {
+  --bg: #000000;
+  --card: #111111;
+  --text-main: #FFFFFF;
+  --text-dim: #888888;
+  --accent-red: #EB4432;
+  --border: #222222;
+  --dot-font: 'Space Mono', monospace;
+}
+
+body.light-theme {
+  --bg: #F5F5F5;
+  --card: #FFFFFF;
+  --text-main: #111111;
+  --text-dim: #777777;
+  --border: #E0E0E0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: 120px; overflow-x: hidden; }
+
+/* --- HEADER & RECHERCHE --- */
+.app-header { position: sticky; top: 0; z-index: 1000; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+body.light-theme .app-header { background: rgba(245,245,245,0.85); }
+.logo { font-family: var(--dot-font); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; }
+
+.search-container { padding: 16px 20px 0 20px; background: var(--bg); }
+.search-bar { background: #111111; border: 1px solid #222222; border-radius: 24px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+body.light-theme .search-bar { background: #EBEBEB; border-color: #D8D8D8; }
+.search-bar .material-icons-round { color: #555555; font-size: 20px; }
+.search-bar input { background: none; border: none; outline: none; color: #FFFFFF; width: 100%; font-size: 15px; font-family: 'Inter', sans-serif; }
+body.light-theme .search-bar input { color: #111111; }
+
+/* --- GRID & CARDS --- */
+.cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 20px; }
+.card { background: var(--card); border-radius: 28px; padding: 20px; border: 1px solid var(--border); transition: transform 0.2s; min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; cursor: pointer; }
+.card.pressing { transform: scale(0.95); background: #1a1a1a; }
+body.light-theme .card.pressing { background: #EFEFEF; }
+.pin-dot { position: absolute; top: 15px; right: 15px; width: 6px; height: 6px; background: var(--accent-red); border-radius: 50%; box-shadow: 0 0 8px var(--accent-red); }
+
+.card-type { font-family: var(--dot-font); font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
+.card-title { font-weight: 600; font-size: 15px; color: white; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.light-theme .card-title { color: #111111; }
+.card-content { font-size: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card-image { width: 100%; height: 80px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
+.card-audio { width: 100%; height: 30px; margin-top: 8px; filter: invert(1); }
+
+/* --- POPUP SPEED DIAL --- */
+.popup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); z-index: 2000; display: none; flex-direction: column; align-items: flex-end; justify-content: flex-end; padding: 30px 24px 110px 24px; }
+.speed-dial-list { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; width: 100%; }
+.dial-item { background: #222; border-radius: 100px; padding: 12px 24px; display: flex; align-items: center; gap: 16px; opacity: 0; transform: translateY(20px); border: 1px solid #333; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+body.light-theme .dial-item { background: #FFFFFF; border-color: #E0E0E0; }
+.popup-overlay.active .dial-item { opacity: 1; transform: translateY(0); }
+.popup-overlay.active .dial-item:nth-child(1) { transition-delay: 0.2s; }
+.popup-overlay.active .dial-item:nth-child(2) { transition-delay: 0.15s; }
+.popup-overlay.active .dial-item:nth-child(3) { transition-delay: 0.1s; }
+.popup-overlay.active .dial-item:nth-child(4) { transition-delay: 0.05s; }
+.dial-item span { font-family: var(--dot-font); font-size: 13px; text-transform: uppercase; color: white; }
+body.light-theme .dial-item span { color: #111111; }
+
+/* --- FAB --- */
+.fab-container { position: fixed; bottom: 30px; right: 24px; z-index: 2500; }
+.fab { background: white; color: black; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.3s; }
+body.light-theme .fab { background: #111111; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+body.light-theme .fab.active { background: var(--accent-red); color: white; }
+.fab.active { transform: rotate(45deg); background: var(--accent-red); color: white; }
+
+/* --- MODAL FORMULAIRE & VUE DÉTAILLÉE --- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; display: none; align-items: flex-end; }
+.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transition: transform 0.3s ease-out; transform: translateY(100%); max-height: 90vh; overflow-y: auto; }
+.modal-overlay.active .modal-sheet { transform: translateY(0); }
+
+.modal-sheet input, .modal-sheet textarea { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 16px; padding: 16px; color: white; margin-bottom: 12px; outline: none; font-size: 16px; display: block; }
+body.light-theme .modal-sheet input, body.light-theme .modal-sheet textarea { background: #F0F0F0; color: #111111; }
+.color-picker { display: flex; gap: 10px; margin-bottom: 20px; }
+.color-btn { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+.color-btn.active { border-color: white; }
+body.light-theme .color-btn[style*="background:#FFFFFF"] { border-color: #000000; }
+
+.action-bar { display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--border); margin-top: 10px; }
+.action-btn { background: none; border: none; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 10px; font-family: var(--dot-font); }
+.action-btn.active { color: var(--accent-red); }
+.action-btn.delete { color: #ff4444; }
+
+.save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); }
+body.light-theme .save-btn { background: #111111; color: white; }
+
+/* --- SETTINGS PAGE --- */
+.settings-overlay { position: fixed; inset: 0; z-index: 3000; display: none; flex-direction: column; background: var(--bg); }
+.settings-overlay.active { display: flex; }
+.settings-header { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid var(--border); }
+.settings-title { font-family: var(--dot-font); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); }
+.settings-close { background: none; border: none; color: var(--text-dim); cursor: pointer; }
+.settings-scroll { overflow-y: auto; flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+.settings-section-label { font-family: var(--dot-font); font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin: 12px 0 6px 4px; }
+.settings-item { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
+.settings-item-icon { color: var(--text-dim); }
+.settings-item-label { font-size: 15px; color: var(--text-main); flex: 1; }
+.settings-item-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.settings-item-arrow { color: var(--text-dim); font-size: 18px; }
+.settings-item.danger .settings-item-label { color: #ff4444; }
+.settings-item.danger .settings-item-icon { color: #ff4444; }
+
+/* Toggle switch */
+.toggle-switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: #444; border-radius: 26px; transition: background 0.3s; }
+.toggle-track::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.3s; }
+.toggle-switch input:checked + .toggle-track { background: var(--accent-red); }
+.toggle-switch input:checked + .toggle-track::after { transform: translateX(18px); }
+
+/* Theme selector */
+.theme-options { display: flex; gap: 8px; margin-top: 8px; }
+.theme-option { flex: 1; padding: 10px; border-radius: 14px; border: 2px solid var(--border); display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-family: var(--dot-font); font-size: 8px; color: var(--text-dim); text-transform: uppercase; transition: border-color 0.2s; }
+.theme-option.selected { border-color: var(--accent-red); color: var(--accent-red); }
+.theme-option-preview { width: 36px; height: 24px; border-radius: 8px; border: 1px solid var(--border); }
+.preview-dark { background: #111; }
+.preview-light { background: #F5F5F5; }
+.preview-auto { background: linear-gradient(135deg, #111 50%, #F5F5F5 50%); }
+
+/* --- TIPS --- */
+.tips-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3500; display: none; flex-direction: column; }
+.tips-overlay.active { display: flex; }
+.tips-header { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid var(--border); background: var(--bg); }
+.tips-header-title { font-family: var(--dot-font); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-main); }
+.tips-close { background: none; border: none; color: var(--text-dim); cursor: pointer; }
+.tips-scroll { overflow-y: auto; flex: 1; padding: 16px; background: var(--bg); }
+.tips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.tip-card { background: var(--card); border-radius: 28px; padding: 20px; border: 1px solid var(--border); min-height: 150px; display: flex; flex-direction: column; justify-content: space-between; }
+.tip-card-icon { font-size: 26px; margin-bottom: 10px; }
+.tip-card-title { font-weight: 600; font-size: 13px; color: var(--text-main); margin-bottom: 6px; }
+.tip-card-body { font-size: 11px; line-height: 1.5; color: var(--text-dim); flex: 1; }
+.tip-card-tag { font-family: var(--dot-font); font-size: 8px; color: var(--accent-red); text-transform: uppercase; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">ESSENTIAL SPACE</div>
+  <div style="display:flex; align-items:center; gap:14px;">
+    <span class="material-icons-round" style="color:var(--text-dim); cursor:pointer;" onclick="toggleTips(true)">help_outline</span>
+    <span class="material-icons-round" style="color:var(--text-dim); cursor:pointer;" onclick="toggleSettings(true)">settings</span>
+  </div>
+</header>
+
+<div class="search-container">
+    <div class="search-bar">
+        <span class="material-icons-round">search</span>
+        <input type="text" id="search-input" placeholder="Rechercher..." oninput="search(this.value)">
+    </div>
+</div>
+
+<div class="cards-grid" id="container"></div>
+
+<div class="fab-container">
+    <div class="fab" id="main-fab" onclick="togglePopup()">
+        <span class="material-icons-round" style="font-size: 32px;">add</span>
+    </div>
+</div>
+
+<div class="popup-overlay" id="choice-popup" onclick="togglePopup()">
+  <div class="speed-dial-list" onclick="event.stopPropagation()">
+    <div class="dial-item" onclick="openForm('écrit')"><span class="material-icons-round">notes</span><span>Écrit</span></div>
+    <div class="dial-item" onclick="openForm('lien')"><span class="material-icons-round">link</span><span>Lien</span></div>
+    <div class="dial-item" onclick="handleImageClick()"><span class="material-icons-round">photo_library</span><span>Image</span></div>
+    <div class="dial-item" onclick="openForm('vocale')"><span class="material-icons-round" style="color:var(--accent-red)">mic</span><span>Vocale</span></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-sheet">
+    <div id="modal-label" style="font-family: var(--dot-font); margin-bottom: 15px; font-size: 10px; color: var(--text-dim); text-transform: uppercase;">NOUVEAU</div>
+    
+    <input type="text" id="note-title" placeholder="Titre (optionnel)">
+    <img id="preview-img" style="width:100%; max-height:200px; object-fit:contain; display:none; border-radius:16px; margin-bottom:12px; border: 1px solid var(--border);">
+    <button id="record-btn" style="width:100%; padding:15px; background:var(--accent-red); color:white; border-radius:50px; border:none; margin-bottom:12px; display:none;" onclick="toggleRecording()">MICRO</button>
+    <audio id="audio-preview" controls style="display:none; width:100%; margin-bottom:12px; filter:invert(1)"></audio>
+    
+    <textarea id="note-content" placeholder="Contenu..." rows="6"></textarea>
+
+    <div class="color-picker" id="color-picker-ui">
+        <div class="color-btn" style="background:#FFFFFF" onclick="setTextColor('#FFFFFF')"></div>
+        <div class="color-btn" style="background:#EB4432" onclick="setTextColor('#EB4432')"></div>
+        <div class="color-btn" style="background:#FFD700" onclick="setTextColor('#FFD700')"></div>
+        <div class="color-btn" style="background:#00FF7F" onclick="setTextColor('#00FF7F')"></div>
+        <div class="color-btn" style="background:#00BFFF" onclick="setTextColor('#00BFFF')"></div>
+    </div>
+
+    <button class="save-btn" onclick="saveNote()">ENREGISTRER</button>
+
+    <div class="action-bar" id="edit-actions" style="display:none;">
+        <button class="action-btn" id="pin-btn-modal" onclick="togglePinModal()"><span class="material-icons-round">push_pin</span>Épingler</button>
+        <button class="action-btn delete" onclick="deleteNoteModal()"><span class="material-icons-round">delete</span>Supprimer</button>
+    </div>
+
+    <button onclick="closeForm()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px; font-size:11px; font-family:var(--dot-font)">FERMER</button>
+  </div>
+</div>
+
+<div class="settings-overlay" id="settings-overlay">
+  <div class="settings-header">
+    <span class="settings-title">⚙️ Paramètres</span>
+    <button class="settings-close" onclick="toggleSettings(false)"><span class="material-icons-round">close</span></button>
+  </div>
+  <div class="settings-scroll">
+
+    <div class="settings-section-label">Apparence</div>
+
+    <div class="settings-item" style="flex-direction: column; align-items: flex-start; cursor: default;">
+      <div style="display:flex; align-items:center; gap:14px; width:100%;">
+        <span class="material-icons-round settings-item-icon">palette</span>
+        <div style="flex:1">
+          <div class="settings-item-label">Thème</div>
+          <div class="settings-item-sub" id="theme-sub-label">Automatique (système)</div>
+        </div>
+      </div>
+      <div class="theme-options">
+        <div class="theme-option" id="theme-opt-dark" onclick="setThemeMode('dark')">
+          <div class="theme-option-preview preview-dark"></div>
+          Sombre
+        </div>
+        <div class="theme-option" id="theme-opt-light" onclick="setThemeMode('light')">
+          <div class="theme-option-preview preview-light"></div>
+          Clair
+        </div>
+        <div class="theme-option" id="theme-opt-auto" onclick="setThemeMode('auto')">
+          <div class="theme-option-preview preview-auto"></div>
+          Auto
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section-label">Données</div>
+
+    <div class="settings-item" onclick="exportData()">
+      <span class="material-icons-round settings-item-icon">share</span>
+      <div style="flex:1">
+        <div class="settings-item-label">Exporter les notes</div>
+        <div class="settings-item-sub">Sauvegarde en fichier JSON</div>
+      </div>
+      <span class="material-icons-round settings-item-arrow">chevron_right</span>
+    </div>
+
+    <div class="settings-item" onclick="triggerImport()">
+      <span class="material-icons-round settings-item-icon">upload</span>
+      <div style="flex:1">
+        <div class="settings-item-label">Importer des notes</div>
+        <div class="settings-item-sub">Restaurer depuis un fichier JSON</div>
+      </div>
+      <span class="material-icons-round settings-item-arrow">chevron_right</span>
+    </div>
+
+
+
+  </div>
+</div>
+
+<input type="file" id="image-input" accept="image/*" style="display:none">
+<input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
+
+<!-- TIPS OVERLAY -->
+<div class="tips-overlay" id="tips-overlay">
+  <div class="tips-header">
+    <span class="tips-header-title">💡 Astuces</span>
+    <button class="tips-close" onclick="toggleTips(false)"><span class="material-icons-round">close</span></button>
+  </div>
+  <div class="tips-scroll">
+    <div class="tips-grid">
+
+      <div class="tip-card">
+        <div class="tip-card-icon">✏️</div>
+        <div>
+          <div class="tip-card-title">Créer une note</div>
+          <div class="tip-card-body">Appuie sur le bouton <strong>+</strong> en bas à droite pour choisir le type de note : écrit, lien, image ou vocale.</div>
+        </div>
+        <div class="tip-card-tag">Démarrer</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">📌</div>
+        <div>
+          <div class="tip-card-title">Épingler</div>
+          <div class="tip-card-body">Ouvre une note et appuie sur <strong>Épingler</strong> pour la garder tout en haut de ta liste.</div>
+        </div>
+        <div class="tip-card-tag">Organisation</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">🎨</div>
+        <div>
+          <div class="tip-card-title">Couleur du texte</div>
+          <div class="tip-card-body">Lors de la création, utilise la palette de couleurs pour personnaliser la couleur de ton contenu.</div>
+        </div>
+        <div class="tip-card-tag">Personnalisation</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">🔍</div>
+        <div>
+          <div class="tip-card-title">Recherche rapide</div>
+          <div class="tip-card-body">Utilise la barre de recherche en haut pour filtrer tes notes par titre ou contenu en temps réel.</div>
+        </div>
+        <div class="tip-card-tag">Recherche</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">🎙️</div>
+        <div>
+          <div class="tip-card-title">Note vocale</div>
+          <div class="tip-card-body">Choisis <strong>Vocale</strong> dans le menu + pour enregistrer un audio. Appuie sur MICRO pour lancer, STOP pour finir.</div>
+        </div>
+        <div class="tip-card-tag">Audio</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">🖼️</div>
+        <div>
+          <div class="tip-card-title">Ajouter une image</div>
+          <div class="tip-card-body">Choisis <strong>Image</strong> dans le menu + pour sélectionner une photo depuis ta galerie.</div>
+        </div>
+        <div class="tip-card-tag">Média</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">💾</div>
+        <div>
+          <div class="tip-card-title">Exporter / Importer</div>
+          <div class="tip-card-body">Via le menu <strong>⋮</strong>, exporte tes notes en fichier JSON pour les sauvegarder ou les transférer.</div>
+        </div>
+        <div class="tip-card-tag">Sauvegarde</div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-card-icon">🌗</div>
+        <div>
+          <div class="tip-card-title">Thème clair / sombre</div>
+          <div class="tip-card-body">Change l'apparence de l'app depuis le menu <strong>⋮</strong> en haut à droite. Ton choix est mémorisé.</div>
+        </div>
+        <div class="tip-card-tag">Affichage</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let items = JSON.parse(localStorage.getItem('essential_space_v2')) || [];
+let currentType = 'écrit';
+let currentMediaData = null;
+let editingIndex = null;
+let selectedColor = '#FFFFFF';
+let mediaRecorder, audioChunks = [], isRecording = false;
+
+function render(data = items) {
+    const container = document.getElementById('container');
+    container.innerHTML = data.length === 0 ? `<div style="grid-column: span 2; text-align:center; padding: 50px; color: var(--text-dim); font-family: var(--dot-font); font-size:10px;">ESPACE VIDE</div>` : 
+    data.map((item, i) => {
+        const span = (item.type === 'image' || item.type === 'vocale') ? 'grid-column: span 2' : '';
+        return `
+        <div class="card" style="${span}" onclick="openEdit(${i})">
+            ${item.pinned ? '<div class="pin-dot"></div>' : ''}
+            <div>
+                <div class="card-type">${item.type}</div>
+                ${item.title ? `<div class="card-title">${item.title}</div>` : ''}
+                ${item.type === 'image' && item.media ? `<img src="${item.media}" class="card-image">` : ''}
+                ${item.type === 'vocale' && item.media ? `<audio src="${item.media}" class="card-audio" controls onclick="event.stopPropagation()"></audio>` : ''}
+                <div class="card-content" style="color:${item.color || '#FFFFFF'}">${item.content}</div>
+            </div>
+            <div style="font-family:var(--dot-font); font-size:8px; color:var(--text-dim); margin-top:10px">${item.date}</div>
+        </div>`;
+    }).join('');
+}
+
+function openForm(type) {
+    editingIndex = null; currentType = type; togglePopup();
+    resetModal();
+    document.getElementById('modal-label').innerText = "NOUVEAU";
+    document.getElementById('edit-actions').style.display = "none";
+    document.getElementById('record-btn').style.display = type === 'vocale' ? 'block' : 'none';
+    showModal();
+}
+
+function openEdit(index) {
+    editingIndex = index;
+    const item = items[index];
+    resetModal();
+    document.getElementById('modal-label').innerText = "MODIFIER";
+    document.getElementById('note-title').value = item.title || '';
+    document.getElementById('note-content').value = item.content || '';
+    document.getElementById('note-content').style.color = item.color || '#FFFFFF';
+    selectedColor = item.color || '#FFFFFF';
+    document.getElementById('edit-actions').style.display = "flex";
+    document.getElementById('pin-btn-modal').classList.toggle('active', item.pinned);
+    
+    if(item.type === 'image') { document.getElementById('preview-img').src = item.media; document.getElementById('preview-img').style.display = 'block'; }
+    if(item.type === 'vocale') { document.getElementById('audio-preview').src = item.media; document.getElementById('audio-preview').style.display = 'block'; }
+    
+    showModal();
+}
+
+function resetModal() {
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-content').value = '';
+    document.getElementById('note-content').style.color = '#FFFFFF';
+    document.getElementById('preview-img').style.display = 'none';
+    document.getElementById('audio-preview').style.display = 'none';
+    currentMediaData = null; selectedColor = '#FFFFFF';
+}
+
+function setTextColor(color) {
+    selectedColor = color;
+    document.getElementById('note-content').style.color = color;
+}
+
+function saveNote() {
+    const t = document.getElementById('note-title').value.trim();
+    const c = document.getElementById('note-content').value.trim();
+    const now = new Date();
+    const d = `${now.getDate().toString().padStart(2,'0')}.${(now.getMonth()+1).toString().padStart(2,'0')}.${now.getFullYear().toString().slice(-2)}`;
+
+    const noteData = { title: t, content: c, type: currentType, date: d, color: selectedColor, media: currentMediaData || (editingIndex !== null ? items[editingIndex].media : null), pinned: editingIndex !== null ? items[editingIndex].pinned : false };
+
+    if(editingIndex !== null) items[editingIndex] = noteData;
+    else items.unshift(noteData);
+
+    saveToDisk(); closeForm();
+}
+
+function togglePinModal() {
+    items[editingIndex].pinned = !items[editingIndex].pinned;
+    document.getElementById('pin-btn-modal').classList.toggle('active', items[editingIndex].pinned);
+    saveToDisk();
+}
+
+function deleteNoteModal() {
+    if(confirm("Supprimer cette note ?")) { items.splice(editingIndex, 1); saveToDisk(); closeForm(); }
+}
+
+function showModal() { document.getElementById('modal-overlay').style.display = 'flex'; setTimeout(() => document.getElementById('modal-overlay').classList.add('active'), 10); }
+function closeForm() { document.getElementById('modal-overlay').classList.remove('active'); setTimeout(() => document.getElementById('modal-overlay').style.display = 'none', 300); }
+function togglePopup() { const p = document.getElementById('choice-popup'); const f = document.getElementById('main-fab'); if(!p.classList.contains('active')){ p.style.display='flex'; f.classList.add('active'); setTimeout(()=>p.classList.add('active'),10); } else { p.classList.remove('active'); f.classList.remove('active'); setTimeout(()=>p.style.display='none',300); }}
+function saveToDisk() { items.sort((a,b) => b.pinned - a.pinned); localStorage.setItem('essential_space_v2', JSON.stringify(items)); render(); }
+function search(q) { const query = q.toLowerCase(); render(items.filter(i => (i.title+i.content).toLowerCase().includes(query))); }
+
+function exportData() {
+    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'essential_space_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    toggleSettings(false);
+}
+
+function triggerImport() {
+    document.getElementById('import-input').click();
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = (ev) => {
+        try {
+            const imported = JSON.parse(ev.target.result);
+            if (!Array.isArray(imported)) { alert('Fichier invalide.'); return; }
+            items = imported;
+            saveToDisk();
+            toggleSettings(false);
+            alert(imported.length + ' note(s) importée(s) avec succès.');
+        } catch(e) {
+            alert('Erreur de lecture du fichier JSON.');
+        }
+    };
+    r.readAsText(file);
+    event.target.value = '';
+}
+function toggleHeaderMenu(s) { /* legacy no-op */ }
+function toggleSettings(s) { document.getElementById('settings-overlay').classList.toggle('active', s); }
+function toggleTips(s) { document.getElementById('tips-overlay').classList.toggle('active', s); }
+
+// Thème
+let themeMode = localStorage.getItem('essential_theme_mode') || 'auto'; // 'dark' | 'light' | 'auto'
+
+function getSystemDark() { return window.matchMedia('(prefers-color-scheme: dark)').matches; }
+
+function applyTheme() {
+    const dark = themeMode === 'dark' || (themeMode === 'auto' && getSystemDark());
+    const light = themeMode === 'light' || (themeMode === 'auto' && !getSystemDark());
+    document.body.classList.toggle('light-theme', !!light && !dark);
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#000000' : '#F5F5F5');
+    // Update UI selectors
+    ['dark','light','auto'].forEach(m => {
+        const el = document.getElementById('theme-opt-' + m);
+        if(el) el.classList.toggle('selected', themeMode === m);
+    });
+    const sub = document.getElementById('theme-sub-label');
+    if(sub) sub.textContent = themeMode === 'auto' ? 'Automatique (système)' : themeMode === 'light' ? 'Thème clair' : 'Thème sombre';
+}
+
+function setThemeMode(mode) {
+    themeMode = mode;
+    localStorage.setItem('essential_theme_mode', mode);
+    applyTheme();
+}
+
+// Écouter les changements système
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if(themeMode === 'auto') applyTheme(); });
+
+applyTheme();
+
+// Médias
+function handleImageClick() { togglePopup(); document.getElementById('image-input').click(); }
+document.getElementById('image-input').onchange = (e) => { const r = new FileReader(); r.onload = (ev) => { currentMediaData = ev.target.result; openForm('image'); }; r.readAsDataURL(e.target.files[0]); };
+
+async function toggleRecording() {
+    const btn = document.getElementById('record-btn');
+    if(!isRecording) {
+        const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(s); audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const b = new Blob(audioChunks, { type: 'audio/webm' });
+            const r = new FileReader(); r.onload = ev => { currentMediaData = ev.target.result; document.getElementById('audio-preview').src = ev.target.result; document.getElementById('audio-preview').style.display = 'block'; };
+            r.readAsDataURL(b);
+        };
+        mediaRecorder.start(); isRecording = true; btn.innerText = "STOP";
+    } else { mediaRecorder.stop(); isRecording = false; btn.innerText = "MICRO"; }
+}
+
+render();
+</script>
+</body>
+</html>
