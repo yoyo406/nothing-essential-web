@@ -255,9 +255,42 @@ function handleMenuAction(action) {
 function openHeaderMenu() { document.getElementById('header-menu-overlay').style.display = 'flex'; }
 function closeHeaderMenu() { document.getElementById('header-menu-overlay').style.display = 'none'; }
 
-function exportData() {
+async function exportData() {
     closeHeaderMenu();
     if (items.length === 0) return alert("Aucune donnée à sauvegarder.");
+
+    const dataStr = JSON.stringify(items);
+
+    // 1. On essaie d'abord d'utiliser le menu de partage du téléphone (Le plus fiable sur mobile)
+    if (navigator.share) {
+        try {
+            const file = new File([dataStr], 'nano_banana_backup.json', { type: 'application/json' });
+            await navigator.share({
+                title: 'Sauvegarde Nano Banana',
+                files: [file]
+            });
+            return; // Si ça marche, on s'arrête ici
+        } catch (err) {
+            console.log("Le partage de fichier a échoué, essai du partage de texte...");
+        }
+    }
+
+    // 2. Méthode de secours : Téléchargement classique (Pour ordinateur ou vieux navigateurs)
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
+    a.download = `memoire_backup_${formattedDate}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
     
     const dataStr = JSON.stringify(items);
     const blob = new Blob([dataStr], { type: "application/json" });
