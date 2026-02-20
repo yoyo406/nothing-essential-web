@@ -1,476 +1,270 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Mémoire</title>
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Mémoire">
-  <meta name="theme-color" content="#000000">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mémoire - Nano Banana</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 
-  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSIxMjAiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxNDAiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWRhc2hhcnJheT0iMSAxMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxMTAiIHN0cm9rZT0iIzMzMyIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSIxIDEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjI1IiBmaWxsPSIjRUI0NDMyIi8+PHRleHQgeD0iNTAlIiB5PSI0MjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjI0IiBsZXR0ZXItc3BhY2luZz0iOCIgb3BhY2l0eT0iMC41Ij5NRU1PSVJFTDwvdGV4dD48L3N2Zz4=">
-
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-  
-  <style>
-    /* ... (ton code CSS reste le même) ... */
-  </style>
-</head>
-
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#6750A4">
 
 <style>
 :root {
-  --bg: #000000;
-  --card: #111111;
-  --text-main: #FFFFFF;
-  --text-dim: #888888;
-  --accent-red: #EB4432;
-  --border: #222222;
-  --dot-font: 'Space Mono', monospace;
+  --md-primary: #6750A4;
+  --md-surface: #FFFBFE;
+  --md-surface-variant: #E7E0EC;
+  --md-on-surface: #1C1B1F;
+  --md-outline-variant: #CAC4D0;
+  --fluid-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --glass: rgba(255, 251, 254, 0.8);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: 120px; touch-action: pan-y; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Inter', sans-serif; background: var(--md-surface); color: var(--md-on-surface); overflow-x: hidden; padding-bottom: 100px; }
+
+/* ── ANIMATIONS ── */
+@keyframes fluidUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.fade-in { animation: fluidUp 0.5s var(--fluid-curve) both; }
 
 /* ── HEADER & SEARCH ── */
-.app-header { position: sticky; top: 0; z-index: 1000; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.logo { font-family: var(--dot-font); font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
-.header-icon { color: var(--text-dim); cursor: pointer; padding: 5px; }
-.header-icon:active { color: white; }
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--glass); backdrop-filter: blur(20px);
+  padding: 12px 20px; border-bottom: 1px solid var(--md-outline-variant);
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 
-.search-container { padding: 16px 20px 0 20px; }
-.search-bar { background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
-.search-bar input { background: none; border: none; outline: none; color: white; width: 100%; font-size: 14px; }
+/* ── SETTINGS DRAWER ── */
+#settings-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 280px;
+  background: var(--md-surface); z-index: 501;
+  transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1);
+  padding: 24px; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+}
+#settings-drawer.active { transform: translateX(0); }
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  z-index: 500; display: none; backdrop-filter: blur(4px);
+}
 
-/* ── GRID & CARDS ── */
-.cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 20px; }
-.card { background: var(--card); border-radius: 28px; padding: 20px; border: 1px solid var(--border); transition: transform 0.2s, background 0.2s; display: flex; flex-direction: column; justify-content: space-between; min-height: 160px; position: relative; overflow: hidden; }
-.card.pressing { transform: scale(0.94); background: #1a1a1a; }
-.card.pinned { border: 1px solid #444; }
-.pin-dot { position: absolute; top: 15px; right: 15px; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%; box-shadow: 0 0 10px var(--accent-red); }
-
-.card-type { font-family: var(--dot-font); font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
-.card-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-content { font-size: 13px; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
-.card-date { font-family: var(--dot-font); font-size: 9px; color: var(--text-dim); margin-top: 15px; }
-
-/* Media styling inside cards */
-.card-image { width: 100%; height: 80px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; filter: grayscale(20%); }
-.card-audio { width: 100%; height: 30px; margin-top: 8px; filter: invert(1) hue-rotate(180deg); }
-
-/* ── MENUS (CONTEXT & HEADER) ── */
-.context-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 3000; display: none; align-items: center; justify-content: center; }
-.header-menu-overlay { position: fixed; inset: 0; z-index: 3000; display: none; justify-content: flex-end; align-items: flex-start; padding: 60px 20px; }
-.menu-box { background: #1a1a1a; border: 1px solid var(--border); border-radius: 28px; width: 220px; padding: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); animation: pop 0.2s ease-out; }
-@keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.menu-item { padding: 15px; display: flex; align-items: center; gap: 12px; color: white; font-size: 14px; font-weight: 500; border-radius: 20px; cursor: pointer; }
-.menu-item:active { background: #333; }
-.menu-item.delete { color: var(--accent-red); }
+/* ── CARDS ── */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 20px; }
+.card {
+  background: white; border-radius: 24px; padding: 20px; border: 1px solid var(--md-outline-variant);
+  transition: all 0.3s var(--fluid-curve); cursor: pointer; position: relative;
+}
+.card:active { transform: scale(0.98); }
 
 /* ── POPUPS & MODALS ── */
-.popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; }
-.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 85%; }
-.choice-item { background: var(--card); border: 1px solid var(--border); border-radius: 32px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-.choice-item span { font-family: var(--dot-font); font-size: 11px; text-transform: uppercase; }
+#choice-popup {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px); z-index: 1000;
+  display: none; align-items: center; justify-content: center;
+}
+.choice-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  width: 90%; max-width: 340px; animation: fluidUp 0.4s var(--fluid-curve);
+}
+.choice-card {
+  aspect-ratio: 1/1; background: white; border-radius: 32px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; cursor: pointer;
+}
 
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; display: none; align-items: flex-end; }
-.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transition: transform 0.3s ease-out; transform: translateY(100%); max-height: 90vh; overflow-y: auto; }
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 1100; display: none; align-items: flex-end;
+}
+.modal-overlay.active { display: flex; }
+.modal-sheet {
+  background: white; width: 100%; max-width: 600px; border-radius: 32px 32px 0 0;
+  padding: 24px; margin: 0 auto; transform: translateY(100%);
+  transition: transform 0.4s var(--fluid-curve);
+}
 .modal-overlay.active .modal-sheet { transform: translateY(0); }
 
-.modal-sheet input[type="text"], .modal-sheet textarea { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 16px; padding: 16px; color: white; margin-bottom: 12px; outline: none; font-size: 16px; font-family: 'Inter', sans-serif;}
-.save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); margin-top: 10px;}
-.record-btn { width: 100%; padding: 20px; background: var(--accent-red); color: white; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.record-btn.recording { animation: pulse 1.5s infinite; background: #800000; }
+input, textarea {
+    width: 100%; padding: 14px; border-radius: 16px; 
+    border: 1px solid var(--md-outline-variant); background: #f9f9f9;
+    margin-bottom: 12px; outline: none; font-family: inherit;
+}
 
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(0.98); } 100% { transform: scale(1); } }
-
-.fab { position: fixed; bottom: 30px; right: 24px; background: white; color: black; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.5); cursor: pointer; }
-
-/* Image Preview */
-#preview-img { width: 100%; max-height: 200px; object-fit: contain; border-radius: 16px; display: none; margin-bottom: 12px; border: 1px solid var(--border); }
-#audio-preview { width: 100%; display: none; margin-bottom: 12px; filter: invert(1); }
+.fab {
+  position: fixed; bottom: 30px; right: 24px;
+  background: #EADDFF; color: var(--md-primary);
+  padding: 16px 24px; border-radius: 24px; display: flex; align-items: center; gap: 8px;
+  font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; z-index: 200;
+}
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="logo">MÉMOIRE.</div>
-  <span class="material-icons-round header-icon" onclick="openHeaderMenu()">more_vert</span>
-</header>
-
-<div class="search-container">
-    <div class="search-bar">
-        <span class="material-icons-round" style="color:var(--text-dim)">search</span>
-        <input type="text" placeholder="Rechercher..." oninput="search(this.value)">
+  <div class="header-top">
+    <div style="font-family:'Nunito'; font-weight:800; font-size:24px; color:var(--md-primary)">Mémoire</div>
+    <div style="display:flex; gap:10px;">
+        <button onclick="toggleSettings(true)" style="background:none; border:none;"><span class="material-icons-round">settings</span></button>
+        <div style="width:32px; height:32px; background:var(--md-primary); border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; font-weight:700">NB</div>
     </div>
-</div>
+  </div>
+  <div style="background:var(--md-surface-variant); padding:10px 16px; border-radius:14px; display:flex; align-items:center; gap:10px;">
+    <span class="material-icons-round">search</span>
+    <input type="text" placeholder="Rechercher..." style="background:none; border:none; margin-bottom:0; padding:0" oninput="search(this.value)">
+  </div>
+</header>
 
 <div class="cards-grid" id="container"></div>
 
 <div class="fab" onclick="toggleChoice(true)">
-  <span class="material-icons-round" style="font-size: 32px;">add</span>
+  <span class="material-icons-round">add</span> Nouveau
 </div>
 
-<input type="file" id="image-input" accept="image/*" style="display: none;">
-<input type="file" id="import-input" accept=".json" style="display: none;" onchange="importData(event)">
-
-<div class="header-menu-overlay" id="header-menu-overlay" onclick="closeHeaderMenu()">
-    <div class="menu-box" onclick="event.stopPropagation()">
-        <div class="menu-item" onclick="exportData()">
-            <span class="material-icons-round">download</span> Sauvegarder (Export)
-        </div>
-        <div class="menu-item" onclick="triggerImport()">
-            <span class="material-icons-round">upload</span> Restaurer (Import)
-        </div>
-    </div>
-</div>
-
-<div class="popup-overlay" id="choice-popup" onclick="toggleChoice(false)">
+<div id="choice-popup" onclick="toggleChoice(false)">
   <div class="choice-grid" onclick="event.stopPropagation()">
-    <div class="choice-item" onclick="openForm('écrit')"><span class="material-icons-round">edit</span><span>Écrit</span></div>
-    <div class="choice-item" onclick="openForm('lien')"><span class="material-icons-round">link</span><span>Lien</span></div>
-    <div class="choice-item" onclick="handleImageClick()"><span class="material-icons-round">image</span><span>Image</span></div>
-    <div class="choice-item" onclick="openForm('vocale')"><span class="material-icons-round" style="color:var(--accent-red)">mic</span><span>Vocale</span></div>
+    <div class="choice-card" onclick="openForm('note')">
+      <span class="material-icons-round" style="color:#6750A4">edit_note</span>
+      <span>TEXTE</span>
+    </div>
+    <div class="choice-card" onclick="openForm('image')">
+      <span class="material-icons-round" style="color:#6750A4">image</span>
+      <span>IMAGE</span>
+    </div>
+    <div class="choice-card" onclick="openForm('link')">
+      <span class="material-icons-round" style="color:#6750A4">link</span>
+      <span>LIEN</span>
+    </div>
+    <div class="choice-card" onclick="toggleChoice(false)">
+      <span class="material-icons-round">close</span>
+      <span>FERMER</span>
+    </div>
   </div>
 </div>
 
-<div class="context-overlay" id="context-overlay" onclick="closeContextMenu()">
-    <div class="menu-box" onclick="event.stopPropagation()">
-        <div class="menu-item" id="pin-text" onclick="handleMenuAction('pin')"><span class="material-icons-round">push_pin</span> Épingler</div>
-        <div class="menu-item delete" onclick="handleMenuAction('delete')"><span class="material-icons-round">delete</span> Supprimer</div>
-    </div>
+<div class="drawer-overlay" id="overlay" onclick="toggleSettings(false)"></div>
+<div id="settings-drawer">
+  <h2 style="font-family:'Nunito'; margin-bottom:24px">Paramètres</h2>
+  <div onclick="exportData()" style="padding:16px; border-radius:16px; background:#F3EDF7; margin-bottom:12px; cursor:pointer; display:flex; gap:12px">
+    <span class="material-icons-round">share</span> Exporter / Partager
+  </div>
+  <div onclick="localStorage.clear(); location.reload();" style="padding:16px; border-radius:16px; color:#ba1a1a; cursor:pointer; display:flex; gap:12px">
+    <span class="material-icons-round">delete_sweep</span> Effacer tout
+  </div>
 </div>
 
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal-sheet" id="modal-sheet">
-    <div id="form-title" style="font-family: var(--dot-font); margin-bottom: 20px; text-transform: uppercase; font-size: 11px; color: var(--text-dim)">Nouveau</div>
-    
-    <input type="text" id="title" placeholder="Titre (optionnel)">
-    
-    <img id="preview-img" src="" alt="Aperçu">
-    
-    <button id="record-btn" class="record-btn" style="display: none;" onclick="toggleRecording()">
-        <span class="material-icons-round">mic</span> Démarrer l'enregistrement
-    </button>
-    <audio id="audio-preview" controls></audio>
-    
-    <textarea id="content" placeholder="Ajouter une note ou un lien..." rows="4"></textarea>
-    
-    <button class="save-btn" onclick="save()">ENREGISTRER</button>
-    <button onclick="closeForm()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px; font-size: 11px; font-family: var(--dot-font)">ANNULER</button>
+  <div class="modal-sheet">
+    <h3 id="form-title" style="margin-bottom:20px; font-family:'Nunito'">Nouveau souvenir</h3>
+    <input type="text" id="title" placeholder="Titre">
+    <textarea id="content" placeholder="Contenu..." rows="4"></textarea>
+    <button onclick="save()" style="width:100%; padding:16px; background:var(--md-primary); color:white; border:none; border-radius:100px; font-weight:700; font-size:16px">ENREGISTRER</button>
+    <button onclick="closeForm()" style="width:100%; padding:12px; background:none; border:none; margin-top:8px; color:#666">Annuler</button>
   </div>
 </div>
 
 <script>
-let items = JSON.parse(localStorage.getItem('nothing_media_v1')) || [];
-let currentType = 'écrit';
-let selectedIndex = null;
-let pressTimer = null;
-let isScrolling = false;
+let items = JSON.parse(localStorage.getItem('notes_v2')) || [];
+let currentType = 'note';
 
-// Variables pour les médias
-let currentMediaData = null;
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-
-window.addEventListener('touchmove', () => { isScrolling = true; clearTimeout(pressTimer); }, {passive: true});
-window.addEventListener('touchstart', () => { isScrolling = false; }, {passive: true});
-
-function render(data = items) {
-    const container = document.getElementById('container');
-    if (data.length === 0) {
-        container.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 50px; color: var(--text-dim); font-family: var(--dot-font); font-size:12px;">AUCUNE NOTE</div>`;
-        return;
-    }
-    container.innerHTML = data.map((item, i) => {
-        let mediaHtml = '';
-        if (item.type === 'image' && item.media) {
-            mediaHtml = `<img src="${item.media}" class="card-image" alt="Note image">`;
-        } else if (item.type === 'vocale' && item.media) {
-            mediaHtml = `<audio src="${item.media}" class="card-audio" controls></audio>`;
-        }
-
-        const spanClass = (item.type === 'image' || item.type === 'vocale') ? 'style="grid-column: span 2;"' : '';
-
-        return `
-        <div class="card ${item.pinned ? 'pinned' : ''}" ${spanClass}
-             onmousedown="handlePressStart(${i}, event)" onmouseup="handlePressEnd(event)" 
-             ontouchstart="handlePressStart(${i}, event)" ontouchend="handlePressEnd(event)">
-            ${item.pinned ? '<div class="pin-dot"></div>' : ''}
-            <div>
-                <div class="card-type">${item.type}</div>
-                ${item.title ? `<div class="card-title">${item.title}</div>` : ''}
-                ${mediaHtml}
-                ${item.content ? `<div class="card-content">${item.content}</div>` : ''}
-            </div>
-            <div class="card-date">${item.date}</div>
-        </div>
-        `;
-    }).join('');
+function toggleChoice(show) {
+  document.getElementById('choice-popup').style.display = show ? 'flex' : 'none';
 }
 
-// --- GESTION APPUI LONG ---
-function handlePressStart(index, e) {
-    if(e.target.tagName.toLowerCase() === 'audio' || e.target.tagName.toLowerCase() === 'input') return;
-    if (isScrolling) return;
-    const card = e.currentTarget;
-    card.classList.add('pressing');
-    pressTimer = setTimeout(() => {
-        card.classList.remove('pressing');
-        openContextMenu(index);
-    }, 600);
+function toggleSettings(show) {
+  document.getElementById('settings-drawer').classList.toggle('active', show);
+  document.getElementById('overlay').style.display = show ? 'block' : 'none';
 }
-
-function handlePressEnd(e) {
-    clearTimeout(pressTimer);
-    e.currentTarget.classList.remove('pressing');
-}
-
-function openContextMenu(index) {
-    selectedIndex = index;
-    const isPinned = items[index].pinned;
-    document.getElementById('pin-text').innerHTML = isPinned ? `<span class="material-icons-round">push_pin</span> Détacher` : `<span class="material-icons-round">push_pin</span> Épingler`;
-    document.getElementById('context-overlay').style.display = 'flex';
-    if (window.navigator.vibrate) window.navigator.vibrate(50);
-}
-
-function closeContextMenu() { document.getElementById('context-overlay').style.display = 'none'; }
-
-function handleMenuAction(action) {
-    closeContextMenu();
-    if (action === 'delete') {
-        items.splice(selectedIndex, 1);
-    } else if (action === 'pin') {
-        items[selectedIndex].pinned = !items[selectedIndex].pinned;
-        items.sort((a, b) => b.pinned - a.pinned);
-    }
-    saveAndRefresh();
-}
-
-// --- HEADER MENU (EXPORT / IMPORT) ---
-function openHeaderMenu() { document.getElementById('header-menu-overlay').style.display = 'flex'; }
-function closeHeaderMenu() { document.getElementById('header-menu-overlay').style.display = 'none'; }
-
-async function exportData() {
-    closeHeaderMenu();
-    if (items.length === 0) return alert("Aucune donnée à sauvegarder.");
-
-    const dataStr = JSON.stringify(items);
-
-    // 1. On essaie d'abord d'utiliser le menu de partage du téléphone (Le plus fiable sur mobile)
-    if (navigator.share) {
-        try {
-            const file = new File([dataStr], 'nano_banana_backup.json', { type: 'application/json' });
-            await navigator.share({
-                title: 'Sauvegarde Nano Banana',
-                files: [file]
-            });
-            return; // Si ça marche, on s'arrête ici
-        } catch (err) {
-            console.log("Le partage de fichier a échoué, essai du partage de texte...");
-        }
-    }
-
-    // 2. Méthode de secours : Téléchargement classique (Pour ordinateur ou vieux navigateurs)
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    
-    const date = new Date();
-    const formattedDate = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
-    a.download = `memoire_backup_${formattedDate}.json`;
-    
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-    
-    const dataStr = JSON.stringify(items);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement("a");
-    a.href = url;
-    
-    // Génère un nom de fichier avec la date du jour
-    const date = new Date();
-    const formattedDate = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
-    a.download = `memoire_backup_${formattedDate}.json`;
-    
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-function triggerImport() {
-    closeHeaderMenu();
-    document.getElementById('import-input').click();
-}
-
-function importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const importedItems = JSON.parse(e.target.result);
-            if (Array.isArray(importedItems)) {
-                if (confirm("Attention : L'importation remplacera toutes vos notes actuelles. Voulez-vous continuer ?")) {
-                    items = importedItems;
-                    saveAndRefresh();
-                    alert("Sauvegarde importée avec succès !");
-                }
-            } else {
-                alert("Le format du fichier n'est pas valide.");
-            }
-        } catch (error) {
-            alert("Erreur lors de la lecture du fichier de sauvegarde.");
-        }
-        event.target.value = ''; // Réinitialise l'input
-    };
-    reader.readAsText(file);
-}
-
-// --- GESTION DES FICHIERS ET MEDIAS ---
-function handleImageClick() {
-    toggleChoice(false);
-    document.getElementById('image-input').click();
-}
-
-document.getElementById('image-input').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        currentMediaData = event.target.result;
-        openForm('image');
-    };
-    reader.readAsDataURL(file);
-});
-
-// --- ENREGISTREMENT AUDIO ---
-async function toggleRecording() {
-    const btn = document.getElementById('record-btn');
-    
-    if (!isRecording) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            
-            mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
-            
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    currentMediaData = event.target.result;
-                    const audioPreview = document.getElementById('audio-preview');
-                    audioPreview.src = currentMediaData;
-                    audioPreview.style.display = 'block';
-                };
-                reader.readAsDataURL(audioBlob);
-                stream.getTracks().forEach(track => track.stop());
-            };
-            
-            mediaRecorder.start();
-            isRecording = true;
-            btn.classList.add('recording');
-            btn.innerHTML = `<span class="material-icons-round">stop</span> Arrêter l'enregistrement`;
-        } catch (err) {
-            alert("Accès au microphone refusé ou introuvable.");
-        }
-    } else {
-        mediaRecorder.stop();
-        isRecording = false;
-        btn.classList.remove('recording');
-        btn.innerHTML = `<span class="material-icons-round">mic</span> Réenregistrer`;
-    }
-}
-
-// --- FORMULAIRE ---
-function toggleChoice(show) { document.getElementById('choice-popup').style.display = show ? 'flex' : 'none'; }
 
 function openForm(type) {
-    currentType = type;
-    toggleChoice(false);
-    
-    document.getElementById('title').value = '';
-    document.getElementById('content').value = '';
-    document.getElementById('preview-img').style.display = 'none';
-    document.getElementById('record-btn').style.display = 'none';
-    document.getElementById('audio-preview').style.display = 'none';
-    if(type !== 'image' && type !== 'vocale') currentMediaData = null;
-    
-    if (type === 'image' && currentMediaData) {
-        document.getElementById('preview-img').src = currentMediaData;
-        document.getElementById('preview-img').style.display = 'block';
-        document.getElementById('content').placeholder = "Ajouter une légende...";
-    } else if (type === 'vocale') {
-        document.getElementById('record-btn').style.display = 'flex';
-        document.getElementById('record-btn').innerHTML = `<span class="material-icons-round">mic</span> Démarrer l'enregistrement`;
-        document.getElementById('content').placeholder = "Notes sur cet audio...";
-        isRecording = false;
-    } else {
-        document.getElementById('content').placeholder = "Contenu de la note...";
-    }
-
-    document.getElementById('form-title').innerText = "Nouveau " + type;
-    document.getElementById('modal-overlay').style.display = 'flex';
-    setTimeout(() => document.getElementById('modal-overlay').classList.add('active'), 10);
+  currentType = type;
+  toggleChoice(false);
+  document.getElementById('form-title').innerText = "Ajouter " + type;
+  document.getElementById('title').value = "";
+  document.getElementById('content').value = "";
+  document.getElementById('modal-overlay').classList.add('active');
 }
 
 function closeForm() {
-    if(isRecording && mediaRecorder) mediaRecorder.stop();
-    document.getElementById('modal-overlay').classList.remove('active');
-    setTimeout(() => document.getElementById('modal-overlay').style.display = 'none', 300);
-    document.getElementById('image-input').value = '';
+  document.getElementById('modal-overlay').classList.remove('active');
 }
 
 function save() {
-    const title = document.getElementById('title').value.trim();
-    const content = document.getElementById('content').value.trim();
-    
-    if (!title && !content && !currentMediaData) return alert("La note est vide !");
-    if (currentType === 'vocale' && !currentMediaData) return alert("Veuillez enregistrer un audio d'abord.");
+  const title = document.getElementById('title').value.trim();
+  const content = document.getElementById('content').value.trim();
+  
+  if(!title && !content) return alert("Note vide !");
 
-    const now = new Date();
-    const dateStr = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth()+1).toString().padStart(2, '0')}.${now.getFullYear().toString().slice(-2)}`;
-
-    items.unshift({ title, content, type: currentType, date: dateStr, pinned: false, media: currentMediaData });
-    
-    saveAndRefresh();
-    closeForm();
+  items.unshift({ 
+    title: title || "Sans titre", 
+    content: content, 
+    type: currentType, 
+    date: new Date().toLocaleDateString('fr-FR') 
+  });
+  
+  localStorage.setItem('notes_v2', JSON.stringify(items));
+  render();
+  closeForm();
 }
 
-function saveAndRefresh() {
-    try {
-        localStorage.setItem('nothing_media_v1', JSON.stringify(items));
-        render();
-    } catch (e) {
-        if (e.name === 'QuotaExceededError') {
-            alert("L'espace de stockage est plein ! Supprimez d'anciennes images ou faites un export de sauvegarde.");
-            items.shift();
-        }
-    }
+function render(data = items) {
+  const container = document.getElementById('container');
+  if(data.length === 0) {
+      container.innerHTML = `<div style="text-align:center; grid-column:1/-1; padding:40px; opacity:0.5">Aucun souvenir ici.</div>`;
+      return;
+  }
+  container.innerHTML = data.map((item, i) => `
+    <div class="card fade-in" style="animation-delay: ${i * 0.05}s">
+      <div style="font-size:10px; color:var(--md-primary); font-weight:800; text-transform:uppercase; margin-bottom:6px; letter-spacing:1px">${item.type}</div>
+      <div style="font-family:'Nunito'; font-weight:700; font-size:17px">${item.title}</div>
+      <div style="font-size:14px; color:#49454F; margin-top:8px; line-height:1.5">${item.content}</div>
+      <div style="margin-top:16px; font-size:10px; opacity:0.4; font-weight:600">${item.date}</div>
+    </div>
+  `).join('');
 }
 
 function search(q) {
-    const filtered = items.filter(i => 
-        (i.title && i.title.toLowerCase().includes(q.toLowerCase())) || 
-        (i.content && i.content.toLowerCase().includes(q.toLowerCase()))
-    );
-    render(filtered);
+  const filtered = items.filter(i => 
+    i.title.toLowerCase().includes(q.toLowerCase()) || 
+    i.content.toLowerCase().includes(q.toLowerCase())
+  );
+  render(filtered);
+}
+
+// --- FONCTION EXPORT / PARTAGE CORRIGÉE ---
+async function exportData() {
+  toggleSettings(false);
+  if (items.length === 0) return alert("Rien à exporter.");
+
+  const dataStr = JSON.stringify(items, null, 2);
+
+  // Tentative de partage natif (Mobile / Median.co)
+  if (navigator.share) {
+    try {
+      const file = new File([dataStr], 'sauvegarde_memoire.json', { type: 'application/json' });
+      await navigator.share({
+        title: 'Ma Sauvegarde Mémoire',
+        text: 'Voici mes notes sauvegardées.',
+        files: [file]
+      });
+    } catch (err) {
+      // Secours : partage de texte si le partage de fichier échoue
+      navigator.share({
+        title: 'Sauvegarde Mémoire',
+        text: dataStr
+      });
+    }
+  } else {
+    // Secours PC : Téléchargement direct
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sauvegarde_memoire.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 }
 
 render();
