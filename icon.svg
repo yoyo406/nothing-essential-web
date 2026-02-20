@@ -1,7 +1,0 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="120" fill="black"/>
-  <circle cx="256" cy="256" r="140" stroke="white" stroke-width="2" stroke-dasharray="1 12" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="110" stroke="#333" stroke-width="2" stroke-dasharray="1 10" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="25" fill="#EB4432"/>
-  <text x="50%" y="420" text-anchor="middle" fill="white" font-family="monospace" font-size="24" letter-spacing="8" opacity="0.5">MEMOIRE</text>
-</svg>
