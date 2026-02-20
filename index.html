@@ -63,6 +63,8 @@ body.light-theme .card.pressing { background: #EFEFEF; }
 .card-type { font-family: var(--dot-font); font-size: 9px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
 .card-title { font-weight: 600; font-size: 15px; color: var(--text-main); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-content { font-size: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card-content.list-content { display: block; -webkit-line-clamp: unset; padding-left: 16px; }
+.card-content.list-content li { margin-bottom: 4px; }
 .card-image { width: 100%; height: 80px; object-fit: cover; border-radius: 12px; margin-bottom: 8px; }
 .card-audio { width: 100%; height: 30px; margin-top: 8px; }
 body:not(.light-theme) .card-audio { filter: invert(1); }
@@ -77,6 +79,7 @@ body.light-theme .dial-item { background: #FFFFFF; border-color: #E0E0E0; }
 .popup-overlay.active .dial-item:nth-child(2) { transition-delay: 0.15s; }
 .popup-overlay.active .dial-item:nth-child(3) { transition-delay: 0.1s; }
 .popup-overlay.active .dial-item:nth-child(4) { transition-delay: 0.05s; }
+.popup-overlay.active .dial-item:nth-child(5) { transition-delay: 0s; }
 .dial-item .dial-label { font-family: var(--dot-font); font-size: 13px; text-transform: uppercase; color: var(--text-main); }
 .dial-item .material-icons-round { color: var(--text-main); }
 
@@ -189,6 +192,10 @@ body.light-theme .save-btn { background: #111111; color: white; }
       <span class="material-icons-round" style="color:var(--accent-red)">mic</span>
       <span class="dial-label">Vocale</span>
     </div>
+    <div class="dial-item" onclick="openForm('liste')">
+      <span class="material-icons-round">checklist</span>
+      <span class="dial-label">Liste</span>
+    </div>
   </div>
 </div>
 
@@ -290,7 +297,7 @@ body.light-theme .save-btn { background: #111111; color: white; }
       <div class="tip-card">
         <div class="tip-card-icon">✏️</div>
         <div><div class="tip-card-title">Créer une note</div>
-        <div class="tip-card-body">Appuie sur <strong>+</strong> en bas à droite pour choisir le type : écrit, lien, image ou vocale.</div></div>
+        <div class="tip-card-body">Appuie sur <strong>+</strong> en bas à droite pour choisir le type : écrit, lien, image, vocale ou liste.</div></div>
         <div class="tip-card-tag">Démarrer</div>
       </div>
       <div class="tip-card">
@@ -392,6 +399,14 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+function renderListContent(content = '', textColor = 'var(--text-main)') {
+  const entries = content.split('\n').map(line => line.trim()).filter(Boolean);
+  if (entries.length === 0) {
+    return `<div class="card-content" style="color:${textColor}">Liste vide</div>`;
+  }
+  return `<ul class="card-content list-content" style="color:${textColor}">${entries.map(entry => `<li>${escapeHtml(entry)}</li>`).join('')}</ul>`;
+}
+
 // Couleur par défaut du thème actuel
 function defaultColor() {
   return isCurrentlyDark() ? '#FFFFFF' : '#111111';
@@ -416,7 +431,9 @@ function render(data = items) {
           ${item.title ? `<div class="card-title">${escapeHtml(item.title)}</div>` : ''}
           ${item.type === 'image' && item.media ? `<img src="${item.media}" class="card-image" alt="">` : ''}
           ${item.type === 'vocale' && item.media ? `<audio src="${item.media}" class="card-audio" controls onclick="event.stopPropagation()"></audio>` : ''}
-          <div class="card-content" style="color:${textColor}">${escapeHtml(item.content || '')}</div>
+          ${item.type === 'liste'
+            ? renderListContent(item.content || '', textColor)
+            : `<div class="card-content" style="color:${textColor}">${escapeHtml(item.content || '')}</div>`}
         </div>
         <div style="font-family:var(--dot-font); font-size:8px; color:var(--text-dim); margin-top:10px">${escapeHtml(item.date || '')}</div>
       </div>`;
@@ -452,9 +469,11 @@ function setTextColor(color) {
 // ── LAYOUT MODAL selon le type ──
 function applyModalLayout(type) {
   const vocale = type === 'vocale';
+  const liste = type === 'liste';
   document.getElementById('note-content').style.display  = vocale ? 'none' : 'block';
   document.getElementById('color-picker-ui').style.display = vocale ? 'none' : 'flex';
   document.getElementById('record-btn').style.display    = vocale ? 'block' : 'none';
+  document.getElementById('note-content').placeholder = liste ? 'Une tâche par ligne...' : 'Contenu...';
 }
 
 // ── RÉINITIALISATION MODAL ──
