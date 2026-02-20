@@ -28,25 +28,14 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: 120px; overflow-x: hidden; }
 
-/* --- HEADER & BARRE DE RECHERCHE (FIXÉE) --- */
+/* --- HEADER & RECHERCHE --- */
 .app-header { position: sticky; top: 0; z-index: 1000; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .logo { font-family: var(--dot-font); font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; }
 
 .search-container { padding: 16px 20px 0 20px; background: var(--bg); }
-.search-bar { 
-    background: #111111; 
-    border: 1px solid #222222; 
-    border-radius: 24px; 
-    padding: 14px 20px; 
-    display: flex; 
-    align-items: center; 
-    gap: 12px;
-}
+.search-bar { background: #111111; border: 1px solid #222222; border-radius: 24px; padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
 .search-bar .material-icons-round { color: #555555; font-size: 20px; }
-.search-bar input { 
-    background: none; border: none; outline: none; color: #FFFFFF; 
-    width: 100%; font-size: 15px; font-family: 'Inter', sans-serif;
-}
+.search-bar input { background: none; border: none; outline: none; color: #FFFFFF; width: 100%; font-size: 15px; font-family: 'Inter', sans-serif; }
 .search-bar input::placeholder { color: #444444; }
 
 /* --- GRID & CARDS --- */
@@ -62,15 +51,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .card-audio { width: 100%; height: 30px; margin-top: 8px; filter: invert(1); }
 
 /* --- POPUP SPEED DIAL --- */
-.popup-overlay { 
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    z-index: 2000; display: none; flex-direction: column; align-items: flex-end; justify-content: flex-end; padding: 30px 24px 110px 24px; 
-}
+.popup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 2000; display: none; flex-direction: column; align-items: flex-end; justify-content: flex-end; padding: 30px 24px 110px 24px; }
 .speed-dial-list { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; width: 100%; }
-.dial-item { 
-    background: #222; border-radius: 100px; padding: 12px 24px; display: flex; align-items: center; gap: 16px; 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateY(20px); border: 1px solid #333;
-}
+.dial-item { background: #222; border-radius: 100px; padding: 12px 24px; display: flex; align-items: center; gap: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; transform: translateY(20px); border: 1px solid #333; }
 .popup-overlay.active .dial-item { opacity: 1; transform: translateY(0); }
 .popup-overlay.active .dial-item:nth-child(1) { transition-delay: 0.2s; }
 .popup-overlay.active .dial-item:nth-child(2) { transition-delay: 0.15s; }
@@ -79,30 +62,41 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 .dial-item span { font-family: var(--dot-font); font-size: 13px; text-transform: uppercase; color: white; letter-spacing: 1px; }
 .dial-item .material-icons-round { font-size: 22px; color: white; }
 
-/* --- FAB (BOUTON +) --- */
+/* --- FAB --- */
 .fab-container { position: fixed; bottom: 30px; right: 24px; z-index: 2500; display: flex; flex-direction: column; align-items: flex-end; }
-.fab { 
-    background: white; color: black; width: 64px; height: 64px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-    transition: transform 0.3s ease;
-}
+.fab { background: white; color: black; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: transform 0.3s ease; }
 .fab.active { transform: rotate(45deg); background: var(--accent-red); color: white; }
 
-/* --- MODALS & MENUS --- */
+/* --- MODAL FORMULAIRE (CORRIGÉ) --- */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; display: none; align-items: flex-end; }
+.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transition: transform 0.3s ease-out; transform: translateY(100%); display: flex; flex-direction: column; }
+.modal-overlay.active .modal-sheet { transform: translateY(0); }
+
+/* Fix des zones de saisie */
+.modal-sheet input[type="text"], 
+.modal-sheet textarea { 
+    width: 100%; 
+    background: #1a1a1a; 
+    border: 1px solid var(--border); 
+    border-radius: 16px; 
+    padding: 16px; 
+    color: white; 
+    margin-bottom: 12px; 
+    outline: none; 
+    font-size: 16px; 
+    font-family: 'Inter', sans-serif;
+    display: block; /* Force l'empilement vertical */
+}
+
+.save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); margin-top: 10px; }
+#record-btn { width: 100%; padding: 20px; background: var(--accent-red); color: white; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
+
+/* --- MENUS --- */
 .header-menu-overlay { position: fixed; inset: 0; z-index: 3000; display: none; justify-content: flex-end; align-items: flex-start; padding: 60px 20px; }
 .context-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 3000; display: none; align-items: center; justify-content: center; }
 .menu-box { background: #1a1a1a; border: 1px solid var(--border); border-radius: 28px; width: 240px; padding: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
 .menu-item { padding: 15px; display: flex; align-items: center; gap: 12px; color: white; font-size: 14px; border-radius: 20px; }
 .menu-item.delete { color: var(--accent-red); }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2500; display: none; align-items: flex-end; }
-.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transition: transform 0.3s ease-out; transform: translateY(100%); }
-.modal-overlay.active .modal-sheet { transform: translateY(0); }
-
-.save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); margin-top: 10px; }
-#record-btn { width: 100%; padding: 20px; background: var(--accent-red); color: white; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); display: none; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
-#record-btn.recording { animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 </style>
 </head>
 <body>
@@ -138,7 +132,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-sheet">
-    <div style="font-family: var(--dot-font); margin-bottom: 15px; font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Nouveau</div>
+    <div style="font-family: var(--dot-font); margin-bottom: 15px; font-size: 10px; color: var(--text-dim); text-transform: uppercase;">NOUVEAU</div>
     <input type="text" id="title" placeholder="Titre (optionnel)">
     <img id="preview-img" style="width:100%; max-height:180px; object-fit:contain; display:none; border-radius:16px; margin-bottom:12px; border: 1px solid var(--border);">
     <button id="record-btn" onclick="toggleRecording()"><span class="material-icons-round">mic</span> Démarrer</button>
