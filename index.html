@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Mémoire - Nothing Edition</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
 :root {
@@ -18,76 +18,58 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); overflow-x: hidden; padding-bottom: 100px; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text-main); padding-bottom: 100px; touch-action: manipulation; }
 
-/* ── HEADER & SEARCH ── */
+/* ── HEADER ── */
 .app-header { position: sticky; top: 0; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.logo { font-family: var(--dot-font); font-weight: 700; font-size: 20px; text-transform: uppercase; }
-.search-container { padding: 16px 20px; }
-.search-bar { background: var(--card); border: 1px solid var(--border); border-radius: 100px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; }
-.search-bar input { background: none; border: none; outline: none; color: white; width: 100%; font-size: 14px; }
+.logo { font-family: var(--dot-font); font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
 
 /* ── GRID & CARDS ── */
-.cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 20px; }
+.cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 20px; }
 .card {
   background: var(--card); border-radius: 28px; padding: 20px; border: 1px solid var(--border);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), background 0.2s;
+  transition: transform 0.2s, background 0.2s;
   display: flex; flex-direction: column; justify-content: space-between; min-height: 160px;
-  position: relative; overflow: hidden;
+  position: relative;
 }
-.card:active { transform: scale(0.96); background: #1a1a1a; }
-.card.pinned { border-color: var(--accent-red); }
-.pin-dot { position: absolute; top: 15px; right: 15px; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%; }
+/* Animation quand on appuie */
+.card.pressing { transform: scale(0.92); background: #222; }
+.card.pinned { border: 1px solid #444; }
+.pin-dot { position: absolute; top: 15px; right: 15px; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%; box-shadow: 0 0 10px var(--accent-red); }
 
 .card-type { font-family: var(--dot-font); font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px; }
-.card-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; }
+.card-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; color: white; }
 .card-content { font-size: 13px; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.card-date { font-family: var(--dot-font); font-size: 9px; color: var(--text-dim); margin-top: 15px; }
 
-/* ── CONTEXT MENU (LONG PRESS) ── */
-.context-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
-  z-index: 2000; display: none; align-items: center; justify-content: center;
-}
-.context-menu {
-  background: #1a1a1a; border: 1px solid var(--border); border-radius: 24px;
-  width: 200px; padding: 8px; animation: pop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.menu-item {
-  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
-  color: white; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 16px;
-}
+/* ── CONTEXT MENU ── */
+.context-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+.context-menu { background: #1a1a1a; border: 1px solid var(--border); border-radius: 28px; width: 220px; padding: 10px; animation: pop 0.2s ease-out; }
+@keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.menu-item { padding: 15px; display: flex; align-items: center; gap: 12px; color: white; font-size: 15px; border-radius: 20px; transition: background 0.2s; }
 .menu-item:active { background: #333; }
 .menu-item.delete { color: var(--accent-red); }
 
-/* ── MODALS & FAB ── */
-#choice-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 1000; display: none; align-items: center; justify-content: center; }
-.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 90%; max-width: 360px; }
-.choice-item { background: var(--card); border: 1px solid var(--border); border-radius: 32px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-.choice-item.close { grid-column: span 2; aspect-ratio: auto; padding: 15px; border-radius: 100px; margin-top: 10px; background: white; color: black; font-family: var(--dot-font); text-align: center; }
+/* ── MODALS ── */
+#choice-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; align-items: center; justify-content: center; }
+.choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 85%; }
+.choice-item { background: var(--card); border: 1px solid var(--border); border-radius: 32px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.choice-item span { font-family: var(--dot-font); font-size: 11px; text-transform: uppercase; }
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1100; display: none; align-items: flex-end; }
-.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 24px; border-top: 1px solid var(--border); }
-.modal-sheet input, .modal-sheet textarea { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 16px; padding: 16px; color: white; margin-bottom: 12px; outline: none; }
+.modal-sheet { background: var(--card); width: 100%; border-radius: 32px 32px 0 0; padding: 30px 20px; border-top: 1px solid var(--border); transform: translateY(100%); transition: transform 0.3s ease-out; }
+.modal-sheet.active { transform: translateY(0); }
+.modal-sheet input, .modal-sheet textarea { width: 100%; background: #1a1a1a; border: 1px solid var(--border); border-radius: 16px; padding: 16px; color: white; margin-bottom: 12px; outline: none; font-size: 16px; }
 .save-btn { width: 100%; padding: 18px; background: white; color: black; border: none; border-radius: 100px; font-weight: 700; font-family: var(--dot-font); }
 
-.fab { position: fixed; bottom: 30px; right: 24px; background: white; color: black; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 200; }
+.fab { position: fixed; bottom: 30px; right: 24px; background: white; color: black; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 200; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="logo">Mémoire</div>
-  <span class="material-icons-round">more_vert</span>
+  <div class="logo">MÉMOIRE.</div>
+  <span class="material-icons-round" style="color:var(--text-dim)">search</span>
 </header>
-
-<div class="search-container">
-    <div class="search-bar">
-        <span class="material-icons-round" style="color:var(--text-dim)">search</span>
-        <input type="text" placeholder="Rechercher..." oninput="search(this.value)">
-    </div>
-</div>
 
 <div class="cards-grid" id="container"></div>
 
@@ -95,62 +77,82 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
   <span class="material-icons-round" style="font-size: 32px;">add</span>
 </div>
 
-<div class="context-overlay" id="context-overlay" onclick="closeContextMenu()">
-    <div class="context-menu" onclick="event.stopPropagation()">
-        <div class="menu-item" onclick="handleMenuAction('edit')">
-            <span class="material-icons-round">edit</span> Modifier
-        </div>
-        <div class="menu-item" onclick="handleMenuAction('pin')">
-            <span class="material-icons-round">push_pin</span> Épingler
-        </div>
-        <div class="menu-item delete" onclick="handleMenuAction('delete')">
-            <span class="material-icons-round">delete</span> Supprimer
-        </div>
-    </div>
-</div>
-
-<div id="choice-popup">
-  <div class="choice-grid">
-    <div class="choice-item" onclick="openForm('écrit')"><span class="material-icons-round">description</span><span>Écrit</span></div>
+<div id="choice-popup" onclick="toggleChoice(false)">
+  <div class="choice-grid" onclick="event.stopPropagation()">
+    <div class="choice-item" onclick="openForm('écrit')"><span class="material-icons-round">edit</span><span>Écrit</span></div>
     <div class="choice-item" onclick="openForm('lien')"><span class="material-icons-round">link</span><span>Lien</span></div>
     <div class="choice-item" onclick="openForm('image')"><span class="material-icons-round">image</span><span>Image</span></div>
-    <div class="choice-item" onclick="openForm('vocale')"><span class="material-icons-round" style="color: var(--accent-red)">mic</span><span>Vocale</span></div>
-    <div class="choice-item close" onclick="toggleChoice(false)">FERMER</div>
+    <div class="choice-item" onclick="openForm('vocale')"><span class="material-icons-round" style="color:var(--accent-red)">mic</span><span>Vocale</span></div>
   </div>
 </div>
 
+<div class="context-overlay" id="context-overlay" onclick="closeContextMenu()">
+    <div class="context-menu" onclick="event.stopPropagation()">
+        <div class="menu-item" onclick="handleMenuAction('edit')"><span class="material-icons-round">edit</span> Modifier</div>
+        <div class="menu-item" onclick="handleMenuAction('pin')"><span class="material-icons-round">push_pin</span> Épingler</div>
+        <div class="menu-item delete" onclick="handleMenuAction('delete')"><span class="material-icons-round">delete_outline</span> Supprimer</div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="modal-overlay">
-  <div class="modal-sheet">
-    <div id="form-title" style="font-family: var(--dot-font); margin-bottom: 20px; text-transform: uppercase; color: var(--text-dim)">Nouveau</div>
+  <div class="modal-sheet" id="modal-sheet">
+    <div id="form-title" style="font-family: var(--dot-font); margin-bottom: 20px; text-transform: uppercase; font-size: 12px; color: var(--text-dim)">Nouveau</div>
     <input type="text" id="title" placeholder="Titre">
-    <textarea id="content" placeholder="Contenu..." rows="4"></textarea>
+    <textarea id="content" placeholder="Ton message..." rows="4"></textarea>
     <button class="save-btn" onclick="save()">ENREGISTRER</button>
-    <button onclick="closeForm()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px">ANNULER</button>
+    <button onclick="closeForm()" style="width:100%; background:none; border:none; color:var(--text-dim); margin-top:15px; font-size: 12px; font-family: var(--dot-font)">ANNULER</button>
   </div>
 </div>
 
 <script>
-let items = JSON.parse(localStorage.getItem('nothing_notes_v2')) || [];
+// Données de démo pour voir le résultat immédiatement
+let items = JSON.parse(localStorage.getItem('nothing_v3')) || [
+    { title: "Long press ici", content: "Reste appuyé 0.5s pour voir le menu !", type: "écrit", date: "20.02.26", pinned: true },
+    { title: "Design Nothing", content: "Noir absolu et police matricielle.", type: "lien", date: "20.02.26", pinned: false }
+];
 let currentType = 'écrit';
 let selectedIndex = null;
 let pressTimer = null;
 
-// --- GESTION DU LONG PRESS (1 seconde) ---
-function startPress(index) {
-    pressTimer = setTimeout(() => {
-        openContextMenu(index);
-    }, 1000);
+function render() {
+    const container = document.getElementById('container');
+    container.innerHTML = items.map((item, i) => `
+        <div class="card ${item.pinned ? 'pinned' : ''}" 
+             onmousedown="handlePressStart(event, ${i})" 
+             onmouseup="handlePressEnd()" 
+             onmouseleave="handlePressEnd()"
+             ontouchstart="handlePressStart(event, ${i})" 
+             ontouchend="handlePressEnd()">
+            ${item.pinned ? '<div class="pin-dot"></div>' : ''}
+            <div>
+                <div class="card-type">${item.type}</div>
+                <div class="card-title">${item.title || 'Sans titre'}</div>
+                <div class="card-content">${item.content}</div>
+            </div>
+        </div>
+    `).join('');
 }
 
-function cancelPress() {
+// --- LOGIQUE D'APPUI LONG ---
+function handlePressStart(e, index) {
+    const card = e.currentTarget;
+    card.classList.add('pressing');
+    
+    pressTimer = setTimeout(() => {
+        card.classList.remove('pressing');
+        openContextMenu(index);
+    }, 500); // 500ms c'est le standard
+}
+
+function handlePressEnd() {
     clearTimeout(pressTimer);
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('pressing'));
 }
 
 function openContextMenu(index) {
     selectedIndex = index;
     document.getElementById('context-overlay').style.display = 'flex';
-    // Vibration légère si supportée
-    if (window.navigator.vibrate) window.navigator.vibrate(50);
+    if (window.navigator.vibrate) window.navigator.vibrate(40);
 }
 
 function closeContextMenu() {
@@ -163,20 +165,17 @@ function handleMenuAction(action) {
         items.splice(selectedIndex, 1);
     } else if (action === 'pin') {
         items[selectedIndex].pinned = !items[selectedIndex].pinned;
-        // Trier pour mettre les épinglés en haut
         items.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
     } else if (action === 'edit') {
         const item = items[selectedIndex];
         openForm(item.type, true);
         document.getElementById('title').value = item.title;
         document.getElementById('content').value = item.content;
-        return; // On ne sauvegarde pas tout de suite
+        return;
     }
-    saveToStorage();
-    render();
+    saveData();
 }
 
-// --- LOGIQUE CORE ---
 function toggleChoice(show) { document.getElementById('choice-popup').style.display = show ? 'flex' : 'none'; }
 
 function openForm(type, isEdit = false) {
@@ -189,48 +188,29 @@ function openForm(type, isEdit = false) {
     toggleChoice(false);
     document.getElementById('form-title').innerText = isEdit ? "Modifier " + type : "Ajouter " + type;
     document.getElementById('modal-overlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('modal-sheet').classList.add('active'), 50);
 }
 
-function closeForm() { document.getElementById('modal-overlay').style.display = 'none'; }
+function closeForm() {
+    document.getElementById('modal-sheet').classList.remove('active');
+    setTimeout(() => document.getElementById('modal-overlay').style.display = 'none', 300);
+}
 
 function save() {
     const title = document.getElementById('title').value;
     const content = document.getElementById('content').value;
-    const date = new Date().toLocaleDateString('fr-FR');
-    
     if (selectedIndex !== null) {
         items[selectedIndex] = { ...items[selectedIndex], title, content };
     } else {
-        items.unshift({ title, content, type: currentType, date, pinned: false });
+        items.unshift({ title, content, type: currentType, date: "Aujourd'hui", pinned: false });
     }
-    
-    saveToStorage();
-    render();
+    saveData();
     closeForm();
 }
 
-function saveToStorage() { localStorage.setItem('nothing_notes_v2', JSON.stringify(items)); }
-
-function render(data = items) {
-    const container = document.getElementById('container');
-    container.innerHTML = data.map((item, i) => `
-        <div class="card ${item.pinned ? 'pinned' : ''}" 
-             onmousedown="startPress(${i})" onmouseup="cancelPress()" onmouseleave="cancelPress()"
-             ontouchstart="startPress(${i})" ontouchend="cancelPress()">
-            ${item.pinned ? '<div class="pin-dot"></div>' : ''}
-            <div>
-                <div class="card-type">${item.type}</div>
-                <div class="card-title">${item.title || 'Sans titre'}</div>
-                <div class="card-content">${item.content}</div>
-            </div>
-            <div class="card-date">${item.date}</div>
-        </div>
-    `).join('');
-}
-
-function search(q) {
-    const f = items.filter(i => i.title.toLowerCase().includes(q.toLowerCase()) || i.content.toLowerCase().includes(q.toLowerCase()));
-    render(f);
+function saveData() {
+    localStorage.setItem('nothing_v3', JSON.stringify(items));
+    render();
 }
 
 render();
