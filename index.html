@@ -114,7 +114,6 @@ body {
   justify-content: space-between;
   position: relative; overflow: hidden; cursor: pointer;
 }
-/* FIX : cartes larges — classe dédiée, pas de style inline */
 .card.wide {
   aspect-ratio: unset;
   min-height: 160px;
@@ -178,9 +177,6 @@ body.dark-theme .card[data-widget="gray"]  { background: #3A3A3A; color: #FFFFFF
 
 /* ═══════════════════════════════════
    NAVBAR
-   FIX PRINCIPAL : on ne touche PAS à font-family
-   pour que Material Icons fonctionne.
-   On utilise un wrapper <span> isolé pour les icônes.
 ═══════════════════════════════════ */
 .navbar {
   position: fixed;
@@ -190,23 +186,20 @@ body.dark-theme .card[data-widget="gray"]  { background: #3A3A3A; color: #FFFFFF
   display: flex; align-items: center; gap: 6px;
   padding: 8px 10px;
   border-radius: 999px;
-  /* Thème sombre par défaut */
   background: rgba(28,28,28,0.82);
   backdrop-filter: blur(20px) saturate(1.6);
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border: 1px solid rgba(255,255,255,0.1);
   box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  transition: background 0.25s, border 0.25s;
 }
-/* FIX navbar thème clair */
 body:not(.dark-theme) .navbar {
   background: rgba(255,255,255,0.92);
   border: 1px solid rgba(0,0,0,0.07);
   box-shadow: 0 8px 30px rgba(0,0,0,0.13);
 }
-/* Cache la navbar quand modal ouverte */
 body.modal-open .navbar { opacity: 0; pointer-events: none; }
 
-/* Boutons navbar — PAS de all:unset pour conserver font-family Material Icons */
 .nav-btn {
   display: flex; align-items: center; justify-content: center;
   width: 46px; height: 46px;
@@ -215,38 +208,38 @@ body.modal-open .navbar { opacity: 0; pointer-events: none; }
   color: rgba(255,255,255,0.58);
   cursor: pointer; padding: 0;
   flex-shrink: 0; flex-grow: 0;
-  /* Isolation : aucun héritage de taille depuis .card */
-  font-size: 0; /* annule héritage, l'icône a sa propre taille */
+  font-size: 0;
   -webkit-appearance: none; appearance: none;
-  transition: transform 0.18s ease, opacity 0.18s;
+  transition: transform 0.18s ease, opacity 0.18s, color 0.18s;
 }
 body:not(.dark-theme) .nav-btn { color: rgba(0,0,0,0.48); }
 .nav-btn:active { transform: scale(0.84); }
 
-/* FIX : icône Material Icons dans la navbar — taille explicite */
 .nav-btn .material-icons-round {
   font-size: 22px;
   line-height: 1;
   display: block;
-  /* Assure la bonne font même après all:unset inexistant */
   font-family: 'Material Icons Round', sans-serif;
-  font-weight: normal;
-  font-style: normal;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
 }
 
-/* Bouton + */
+/* FIX DU BOUTON + (nav-add) */
 .nav-btn.nav-add {
   width: 52px; height: 52px;
-  background: #111111; color: #FFFFFF;
+  /* Couleurs forcées pour la visibilité */
+  background: #111111 !important; 
+  color: #FFFFFF !important;
+  opacity: 1 !important;
   border-radius: 50%;
   box-shadow: 0 4px 14px rgba(0,0,0,0.4);
   transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.25s;
 }
-.nav-btn.nav-add .material-icons-round { font-size: 26px; }
+/* Forcer la couleur de l'icône à l'intérieur pour contrer les règles globales du thème */
+.nav-btn.nav-add .material-icons-round {
+  color: #FFFFFF !important;
+  font-size: 26px;
+}
 .nav-btn.nav-add.active {
-  background: #EB4432;
+  background: #EB4432 !important;
   transform: rotate(45deg) scale(1.05);
 }
 
@@ -264,7 +257,6 @@ body:not(.dark-theme) .nav-btn { color: rgba(0,0,0,0.48); }
   align-items: center; justify-content: flex-end;
   padding-bottom: 116px;
 }
-/* FIX : séparation display / animation en 2 classes distinctes */
 .popup-overlay.visible { display: flex; }
 .speed-dial-list {
   display: flex; flex-direction: column;
@@ -278,14 +270,13 @@ body:not(.dark-theme) .nav-btn { color: rgba(0,0,0,0.48); }
   opacity: 0; transform: translateY(18px);
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   border: none; cursor: pointer; min-width: 185px;
-  font-family: 'Inter', sans-serif; /* évite héritages erronés */
+  font-family: 'Inter', sans-serif;
   transition: opacity 0.22s ease, transform 0.22s ease;
 }
 body.dark-theme .dial-item {
   background: #262626;
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);
 }
-/* FIX nth-child : les items sont enfants de .speed-dial-list, pas de .popup-overlay */
 .popup-overlay.anim .dial-item:nth-child(4) { transition-delay: 0.00s; }
 .popup-overlay.anim .dial-item:nth-child(3) { transition-delay: 0.05s; }
 .popup-overlay.anim .dial-item:nth-child(2) { transition-delay: 0.10s; }
@@ -312,7 +303,6 @@ body.dark-theme .dial-item {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: 10000;
-  /* FIX : une seule classe pour afficher, une pour animer */
   display: none; align-items: flex-end;
 }
 .modal-overlay.visible { display: flex; }
@@ -346,7 +336,6 @@ body.dark-theme .dial-item {
   margin-bottom: 12px; outline: none;
   font-size: 16px; font-family: 'Inter', sans-serif;
   display: block; resize: none;
-  /* FIX : évite que iOS zoom sur focus */
   font-size: max(16px, 1em);
 }
 .modal-sheet input::placeholder,
@@ -368,7 +357,6 @@ body.dark-theme .dial-item {
 }
 #audio-preview { display: none; width: 100%; margin-bottom: 12px; }
 
-/* Palette */
 .color-picker {
   display: flex; gap: 10px;
   margin-bottom: 18px; align-items: center;
@@ -377,13 +365,11 @@ body.dark-theme .dial-item {
   width: 28px; height: 28px;
   border-radius: 50%; border: 2px solid transparent;
   cursor: pointer; flex-shrink: 0;
-  /* FIX : empêche que aspect-ratio de .card s'applique via héritage */
   aspect-ratio: 1 / 1;
 }
 .color-btn.active { outline: 2.5px solid var(--text-main); outline-offset: 2px; }
 .color-btn.white-btn { border-color: #CCCCCC; }
 
-/* Bouton sauvegarder */
 .save-btn {
   width: 100%; padding: 17px;
   background: var(--accent); color: var(--bg);
@@ -392,7 +378,6 @@ body.dark-theme .dial-item {
   cursor: pointer; font-size: 13px; letter-spacing: 1px;
 }
 
-/* Actions édition */
 .action-bar {
   display: flex; justify-content: space-around;
   padding: 14px 0;
@@ -512,12 +497,10 @@ body.dark-theme .dial-item {
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="app-header">
   <div class="logo">Essential <span>Space</span></div>
 </header>
 
-<!-- RECHERCHE -->
 <div class="search-container">
   <div class="search-bar">
     <span class="material-icons-round">search</span>
@@ -525,10 +508,8 @@ body.dark-theme .dial-item {
   </div>
 </div>
 
-<!-- GRILLE -->
 <div class="cards-grid" id="container"></div>
 
-<!-- NAVBAR -->
 <nav class="navbar">
   <button class="nav-btn nav-add" id="main-fab" onclick="togglePopup()" aria-label="Ajouter">
     <span class="material-icons-round">add</span>
@@ -541,7 +522,6 @@ body.dark-theme .dial-item {
   </button>
 </nav>
 
-<!-- SPEED DIAL -->
 <div class="popup-overlay" id="choice-popup" onclick="closePopup()">
   <div class="speed-dial-list" onclick="event.stopPropagation()">
     <div class="dial-item" onclick="openForm('écrit')">
@@ -563,7 +543,6 @@ body.dark-theme .dial-item {
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -598,7 +577,6 @@ body.dark-theme .dial-item {
   </div>
 </div>
 
-<!-- PARAMÈTRES -->
 <div class="settings-overlay" id="settings-overlay">
   <div class="settings-header">
     <span class="settings-title">Paramètres</span>
@@ -613,496 +591,4 @@ body.dark-theme .dial-item {
         <span class="material-icons-round settings-item-icon">palette</span>
         <div style="flex:1">
           <div class="settings-item-label">Thème</div>
-          <div class="settings-item-sub" id="theme-sub-label">Automatique (système)</div>
-        </div>
-      </div>
-      <div class="theme-options">
-        <div class="theme-option" id="theme-opt-dark"  onclick="setThemeMode('dark')">
-          <div class="theme-option-preview preview-dark"></div>Sombre
-        </div>
-        <div class="theme-option" id="theme-opt-light" onclick="setThemeMode('light')">
-          <div class="theme-option-preview preview-light"></div>Clair
-        </div>
-        <div class="theme-option" id="theme-opt-auto"  onclick="setThemeMode('auto')">
-          <div class="theme-option-preview preview-auto"></div>Auto
-        </div>
-      </div>
-    </div>
-    <div class="settings-section-label">Données</div>
-    <div class="settings-item" onclick="exportData()">
-      <span class="material-icons-round settings-item-icon">share</span>
-      <div style="flex:1">
-        <div class="settings-item-label">Exporter les notes</div>
-        <div class="settings-item-sub">Sauvegarde en fichier JSON</div>
-      </div>
-      <span class="material-icons-round settings-item-arrow">chevron_right</span>
-    </div>
-    <div class="settings-item" onclick="triggerImport()">
-      <span class="material-icons-round settings-item-icon">upload</span>
-      <div style="flex:1">
-        <div class="settings-item-label">Importer des notes</div>
-        <div class="settings-item-sub">Restaurer depuis un fichier JSON</div>
-      </div>
-      <span class="material-icons-round settings-item-arrow">chevron_right</span>
-    </div>
-  </div>
-</div>
-
-<!-- ASTUCES -->
-<div class="tips-overlay" id="tips-overlay">
-  <div class="tips-header">
-    <span class="tips-header-title">Astuces</span>
-    <button class="icon-btn" onclick="closeTips()">
-      <span class="material-icons-round">close</span>
-    </button>
-  </div>
-  <div class="tips-scroll">
-    <div class="tips-grid">
-      <div class="tip-card">
-        <div class="tip-card-icon">✏️</div>
-        <div><div class="tip-card-title">Créer une note</div>
-        <div class="tip-card-body">Appuie sur <strong>+</strong> en bas pour choisir le type.</div></div>
-        <div class="tip-card-tag">Démarrer</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">📌</div>
-        <div><div class="tip-card-title">Épingler</div>
-        <div class="tip-card-body">Ouvre une note et appuie sur <strong>Épingler</strong>.</div></div>
-        <div class="tip-card-tag">Organisation</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">🎨</div>
-        <div><div class="tip-card-title">Couleur du texte</div>
-        <div class="tip-card-body">Utilise la palette pour personnaliser ton contenu.</div></div>
-        <div class="tip-card-tag">Style</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">🔍</div>
-        <div><div class="tip-card-title">Recherche</div>
-        <div class="tip-card-body">La barre filtre tes notes en temps réel.</div></div>
-        <div class="tip-card-tag">Recherche</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">🎙️</div>
-        <div><div class="tip-card-title">Note vocale</div>
-        <div class="tip-card-body">Choisis <strong>Vocale</strong> puis MICRO pour enregistrer.</div></div>
-        <div class="tip-card-tag">Audio</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">🖼️</div>
-        <div><div class="tip-card-title">Ajouter une image</div>
-        <div class="tip-card-body">Choisis <strong>Image</strong> pour sélectionner une photo.</div></div>
-        <div class="tip-card-tag">Média</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">💾</div>
-        <div><div class="tip-card-title">Exporter</div>
-        <div class="tip-card-body">Via <strong>Paramètres</strong>, exporte tes notes en JSON.</div></div>
-        <div class="tip-card-tag">Sauvegarde</div>
-      </div>
-      <div class="tip-card">
-        <div class="tip-card-icon">🌗</div>
-        <div><div class="tip-card-title">Thème</div>
-        <div class="tip-card-body">Via <strong>Paramètres</strong>, choisis Sombre, Clair, ou Auto.</div></div>
-        <div class="tip-card-tag">Affichage</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Inputs cachés -->
-<input type="file" id="image-input"  accept="image/*" style="display:none">
-<input type="file" id="import-input" accept=".json"   style="display:none" onchange="importData(event)">
-
-<script>
-'use strict';
-
-/* ═══════════════════════════════
-   ÉTAT
-═══════════════════════════════ */
-let items            = JSON.parse(localStorage.getItem('essential_space_v2')) || [];
-let currentType      = 'écrit';
-let currentMediaData = null;
-let editingIndex     = null;
-let selectedColor    = null;
-let currentQuery     = '';
-let mediaRecorder, audioChunks = [], isRecording = false;
-
-/* ═══════════════════════════════
-   THÈME
-═══════════════════════════════ */
-let themeMode = localStorage.getItem('essential_theme_mode') || 'auto';
-
-function isCurrentlyDark() {
-  return themeMode === 'dark' ||
-    (themeMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-}
-
-function applyTheme() {
-  document.body.classList.toggle('dark-theme', isCurrentlyDark());
-  document.querySelector('meta[name="theme-color"]')
-    .setAttribute('content', isCurrentlyDark() ? '#141414' : '#E8E8E8');
-
-  ['dark','light','auto'].forEach(m => {
-    const el = document.getElementById('theme-opt-' + m);
-    if (el) el.classList.toggle('selected', themeMode === m);
-  });
-  const sub = document.getElementById('theme-sub-label');
-  if (sub) sub.textContent =
-    themeMode === 'dark'  ? 'Thème sombre' :
-    themeMode === 'light' ? 'Thème clair'  : 'Automatique (système)';
-
-  render();
-}
-
-function setThemeMode(mode) {
-  themeMode = mode;
-  localStorage.setItem('essential_theme_mode', mode);
-  applyTheme();
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-  if (themeMode === 'auto') applyTheme();
-});
-
-/* ═══════════════════════════════
-   UTILITAIRES
-═══════════════════════════════ */
-function esc(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-function defaultColor() { return isCurrentlyDark() ? '#FFFFFF' : '#111111'; }
-
-/* ═══════════════════════════════
-   WIDGETS
-═══════════════════════════════ */
-const WIDGET_SEQ = ['dark','red','light','dark','red','light','dark','red'];
-
-function getWidgetTheme(item, index) {
-  if (item.pinned)            return 'red';
-  if (item.type === 'vocale') return 'dark';
-  if (item.type === 'image')  return 'light';
-  return WIDGET_SEQ[index % WIDGET_SEQ.length];
-}
-
-const TYPE_ICON = { écrit:'✦', lien:'↗', image:'□', vocale:'◉' };
-
-/* ═══════════════════════════════
-   RENDU
-═══════════════════════════════ */
-function render() {
-  const container = document.getElementById('container');
-  const data = currentQuery
-    ? items.filter(it => ((it.title||'')+' '+(it.content||'')).toLowerCase().includes(currentQuery))
-    : items;
-
-  if (!data.length) {
-    container.innerHTML = '<div class="empty-state">ESPACE VIDE</div>';
-    return;
-  }
-
-  container.innerHTML = data.map((item, i) => {
-    const wide     = item.type === 'image' || item.type === 'vocale';
-    const theme    = getWidgetTheme(item, i);
-    const txtAttr  = item.color ? `style="color:${item.color}"` : '';
-    const title    = item.title || (item.content ? item.content.slice(0,40) : '');
-    const showBody = !wide && item.title && item.content;
-
-    return `<div class="card${wide?' wide':''}" data-widget="${theme}" onclick="openEdit(${i})">
-  ${item.pinned ? '<div class="pin-dot"></div>' : ''}
-  <div class="card-inner">
-    <div class="card-type">${TYPE_ICON[item.type]||'·'} ${esc(item.type)}</div>
-    ${title ? `<div class="card-title" ${txtAttr}>${esc(title)}</div>` : ''}
-    ${item.type==='image' && item.media ? `<img src="${item.media}" class="card-image" alt="">` : ''}
-    ${item.type==='vocale' && item.media ? `<audio src="${item.media}" class="card-audio" controls onclick="event.stopPropagation()"></audio>` : ''}
-    ${showBody ? `<div class="card-content" ${txtAttr}>${esc(item.content)}</div>` : ''}
-  </div>
-  <div class="card-date">${esc(item.date||'')}</div>
-</div>`;
-  }).join('');
-}
-
-/* ═══════════════════════════════
-   COULEURS
-═══════════════════════════════ */
-const COLOR_BTN = {
-  'default':'cbtn-default','#EB4432':'cbtn-red',
-  '#FFD700':'cbtn-yellow','#00FF7F':'cbtn-green','#00BFFF':'cbtn-blue',
-};
-
-function setTextColor(color) {
-  selectedColor = color === 'default' ? null : color;
-  document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById(COLOR_BTN[color] || 'cbtn-default');
-  if (btn) btn.classList.add('active');
-  const ta = document.getElementById('note-content');
-  if (ta && ta.style.display !== 'none') ta.style.color = selectedColor || defaultColor();
-}
-
-/* ═══════════════════════════════
-   LAYOUT MODAL
-═══════════════════════════════ */
-function applyModalLayout(type) {
-  const v = type === 'vocale';
-  document.getElementById('note-content').style.display    = v ? 'none'  : 'block';
-  document.getElementById('color-picker-ui').style.display = v ? 'none'  : 'flex';
-  document.getElementById('record-btn').style.display      = v ? 'block' : 'none';
-}
-
-function resetModal() {
-  document.getElementById('note-title').value   = '';
-  document.getElementById('note-content').value = '';
-  document.getElementById('preview-img').style.display    = 'none';
-  document.getElementById('preview-img').src              = '';
-  document.getElementById('audio-preview').style.display  = 'none';
-  document.getElementById('audio-preview').src            = '';
-  document.getElementById('edit-actions').style.display   = 'none';
-  document.getElementById('record-btn').style.display     = 'none';
-  document.getElementById('note-content').style.display   = 'block';
-  document.getElementById('color-picker-ui').style.display = 'flex';
-  currentMediaData = null;
-  setTextColor('default');
-}
-
-/* ═══════════════════════════════
-   CRÉATION / ÉDITION
-═══════════════════════════════ */
-function openForm(type) {
-  closePopup();
-  editingIndex = null; currentType = type;
-  resetModal();
-  document.getElementById('modal-label').textContent = 'NOUVEAU';
-  applyModalLayout(type);
-  showModal();
-}
-
-function openEdit(index) {
-  editingIndex = index;
-  const item = items[index];
-  resetModal();
-  document.getElementById('modal-label').textContent = 'MODIFIER';
-  document.getElementById('note-title').value = item.title || '';
-  document.getElementById('edit-actions').style.display = 'flex';
-  document.getElementById('pin-btn-modal').classList.toggle('active', !!item.pinned);
-  currentType = item.type;
-  applyModalLayout(item.type);
-  if (item.type !== 'vocale') {
-    document.getElementById('note-content').value = item.content || '';
-    setTextColor(item.color || 'default');
-  }
-  if (item.type === 'image' && item.media) {
-    document.getElementById('preview-img').src = item.media;
-    document.getElementById('preview-img').style.display = 'block';
-  }
-  if (item.type === 'vocale' && item.media) {
-    document.getElementById('audio-preview').src = item.media;
-    document.getElementById('audio-preview').style.display = 'block';
-  }
-  showModal();
-}
-
-/* ═══════════════════════════════
-   SAUVEGARDE
-═══════════════════════════════ */
-function saveNote() {
-  const title   = document.getElementById('note-title').value.trim();
-  const content = document.getElementById('note-content').value.trim();
-  const now = new Date();
-  const date = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getFullYear()).slice(-2)}`;
-  const note = {
-    title, content, type: currentType, date,
-    color:  selectedColor,
-    media:  currentMediaData ?? (editingIndex !== null ? items[editingIndex].media : null),
-    pinned: editingIndex !== null ? items[editingIndex].pinned : false,
-  };
-  if (editingIndex !== null) items[editingIndex] = note;
-  else items.unshift(note);
-  saveToDisk(); closeForm();
-}
-
-function togglePinModal() {
-  if (editingIndex === null) return;
-  items[editingIndex].pinned = !items[editingIndex].pinned;
-  document.getElementById('pin-btn-modal').classList.toggle('active', items[editingIndex].pinned);
-  saveToDisk();
-}
-
-function deleteNoteModal() {
-  if (editingIndex === null) return;
-  if (!confirm('Supprimer cette note ?')) return;
-  items.splice(editingIndex, 1);
-  saveToDisk(); closeForm();
-}
-
-/* ═══════════════════════════════
-   MODAL – affichage
-   FIX : .visible = display, .open = animation translateY
-═══════════════════════════════ */
-function showModal() {
-  const o = document.getElementById('modal-overlay');
-  o.classList.add('visible');
-  document.body.classList.add('modal-open');
-  requestAnimationFrame(() => requestAnimationFrame(() => o.classList.add('open')));
-}
-
-function closeForm() {
-  const o = document.getElementById('modal-overlay');
-  o.classList.remove('open');
-  document.body.classList.remove('modal-open');
-  setTimeout(() => o.classList.remove('visible'), 340);
-}
-
-/* ═══════════════════════════════
-   SPEED DIAL – affichage
-   FIX : .visible = display, .anim = animation items
-═══════════════════════════════ */
-function togglePopup() {
-  const p = document.getElementById('choice-popup');
-  const fab = document.getElementById('main-fab');
-  if (p.classList.contains('visible')) {
-    closePopup();
-  } else {
-    p.classList.add('visible');
-    fab.classList.add('active');
-    requestAnimationFrame(() => requestAnimationFrame(() => p.classList.add('anim')));
-  }
-}
-
-function closePopup() {
-  const p = document.getElementById('choice-popup');
-  const fab = document.getElementById('main-fab');
-  if (!p.classList.contains('visible')) return;
-  p.classList.remove('anim');
-  fab.classList.remove('active');
-  setTimeout(() => p.classList.remove('visible'), 260);
-}
-
-/* ═══════════════════════════════
-   PARAMÈTRES & ASTUCES
-═══════════════════════════════ */
-function openSettings()  { document.getElementById('settings-overlay').classList.add('visible'); }
-function closeSettings() { document.getElementById('settings-overlay').classList.remove('visible'); }
-function openTips()      { document.getElementById('tips-overlay').classList.add('visible'); }
-function closeTips()     { document.getElementById('tips-overlay').classList.remove('visible'); }
-
-/* ═══════════════════════════════
-   PERSISTANCE
-═══════════════════════════════ */
-function saveToDisk() {
-  items.sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0));
-  localStorage.setItem('essential_space_v2', JSON.stringify(items));
-  render();
-}
-
-function search(q) {
-  currentQuery = (q||'').toLowerCase().trim();
-  render();
-}
-
-/* ═══════════════════════════════
-   EXPORT / IMPORT
-═══════════════════════════════ */
-function exportData() {
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(new Blob([JSON.stringify(items,null,2)],{type:'application/json'})),
-    download: 'essential_space_' + new Date().toISOString().slice(0,10) + '.json',
-  });
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  closeSettings();
-}
-
-function triggerImport() { document.getElementById('import-input').click(); }
-
-function importData(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const imp = JSON.parse(ev.target.result);
-      if (!Array.isArray(imp)) { alert('Fichier invalide.'); return; }
-      items = imp; saveToDisk(); closeSettings();
-      alert(imp.length + ' note(s) importée(s).');
-    } catch { alert('Erreur de lecture JSON.'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-/* ═══════════════════════════════
-   MÉDIAS
-═══════════════════════════════ */
-function handleImageClick() {
-  closePopup();
-  document.getElementById('image-input').click();
-}
-
-document.getElementById('image-input').onchange = e => {
-  const file = e.target.files[0]; if (!file) return;
-  const fr = new FileReader();
-  fr.onload = ev => {
-    currentMediaData = ev.target.result;
-    editingIndex = null; currentType = 'image';
-    resetModal();
-    document.getElementById('modal-label').textContent = 'NOUVEAU';
-    applyModalLayout('image');
-    document.getElementById('preview-img').src = ev.target.result;
-    document.getElementById('preview-img').style.display = 'block';
-    showModal();
-  };
-  fr.readAsDataURL(file);
-  e.target.value = '';
-};
-
-async function toggleRecording() {
-  const btn = document.getElementById('record-btn');
-  if (!isRecording) {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = () => {
-        const fr = new FileReader();
-        fr.onload = ev => {
-          currentMediaData = ev.target.result;
-          document.getElementById('audio-preview').src = ev.target.result;
-          document.getElementById('audio-preview').style.display = 'block';
-        };
-        fr.readAsDataURL(new Blob(audioChunks, { type: 'audio/webm' }));
-        stream.getTracks().forEach(t => t.stop());
-      };
-      mediaRecorder.start();
-      isRecording = true;
-      btn.textContent = 'STOP';
-    } catch { alert('Accès au microphone refusé.'); }
-  } else {
-    mediaRecorder.stop(); isRecording = false; btn.textContent = 'MICRO';
-  }
-}
-
-/* ═══════════════════════════════
-   PRESS EFFECT
-═══════════════════════════════ */
-document.getElementById('container').addEventListener('pointerdown', e => {
-  const card = e.target.closest('.card');
-  if (!card) return;
-  card.classList.add('pressing');
-  const up = () => {
-    card.classList.remove('pressing');
-    document.removeEventListener('pointerup', up);
-    document.removeEventListener('pointercancel', up);
-  };
-  document.addEventListener('pointerup', up);
-  document.addEventListener('pointercancel', up);
-});
-
-/* ═══════════════════════════════
-   INIT
-═══════════════════════════════ */
-applyTheme();
-</script>
-</body>
-</html>
+          <div class="settings-item-sub" id
