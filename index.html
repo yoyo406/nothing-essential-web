@@ -21,7 +21,9 @@
   --text-main:   #111111;
   --text-dim:    #888888;
   --accent:      #111111;
-  --accent-red:  #EB4432;
+  --accent-red:  #F0449A;
+  --grad:        linear-gradient(135deg, #5B8DF6 0%, #C45EE2 40%, #F0449A 70%, #F97240 100%);
+  --grad-45:     linear-gradient(45deg,  #5B8DF6 0%, #C45EE2 40%, #F0449A 70%, #F97240 100%);
   --border:      rgba(0,0,0,0.08);
   --dot-font:    'Space Mono', monospace;
 }
@@ -139,7 +141,7 @@ body {
 /* Thème clair : carte blanche sur fond gris clair → ombre pour la distinguer */
 .card[data-widget="dark"]  { background: #111111; color: #FFFFFF; }
 .card[data-widget="light"] { background: #FFFFFF; color: #111111; box-shadow: 0 4px 24px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.08); }
-.card[data-widget="red"]   { background: #EB4432; color: #FFFFFF; }
+.card[data-widget="red"]   { background: var(--grad); color: #FFFFFF; }
 .card[data-widget="gray"]  { background: #C8C8C8; color: #111111; }
 
 /* Thème sombre : carte noire sur fond noir → bordure + légère ombre claire */
@@ -151,10 +153,10 @@ body.dark-theme .card[data-widget="gray"]  { background: #3A3A3A; color: #FFFFFF
 .pin-dot {
   position: absolute; top: 14px; right: 14px;
   width: 7px; height: 7px;
-  background: #EB4432; border-radius: 50%;
+  background: var(--grad); border-radius: 50%;
 }
 .card[data-widget="red"] .pin-dot { background: rgba(255,255,255,0.85); }
-body.dark-theme .card[data-widget="dark"]  .pin-dot { background: #EB4432; }
+body.dark-theme .card[data-widget="dark"]  .pin-dot { background: var(--grad); }
 body.dark-theme .card[data-widget="light"] .pin-dot { background: rgba(255,255,255,0.85); }
 
 /* Contenu */
@@ -256,20 +258,25 @@ body:not(.dark-theme) .nav-btn { color: rgba(0,0,0,0.48); }
   -webkit-font-smoothing: antialiased;
 }
 
-/* Bouton actif générique (loupe) — ne doit PAS affecter nav-add */
-.nav-btn.active:not(.nav-add) .material-icons-round { color: #EB4432; }
+/* Bouton actif générique (loupe) */
+.nav-btn.active:not(.nav-add) .material-icons-round {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-/* Bouton + — toujours noir, rouge quand speed dial ouvert */
+/* Bouton + */
 .nav-btn.nav-add {
   width: 52px; height: 52px;
-  background: #111111; color: #FFFFFF;
+  background: var(--grad); color: #FFFFFF;
   border-radius: 50%;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), background 0.25s;
+  box-shadow: 0 4px 18px rgba(91,141,246,0.4);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s;
 }
 .nav-btn.nav-add .material-icons-round { font-size: 26px; color: #FFFFFF; }
 .nav-btn.nav-add.active {
-  background: #EB4432;
+  opacity: 0.85;
   transform: rotate(45deg) scale(1.05);
 }
 
@@ -322,8 +329,18 @@ body.dark-theme .dial-item {
   font-size: 12px; text-transform: uppercase;
   color: var(--text-main); letter-spacing: 1px;
 }
-.dial-item .dial-icon-red { color: #EB4432; }
-.dial-item .dial-label-red { color: #EB4432; }
+.dial-item .dial-icon-red {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.dial-item .dial-label-red {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
 /* ═══════════════════════════════════
    MODAL
@@ -382,7 +399,7 @@ body.dark-theme .dial-item {
 }
 #record-btn {
   width: 100%; padding: 15px;
-  background: var(--accent-red); color: white;
+  background: var(--grad); color: white;
   border-radius: 50px; border: none; margin-bottom: 12px;
   display: none; font-family: var(--dot-font);
   font-weight: 700; cursor: pointer;
@@ -408,7 +425,7 @@ body.dark-theme .dial-item {
 /* Bouton sauvegarder */
 .save-btn {
   width: 100%; padding: 17px;
-  background: var(--accent); color: var(--bg);
+  background: var(--grad); color: #FFFFFF;
   border: none; border-radius: 100px;
   font-weight: 700; font-family: var(--dot-font);
   cursor: pointer; font-size: 13px; letter-spacing: 1px;
@@ -429,7 +446,12 @@ body.dark-theme .dial-item {
   cursor: pointer; padding: 4px 16px; border-radius: 12px;
 }
 .action-btn.active { color: var(--text-main); }
-.action-btn.delete { color: var(--accent-red); }
+.action-btn.delete {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .close-btn {
   width: 100%; background: none; border: none;
   color: var(--text-dim); margin-top: 14px;
@@ -442,10 +464,12 @@ body.dark-theme .dial-item {
 ═══════════════════════════════════ */
 .settings-overlay {
   position: fixed; inset: 0; z-index: 11000;
-  display: none; flex-direction: column;
+  display: flex; flex-direction: column;
   background: var(--bg);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
 }
-.settings-overlay.visible { display: flex; }
+.settings-overlay.visible { transform: translateX(0); }
 .settings-header {
   display: flex; align-items: center;
   justify-content: space-between;
@@ -503,10 +527,12 @@ body.dark-theme .dial-item {
 ═══════════════════════════════════ */
 .tips-overlay {
   position: fixed; inset: 0; z-index: 11000;
-  display: none; flex-direction: column;
+  display: flex; flex-direction: column;
   background: var(--bg);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
 }
-.tips-overlay.visible { display: flex; }
+.tips-overlay.visible { transform: translateX(0); }
 .tips-header {
   display: flex; align-items: center;
   justify-content: space-between;
