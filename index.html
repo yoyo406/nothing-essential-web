@@ -1823,12 +1823,19 @@ body.modal-open .navbar {
     const container = document.getElementById('container');
     if (!container) return;
     
+    // Trier : épinglés en premier
+    let sortedItems = items.slice().sort(function(a, b) {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0;
+    });
+    
     const data = currentQuery
-      ? items.filter(function(it) {
+      ? sortedItems.filter(function(it) {
           const text = ((it.title || '') + ' ' + (it.content || '')).toLowerCase();
           return text.includes(currentQuery);
         })
-      : items;
+      : sortedItems;
 
     if (!data.length) {
       container.innerHTML = '<div class="empty-state">ESPACE VIDE</div>';
