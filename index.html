@@ -1850,7 +1850,7 @@ body.modal-open .navbar {
       const showBody = !wide && item.title && item.content;
       const typeIcon = TYPE_ICON[item.type] || '·';
 
-      let html = '<div class="card' + (wide ? ' wide' : '') + '" data-widget="' + theme + '" onclick="openEdit(' + items.indexOf(item) + ')">';
+      let html = '<div class="card' + (wide ? ' wide' : '') + '" data-widget="' + theme + '" onclick="openEditById(' + item.id + ')">';
       if (item.pinned) html += '<div class="pin-dot"></div>';
       html += '<div class="card-inner">';
       html += '<div class="card-type">' + typeIcon + ' ' + esc(item.type) + '</div>';
@@ -1966,6 +1966,11 @@ body.modal-open .navbar {
     showModal();
   };
 
+  window.openEditById = function(id) {
+  const index = items.findIndex(function(it) { return it.id === id; });
+  if (index !== -1) openEdit(index);
+  };
+
   /* ═══════════════════════════════
      SAUVEGARDE
   ═══════════════════════════════ */
@@ -1982,6 +1987,7 @@ body.modal-open .navbar {
                  String(now.getFullYear()).slice(-2);
     
     const note = {
+      id: editingIndex !== null ? items[editingIndex].id : Date.now(), // ID unique
       title: title,
       content: content,
       type: currentType,
