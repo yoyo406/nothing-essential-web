@@ -10,39 +10,40 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mind Space">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#F5F5F7">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F5F7">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
 <link rel="manifest" href="data:application/json,{
   &quot;name&quot;: &quot;Mind Space&quot;,
   &quot;short_name&quot;: &quot;Mind Space&quot;,
   &quot;display&quot;: &quot;standalone&quot;,
   &quot;orientation&quot;: &quot;portrait&quot;,
-  &quot;background_color&quot;: &quot;#000000&quot;,
-  &quot;theme_color&quot;: &quot;#000000&quot;,
+  &quot;background_color&quot;: &quot;#F5F5F7&quot;,
+  &quot;theme_color&quot;: &quot;#F5F5F7&quot;,
   &quot;start_url&quot;: &quot;.&quot;
 }">
 
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   LIQUID GLASS - iOS 26 DESIGN SYSTEM (DARK ONLY)
+   LIQUID GLASS - iOS 26 DESIGN SYSTEM (CORRECTED)
 ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Dark mode colors */
-  --bg-primary: #000000;
-  --bg-secondary: rgba(28, 28, 30, 0.72);
-  --bg-tertiary: rgba(44, 44, 46, 0.45);
+  /* Base colors - Light mode */
+  --bg-primary: #F5F5F7;
+  --bg-secondary: rgba(255, 255, 255, 0.72);
+  --bg-tertiary: rgba(255, 255, 255, 0.45);
   
   /* Glass effects */
-  --glass-bg: rgba(28, 28, 30, 0.45);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.08);
-  --glass-shadow: rgba(0, 0, 0, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-highlight: rgba(255, 255, 255, 0.6);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
   
   /* Text colors */
-  --text-primary: #FFFFFF;
-  --text-secondary: rgba(255, 255, 255, 0.55);
-  --text-tertiary: rgba(255, 255, 255, 0.25);
+  --text-primary: #1C1C1E;
+  --text-secondary: rgba(60, 60, 67, 0.6);
+  --text-tertiary: rgba(60, 60, 67, 0.3);
   
   /* Accent gradient - Palette Mind Space */
   --accent-gradient: linear-gradient(135deg, #5B8DF6 0%, #C45EE2 40%, #F0449A 70%, #F97240 100%);
@@ -52,10 +53,10 @@
   --accent-orange: #F97240;
   
   /* Elevation */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 40px rgba(91, 141, 246, 0.2);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 40px rgba(91, 141, 246, 0.15);
   
   /* Typography */
   --font-primary: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Display', sans-serif;
@@ -71,6 +72,27 @@
   --radius-lg: 28px;
   --radius-xl: 36px;
   --radius-full: 999px;
+}
+
+/* Dark mode - Liquid Glass */
+body.dark-theme {
+  --bg-primary: #000000;
+  --bg-secondary: rgba(28, 28, 30, 0.72);
+  --bg-tertiary: rgba(44, 44, 46, 0.45);
+  
+  --glass-bg: rgba(28, 28, 30, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+  
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.55);
+  --text-tertiary: rgba(255, 255, 255, 0.25);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 40px rgba(91, 141, 246, 0.2);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -219,12 +241,13 @@ body::before {
 
 .empty-state {
   grid-column: span 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
   padding: 80px 20px;
-  gap: 16px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 /* Liquid Glass Card */
@@ -276,7 +299,7 @@ body::before {
     var(--shadow-sm);
 }
 
-/* Card themes */
+/* Card themes - Liquid Glass variants */
 .card[data-widget="dark"] {
   background: rgba(0, 0, 0, 0.75);
   border-color: rgba(255, 255, 255, 0.08);
@@ -284,9 +307,9 @@ body::before {
 }
 
 .card[data-widget="light"] {
-  background: rgba(28, 28, 30, 0.7);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #1C1C1E;
 }
 
 .card[data-widget="red"] {
@@ -309,6 +332,25 @@ body::before {
   background: rgba(142, 142, 147, 0.35);
   border-color: rgba(142, 142, 147, 0.2);
   color: var(--text-primary);
+}
+
+/* Dark mode card themes */
+body.dark-theme .card[data-widget="dark"] {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #1C1C1E;
+}
+
+body.dark-theme .card[data-widget="light"] {
+  background: rgba(28, 28, 30, 0.7);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+body.dark-theme .card[data-widget="gray"] {
+  background: rgba(58, 58, 60, 0.6);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
 }
 
 /* Pin indicator */
@@ -385,6 +427,18 @@ body::before {
   height: 36px;
   flex-shrink: 0;
   border-radius: var(--radius-sm);
+}
+
+.card[data-widget="dark"] .card-audio,
+.card[data-widget="red"] .card-audio {
+  filter: invert(1);
+}
+
+body.dark-theme .card[data-widget="dark"] .card-audio {
+  filter: none;
+}
+
+body.dark-theme .card[data-widget="light"] .card-audio {
   filter: invert(1);
 }
 
@@ -792,7 +846,7 @@ body.modal-open .navbar {
   box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 5px var(--text-primary);
 }
 
-/* Save button */
+/* Save button - Liquid Glass gradient */
 .save-btn {
   width: 100%;
   padding: 18px;
@@ -985,7 +1039,7 @@ body.modal-open .navbar {
   font-weight: 600;
 }
 
-/* Theme selector card */
+/* Theme selector card - Premium glass */
 .theme-selector-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -995,6 +1049,7 @@ body.modal-open .navbar {
     0 1px 0 var(--glass-highlight) inset,
     var(--shadow-md);
   position: relative;
+  /* PAS de overflow:hidden ici — ça coupait les boutons */
 }
 
 .theme-selector-card::before {
@@ -1051,7 +1106,7 @@ body.modal-open .navbar {
   margin-top: 3px;
 }
 
-/* Theme options */
+/* Theme options - Glass buttons */
 .theme-options {
   display: flex;
   gap: 10px;
@@ -1106,8 +1161,12 @@ body.modal-open .navbar {
   background: linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%);
 }
 
+.preview-light {
+  background: linear-gradient(135deg, #F2F2F7 0%, #FFFFFF 100%);
+}
+
 .preview-auto {
-  background: linear-gradient(135deg, #1C1C1E 50%, #2C2C2E 50%);
+  background: linear-gradient(135deg, #1C1C1E 50%, #F2F2F7 50%);
 }
 
 /* Selection indicator */
@@ -1131,7 +1190,7 @@ body.modal-open .navbar {
   transform: scale(1);
 }
 
-/* Settings items */
+/* Settings items - Glass list */
 .settings-item {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -1401,6 +1460,7 @@ body.modal-open .navbar {
   100% { background-position: 200% 0; }
 }
 
+/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -1470,6 +1530,7 @@ body.modal-open .navbar {
 .card.animate-in:nth-child(7) { animation-delay: 210ms; }
 .card.animate-in:nth-child(8) { animation-delay: 245ms; }
 
+/* Card delete animation */
 @keyframes cardOut {
   to { opacity: 0; transform: scale(0.85); }
 }
@@ -1477,6 +1538,7 @@ body.modal-open .navbar {
   animation: cardOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
+/* ═══ RELATIVE TIME ON CARD ═══ */
 .card-date {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -1594,6 +1656,7 @@ body.modal-open .navbar {
   padding: 24px 0 8px;
 }
 
+/* ═══ SWIPE INDICATOR ON MODAL ═══ */
 .modal-handle {
   width: 44px;
   height: 5px;
@@ -1604,6 +1667,7 @@ body.modal-open .navbar {
   cursor: grab;
 }
 
+/* ═══ EMPTY STATE UPGRADE ═══ */
 .empty-state {
   grid-column: span 2;
   display: flex;
@@ -1636,6 +1700,7 @@ body.modal-open .navbar {
   line-height: 1.5;
 }
 
+/* Mobile optimizations */
 @media (max-width: 380px) {
   .cards-grid {
     gap: 10px;
@@ -1744,7 +1809,7 @@ body.modal-open .navbar {
   </div>
 </div>
 
-<!-- PARAMÈTRES -->
+<!-- PARAMÈTRES - Liquid Glass -->
 <div class="settings-overlay" id="settings-overlay">
   <div class="settings-header">
     <span class="settings-title">Paramètres</span>
@@ -1755,3 +1820,877 @@ body.modal-open .navbar {
   <div class="settings-scroll">
 
     <!-- Stats card -->
+    <div class="stats-card">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">Notes</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-pinned">0</div>
+        <div class="stat-label">Épinglées</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-media">0</div>
+        <div class="stat-label">Médias</div>
+      </div>
+    </div>
+
+    <!-- Section Apparence -->
+    <div class="settings-section-label">Apparence</div>
+    
+    <!-- Sélecteur de thème Liquid Glass -->
+    <div class="theme-selector-card">
+      <div class="theme-selector-header">
+        <div class="theme-selector-icon">
+          <span class="material-icons-round">palette</span>
+        </div>
+        <div class="theme-selector-info">
+          <div class="theme-selector-title">Thème</div>
+          <div class="theme-selector-sub" id="theme-sub-label">Automatique (système)</div>
+        </div>
+      </div>
+      <div class="theme-options">
+        <button class="theme-option" id="theme-opt-dark" onclick="setThemeMode('dark')">
+          <div class="theme-option-preview preview-dark"></div>Sombre
+        </button>
+        <button class="theme-option" id="theme-opt-light" onclick="setThemeMode('light')">
+          <div class="theme-option-preview preview-light"></div>Clair
+        </button>
+        <button class="theme-option" id="theme-opt-auto" onclick="setThemeMode('auto')">
+          <div class="theme-option-preview preview-auto"></div>Auto
+        </button>
+      </div>
+    </div>
+    
+    <!-- Section Données -->
+    <div class="settings-section-label">Données</div>
+    
+    <button class="settings-item" onclick="exportData()">
+      <div class="settings-item-icon-wrapper icon-share">
+        <span class="material-icons-round settings-item-icon">ios_share</span>
+      </div>
+      <div style="flex:1">
+        <div class="settings-item-label">Exporter les notes</div>
+        <div class="settings-item-sub">Sauvegarde en fichier JSON</div>
+      </div>
+      <span class="material-icons-round settings-item-arrow">chevron_right</span>
+    </button>
+    
+    <button class="settings-item" onclick="triggerImport()">
+      <div class="settings-item-icon-wrapper icon-upload">
+        <span class="material-icons-round settings-item-icon">upload</span>
+      </div>
+      <div style="flex:1">
+        <div class="settings-item-label">Importer des notes</div>
+        <div class="settings-item-sub">Restaurer depuis un fichier JSON</div>
+      </div>
+      <span class="material-icons-round settings-item-arrow">chevron_right</span>
+    </button>
+
+    <!-- Section Danger -->
+    <div class="settings-section-label">Danger</div>
+
+    <button class="settings-item settings-item-danger" onclick="clearAllNotes()">
+      <div class="settings-item-icon-wrapper icon-danger">
+        <span class="material-icons-round settings-item-icon">delete_sweep</span>
+      </div>
+      <div style="flex:1">
+        <div class="settings-item-label settings-label-danger">Tout effacer</div>
+        <div class="settings-item-sub">Supprime toutes les notes définitivement</div>
+      </div>
+      <span class="material-icons-round settings-item-arrow">chevron_right</span>
+    </button>
+
+    <div class="settings-version">MIND SPACE · v2.0</div>
+  </div>
+</div>
+
+<!-- ASTUCES - Liquid Glass -->
+<div class="tips-overlay" id="tips-overlay">
+  <div class="tips-header">
+    <span class="tips-header-title">Astuces</span>
+    <button class="icon-btn" onclick="closeTips()">
+      <span class="material-icons-round">close</span>
+    </button>
+  </div>
+  <div class="tips-scroll">
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-card-icon">✏️</div>
+        <div>
+          <div class="tip-card-title">Créer une note</div>
+          <div class="tip-card-body">Appuie sur <strong>+</strong> en bas pour choisir le type.</div>
+        </div>
+        <div class="tip-card-tag">Démarrer</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-icon">📌</div>
+        <div>
+          <div class="tip-card-title">Épingler</div>
+          <div class="tip-card-body">Ouvre une note et appuie sur <strong>Épingler</strong>.</div>
+        </div>
+        <div class="tip-card-tag">Organisation</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-icon">🔍</div>
+        <div>
+          <div class="tip-card-title">Recherche</div>
+          <div class="tip-card-body">La barre filtre tes notes en temps réel.</div>
+        </div>
+        <div class="tip-card-tag">Recherche</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-icon">🎙️</div>
+        <div>
+          <div class="tip-card-title">Note vocale</div>
+          <div class="tip-card-body">Choisis <strong>Vocale</strong> puis MICRO pour enregistrer.</div>
+        </div>
+        <div class="tip-card-tag">Audio</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-icon">🖼️</div>
+        <div>
+          <div class="tip-card-title">Ajouter une image</div>
+          <div class="tip-card-body">Choisis <strong>Image</strong> pour sélectionner une photo.</div>
+        </div>
+        <div class="tip-card-tag">Média</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-icon">💾</div>
+        <div>
+          <div class="tip-card-title">Exporter</div>
+          <div class="tip-card-body">Via <strong>Paramètres</strong>, exporte tes notes en JSON.</div>
+        </div>
+        <div class="tip-card-tag">Sauvegarde</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-card-icon">🌗</div>
+        <div>
+          <div class="tip-card-title">Thème</div>
+          <div class="tip-card-body">Via <strong>Paramètres</strong>, choisis Sombre, Clair, ou Auto.</div>
+        </div>
+        <div class="tip-card-tag">Affichage</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Inputs cachés -->
+<input type="file" id="image-input" accept="image/*" style="display:none">
+<input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ═══════════════════════════════
+     ÉTAT
+  ═══════════════════════════════ */
+  let items = [];
+  let currentType = 'écrit';
+  let currentMediaData = null;
+  let editingIndex = null;
+  let selectedColor = null;
+  let currentQuery = '';
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let isRecording = false;
+  let themeMode = 'auto';
+  let isFirstRender = true;
+
+  /* ═══════════════════════════════
+     INITIALISATION
+  ═══════════════════════════════ */
+  function init() {
+    try {
+      const stored = localStorage.getItem('essential_space_v2');
+      items = stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      items = [];
+    }
+    
+    themeMode = localStorage.getItem('essential_theme_mode') || 'auto';
+    applyTheme();
+    render();
+    setupEventListeners();
+  }
+
+  /* ═══════════════════════════════
+     THÈME
+  ═══════════════════════════════ */
+  function isCurrentlyDark() {
+    if (themeMode === 'dark') return true;
+    if (themeMode === 'light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  function applyTheme() {
+    const isDark = isCurrentlyDark();
+    document.body.classList.toggle('dark-theme', isDark);
+    
+    // Mettre à jour les options de thème
+    ['dark', 'light', 'auto'].forEach(function(m) {
+      const el = document.getElementById('theme-opt-' + m);
+      if (el) {
+        el.classList.toggle('selected', themeMode === m);
+      }
+    });
+    
+    // Mettre à jour le sous-titre
+    const sub = document.getElementById('theme-sub-label');
+    if (sub) {
+      sub.textContent = themeMode === 'dark' ? 'Thème sombre' :
+                        themeMode === 'light' ? 'Thème clair' : 'Automatique (système)';
+    }
+    
+    render();
+  }
+
+  window.setThemeMode = function(mode) {
+    themeMode = mode;
+    try {
+      localStorage.setItem('essential_theme_mode', mode);
+    } catch (e) {}
+    applyTheme();
+  };
+
+  // Écouter les changements de préférence système
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+      if (themeMode === 'auto') applyTheme();
+    });
+  }
+
+  /* ═══════════════════════════════
+     UTILITAIRES
+  ═══════════════════════════════ */
+  function esc(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Vibration haptique légère
+  function haptic(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern || 8);
+  }
+
+  // Toast notification (remplace les alert)
+  var toastTimer = null;
+  function showToast(msg, duration) {
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { t.classList.remove('show'); }, duration || 2500);
+  }
+
+  // Temps relatif
+  function relativeTime(dateStr) {
+    if (!dateStr) return '';
+    // Format dd.mm.yy
+    var parts = dateStr.split('.');
+    if (parts.length !== 3) return dateStr;
+    var d = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10) - 1;
+    var y = 2000 + parseInt(parts[2], 10);
+    var then = new Date(y, m, d);
+    var now = new Date();
+    var diffDays = Math.floor((now - then) / 86400000);
+    if (diffDays === 0) return "Aujourd'hui";
+    if (diffDays === 1) return 'Hier';
+    if (diffDays < 7) return 'Il y a ' + diffDays + 'j';
+    if (diffDays < 30) return 'Il y a ' + Math.floor(diffDays / 7) + 'sem';
+    return dateStr;
+  }
+
+  // Mise à jour du header et des stats
+  function updateMeta() {
+    var total = items.length;
+    var pinned = items.filter(function(i) { return i.pinned; }).length;
+    var media = items.filter(function(i) { return i.media; }).length;
+
+    // Badge header
+    var badge = document.getElementById('header-badge');
+    if (badge) {
+      badge.innerHTML = '<div class="header-badge-count">' + total + '</div><div class="header-badge-label">notes</div>';
+    }
+
+    // Sous-titre header
+    var sub = document.getElementById('header-sub');
+    if (sub) {
+      var days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+      var months = ['jan','fév','mar','avr','mai','juin','jul','aoû','sep','oct','nov','déc'];
+      var now = new Date();
+      sub.textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()];
+    }
+
+    // Stats paramètres
+    var stTotal = document.getElementById('stat-total');
+    var stPinned = document.getElementById('stat-pinned');
+    var stMedia = document.getElementById('stat-media');
+    if (stTotal) stTotal.textContent = total;
+    if (stPinned) stPinned.textContent = pinned;
+    if (stMedia) stMedia.textContent = media;
+  }
+
+  /* ═══════════════════════════════
+     WIDGETS
+  ═══════════════════════════════ */
+  const WIDGET_SEQ = ['light', 'dark', 'light', 'dark', 'light', 'dark'];
+
+  function getWidgetTheme(item, index) {
+    if (item.pinned) return 'red';
+    if (item.type === 'vocale') return 'dark';
+    if (item.type === 'image') return 'light';
+    return WIDGET_SEQ[index % WIDGET_SEQ.length];
+  }
+
+  const TYPE_ICON = { écrit: '✦', image: '□', vocale: '◉' };
+
+  /* ═══════════════════════════════
+     RENDU
+  ═══════════════════════════════ */
+  window.render = function() {
+    const container = document.getElementById('container');
+    if (!container) return;
+    
+    const data = currentQuery
+      ? items.filter(function(it) {
+          const text = ((it.title || '') + ' ' + (it.content || '')).toLowerCase();
+          return text.includes(currentQuery);
+        })
+      : items;
+
+    if (!data.length) {
+      container.innerHTML = currentQuery
+        ? '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">Aucun résultat</div><div class="empty-hint">Aucune note ne correspond à &laquo;&nbsp;' + esc(currentQuery) + '&nbsp;&raquo;</div></div>'
+        : '<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-text">Espace vide</div><div class="empty-hint">Appuie sur + pour créer ta première note</div></div>';
+      updateMeta();
+      return;
+    }
+
+    container.innerHTML = data.map(function(item, i) {
+      const wide = item.type === 'image' || item.type === 'vocale';
+      const theme = getWidgetTheme(item, i);
+      const txtAttr = item.color ? 'style="color:' + item.color + '"' : '';
+      const title = item.title || (item.content ? item.content.slice(0, 40) : '');
+      const showBody = !wide && item.title && item.content;
+      const typeIcon = TYPE_ICON[item.type] || '·';
+      const timeStr = relativeTime(item.date);
+      // animate-in uniquement sur le premier rendu (isFirstRender)
+      const animClass = isFirstRender && i < 8 ? ' animate-in' : '';
+
+      let html = '<div class="card' + (wide ? ' wide' : '') + animClass + '" data-widget="' + theme + '" onclick="openEdit(' + i + ')">';
+      if (item.pinned) html += '<div class="pin-dot"></div>';
+      html += '<div class="card-inner">';
+      html += '<div class="card-type">' + typeIcon + ' ' + esc(item.type) + '</div>';
+      if (title) html += '<div class="card-title" ' + txtAttr + '>' + esc(title) + '</div>';
+      if (item.type === 'image' && item.media) {
+        html += '<img src="' + esc(item.media) + '" class="card-image" alt="">';
+      }
+      if (item.type === 'vocale' && item.media) {
+        html += '<audio src="' + esc(item.media) + '" class="card-audio" controls onclick="event.stopPropagation()"></audio>';
+      }
+      if (showBody) html += '<div class="card-content" ' + txtAttr + '>' + esc(item.content) + '</div>';
+      html += '</div>';
+      html += '<div class="card-date">' + esc(timeStr) + '</div>';
+      html += '</div>';
+      return html;
+    }).join('');
+
+    updateMeta();
+    isFirstRender = false;
+  };
+
+  /* ═══════════════════════════════
+     LAYOUT MODAL
+  ═══════════════════════════════ */
+  function applyModalLayout(type) {
+    const isVocal = type === 'vocale';
+    const contentEl = document.getElementById('note-content');
+    const recordEl = document.getElementById('record-btn');
+    if (contentEl) contentEl.style.display = isVocal ? 'none' : 'block';
+    if (recordEl) recordEl.style.display = isVocal ? 'block' : 'none';
+  }
+
+  function resetModal() {
+    const titleEl = document.getElementById('note-title');
+    const contentEl = document.getElementById('note-content');
+    const previewImg = document.getElementById('preview-img');
+    const audioPreview = document.getElementById('audio-preview');
+    const editActions = document.getElementById('edit-actions');
+    const recordBtn = document.getElementById('record-btn');
+    
+    if (titleEl) titleEl.value = '';
+    if (contentEl) contentEl.value = '';
+    if (previewImg) {
+      previewImg.style.display = 'none';
+      previewImg.src = '';
+    }
+    if (audioPreview) {
+      audioPreview.style.display = 'none';
+      audioPreview.src = '';
+    }
+    if (editActions) editActions.style.display = 'none';
+    if (recordBtn) recordBtn.style.display = 'none';
+    if (contentEl) contentEl.style.display = 'block';
+    
+    currentMediaData = null;
+    selectedColor = null;
+  }
+
+  /* ═══════════════════════════════
+     CRÉATION / ÉDITION
+  ═══════════════════════════════ */
+  window.openForm = function(type) {
+    closePopup();
+    editingIndex = null;
+    currentType = type || 'écrit';
+    resetModal();
+    
+    const modalLabel = document.getElementById('modal-label');
+    if (modalLabel) modalLabel.textContent = 'NOUVEAU';
+    
+    applyModalLayout(currentType);
+    showModal();
+  };
+
+  window.openEdit = function(index) {
+    if (index < 0 || index >= items.length) return;
+    
+    editingIndex = index;
+    const item = items[index];
+    resetModal();
+    
+    const modalLabel = document.getElementById('modal-label');
+    const titleEl = document.getElementById('note-title');
+    const editActions = document.getElementById('edit-actions');
+    const pinBtn = document.getElementById('pin-btn-modal');
+    
+    if (modalLabel) modalLabel.textContent = 'MODIFIER';
+    if (titleEl) titleEl.value = item.title || '';
+    if (editActions) editActions.style.display = 'flex';
+    if (pinBtn) pinBtn.classList.toggle('active', !!item.pinned);
+    
+    currentType = item.type;
+    applyModalLayout(item.type);
+    
+    if (item.type !== 'vocale') {
+      const contentEl = document.getElementById('note-content');
+      if (contentEl) contentEl.value = item.content || '';
+    }
+    
+    if (item.type === 'image' && item.media) {
+      const previewImg = document.getElementById('preview-img');
+      if (previewImg) {
+        previewImg.src = item.media;
+        previewImg.style.display = 'block';
+      }
+    }
+    
+    if (item.type === 'vocale' && item.media) {
+      const audioPreview = document.getElementById('audio-preview');
+      if (audioPreview) {
+        audioPreview.src = item.media;
+        audioPreview.style.display = 'block';
+      }
+    }
+    
+    showModal();
+  };
+
+  /* ═══════════════════════════════
+     SAUVEGARDE
+  ═══════════════════════════════ */
+  window.saveNote = function() {
+    const titleEl = document.getElementById('note-title');
+    const contentEl = document.getElementById('note-content');
+    
+    const title = titleEl ? titleEl.value.trim() : '';
+    const content = contentEl ? contentEl.value.trim() : '';
+    
+    const now = new Date();
+    const date = String(now.getDate()).padStart(2, '0') + '.' + 
+                 String(now.getMonth() + 1).padStart(2, '0') + '.' + 
+                 String(now.getFullYear()).slice(-2);
+    
+    const note = {
+      title: title,
+      content: content,
+      type: currentType,
+      date: date,
+      color: selectedColor,
+      media: currentMediaData !== null ? currentMediaData : (editingIndex !== null ? items[editingIndex].media : null),
+      pinned: editingIndex !== null ? items[editingIndex].pinned : false
+    };
+    
+    if (editingIndex !== null) {
+      items[editingIndex] = note;
+    } else {
+      items.unshift(note);
+    }
+    
+    var wasEditing = editingIndex !== null;
+    saveToDisk();
+    closeForm();
+    haptic(12);
+    showToast(wasEditing ? 'Note modifiée ✓' : 'Note créée ✓');
+  };
+
+  window.togglePinModal = function() {
+    if (editingIndex === null || editingIndex < 0 || editingIndex >= items.length) return;
+    items[editingIndex].pinned = !items[editingIndex].pinned;
+    const pinBtn = document.getElementById('pin-btn-modal');
+    if (pinBtn) pinBtn.classList.toggle('active', items[editingIndex].pinned);
+    haptic(10);
+    saveToDisk();
+  };
+
+  window.deleteNoteModal = function() {
+    if (editingIndex === null || editingIndex < 0 || editingIndex >= items.length) return;
+    if (!confirm('Supprimer cette note ?')) return;
+    haptic([10, 30, 10]);
+    items.splice(editingIndex, 1);
+    saveToDisk();
+    closeForm();
+    showToast('Note supprimée');
+  };
+
+  /* ═══ TOUT EFFACER ═══ */
+  window.clearAllNotes = function() {
+    if (!items.length) { showToast('Aucune note à effacer'); return; }
+    if (!confirm('Effacer toutes les ' + items.length + ' notes ? Cette action est irréversible.')) return;
+    haptic([20, 50, 20]);
+    items = [];
+    saveToDisk();
+    closeSettings();
+    showToast('Toutes les notes effacées');
+  };
+
+  /* ═══════════════════════════════
+     MODAL - AFFICHAGE
+  ═══════════════════════════════ */
+  function showModal() {
+    const overlay = document.getElementById('modal-overlay');
+    if (!overlay) return;
+    
+    overlay.classList.add('visible');
+    document.body.classList.add('modal-open');
+    
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        overlay.classList.add('open');
+      });
+    });
+  }
+
+  window.closeForm = function() {
+    const overlay = document.getElementById('modal-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    overlay.classList.remove('visible');
+    document.body.classList.remove('modal-open');
+    // Reset swipe transform
+    const sheet = overlay.querySelector('.modal-sheet');
+    if (sheet) sheet.style.transform = '';
+  };
+
+  window.closeFormFromOverlay = function(event) {
+    if (event.target === event.currentTarget) {
+      closeForm();
+    }
+  };
+
+  /* ═══════════════════════════════
+     SPEED DIAL
+  ═══════════════════════════════ */
+  window.togglePopup = function() {
+    const popup = document.getElementById('choice-popup');
+    const fab = document.getElementById('main-fab');
+    if (!popup || !fab) return;
+    
+    if (popup.classList.contains('visible')) {
+      closePopup();
+    } else {
+      popup.classList.add('visible');
+      fab.classList.add('active');
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          popup.classList.add('anim');
+        });
+      });
+    }
+  };
+
+  window.closePopup = function() {
+    const popup = document.getElementById('choice-popup');
+    const fab = document.getElementById('main-fab');
+    if (!popup || !fab) return;
+    
+    popup.classList.remove('anim');
+    fab.classList.remove('active');
+    
+    setTimeout(function() {
+      popup.classList.remove('visible');
+    }, 300);
+  };
+
+  /* ═══════════════════════════════
+     IMAGE
+  ═══════════════════════════════ */
+  window.handleImageClick = function() {
+    closePopup();
+    const imageInput = document.getElementById('image-input');
+    if (imageInput) imageInput.click();
+  };
+
+  function handleImageChange(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      // resetModal D'ABORD (sinon il remet currentMediaData à null)
+      editingIndex = null;
+      currentType = 'image';
+      resetModal();
+      // PUIS on assigne les données
+      currentMediaData = evt.target.result;
+      
+      const modalLabel = document.getElementById('modal-label');
+      const previewImg = document.getElementById('preview-img');
+      const contentEl = document.getElementById('note-content');
+      
+      if (modalLabel) modalLabel.textContent = 'NOUVEAU';
+      if (previewImg) {
+        previewImg.src = currentMediaData;
+        previewImg.style.display = 'block';
+      }
+      if (contentEl) contentEl.style.display = 'none';
+      
+      showModal();
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  /* ═══════════════════════════════
+     AUDIO
+  ═══════════════════════════════ */
+  window.toggleRecording = function() {
+    const btn = document.getElementById('record-btn');
+    if (!btn) return;
+    
+    if (!isRecording) {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Enregistrement audio non supporté');
+        return;
+      }
+      
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(function(stream) {
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          
+          mediaRecorder.ondataavailable = function(e) {
+            audioChunks.push(e.data);
+          };
+          
+          mediaRecorder.onstop = function() {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const fr = new FileReader();
+            fr.onload = function(ev) {
+              currentMediaData = ev.target.result;
+              const audioPreview = document.getElementById('audio-preview');
+              if (audioPreview) {
+                audioPreview.src = currentMediaData;
+                audioPreview.style.display = 'block';
+              }
+            };
+            fr.readAsDataURL(blob);
+            stream.getTracks().forEach(function(t) { t.stop(); });
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          btn.textContent = 'ARRÊTER';
+          btn.style.background = 'linear-gradient(135deg, #FF2D55 0%, #FF6B35 100%)';
+        })
+        .catch(function() {
+          alert('Microphone non accessible');
+        });
+    } else {
+      if (mediaRecorder) mediaRecorder.stop();
+      isRecording = false;
+      btn.textContent = 'MICRO';
+      btn.style.background = 'var(--accent-gradient)';
+    }
+  };
+
+  /* ═══════════════════════════════
+     RECHERCHE
+  ═══════════════════════════════ */
+  window.toggleSearch = function() {
+    const searchContainer = document.getElementById('search-container');
+    const searchBtn = document.getElementById('search-btn');
+    if (!searchContainer || !searchBtn) return;
+    
+    searchContainer.classList.toggle('open');
+    const isOpen = searchContainer.classList.contains('open');
+    searchBtn.classList.toggle('active', isOpen);
+    
+    if (isOpen) {
+      setTimeout(function() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.focus();
+      }, 100);
+    } else {
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.value = '';
+        search('');
+      }
+    }
+  };
+
+  window.search = function(q) {
+    currentQuery = q ? q.toLowerCase().trim() : '';
+    render();
+  };
+
+  /* ═══════════════════════════════
+     PARAMÈTRES
+  ═══════════════════════════════ */
+  window.openSettings = function() {
+    const overlay = document.getElementById('settings-overlay');
+    if (overlay) overlay.classList.add('visible');
+  };
+
+  window.closeSettings = function() {
+    const overlay = document.getElementById('settings-overlay');
+    if (overlay) overlay.classList.remove('visible');
+  };
+
+  /* ═══════════════════════════════
+     ASTUCES
+  ═══════════════════════════════ */
+  window.openTips = function() {
+    const overlay = document.getElementById('tips-overlay');
+    if (overlay) overlay.classList.add('visible');
+  };
+
+  window.closeTips = function() {
+    const overlay = document.getElementById('tips-overlay');
+    if (overlay) overlay.classList.remove('visible');
+  };
+
+  /* ═══════════════════════════════
+     IMPORT / EXPORT
+  ═══════════════════════════════ */
+  function saveToDisk() {
+    try {
+      items.sort(function(a, b) { return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0); });
+      localStorage.setItem('essential_space_v2', JSON.stringify(items));
+    } catch (e) {}
+    render();
+  }
+  window.saveToDisk = saveToDisk;
+
+  window.exportData = function() {
+    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mindspace_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  window.triggerImport = function() {
+    const importInput = document.getElementById('import-input');
+    if (importInput) importInput.click();
+  };
+
+  window.importData = function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const data = JSON.parse(evt.target.result);
+        if (Array.isArray(data)) {
+          items = data;
+          saveToDisk();
+          showToast(data.length + ' notes importées ✓');
+        } else {
+          showToast('Fichier invalide ✗');
+        }
+      } catch (err) {
+        alert('Erreur lors de l\'import');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  /* ═══════════════════════════════
+     EVENT LISTENERS
+  ═══════════════════════════════ */
+  function setupEventListeners() {
+    const imageInput = document.getElementById('image-input');
+    if (imageInput) imageInput.addEventListener('change', handleImageChange);
+
+    // Swipe down to close modal
+    const sheet = document.querySelector('.modal-sheet');
+    if (sheet) {
+      var startY = 0, isDragging = false;
+      sheet.addEventListener('touchstart', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        startY = e.touches[0].clientY;
+        isDragging = true;
+        sheet.style.transition = 'none';
+      }, { passive: true });
+      sheet.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        var dy = e.touches[0].clientY - startY;
+        if (dy > 0) sheet.style.transform = 'translateY(' + dy + 'px)';
+      }, { passive: true });
+      sheet.addEventListener('touchend', function(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        sheet.style.transition = '';
+        var dy = e.changedTouches[0].clientY - startY;
+        if (dy > 120) {
+          closeForm();
+        } else {
+          sheet.style.transform = '';
+        }
+      }, { passive: true });
+    }
+  }
+
+  /* ═══════════════════════════════
+     DÉMARRAGE
+  ═══════════════════════════════ */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
