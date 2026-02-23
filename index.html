@@ -602,116 +602,60 @@ body.modal-open .navbar {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SPEED DIAL - Liquid Glass
+   SPEED DIAL - VERSION LIQUID GLASS
 ═══════════════════════════════════════════════════════════════ */
-.popup-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
-  z-index: 8000;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding-bottom: calc(120px + var(--safe-bottom));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 
-.popup-overlay.visible {
-  display: flex;
-  opacity: 1;
-}
-
-.speed-dial-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-}
-
-.dial-item {
+/* Bouton principal (FAB) */
+.fab-main {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full); /* Cercle parfait */
+  
+  /* Effet Verre Liquide */
   background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Bordures et Relief */
+  border: 1px solid var(--glass-border);
+  box-shadow: 
+    inset 0 1px 1px var(--glass-highlight),
+    var(--shadow-lg), 
+    var(--shadow-glow); /* Ajoute un léger halo lumineux */
+  
+  /* Centrage de l'icône */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-primary);
+  cursor: pointer;
+  
+  /* Animation organique */
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1001;
+}
+
+/* État actif / survol */
+.fab-main:active {
+  transform: scale(0.9) rotate(45deg); /* Rotation pour l'effet "X" si besoin */
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Options du Speed Dial (si présentes) */
+.fab-option {
+  width: 48px;
+  height: 48px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-full);
-  padding: 16px 32px;
+  margin-bottom: 12px;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 16px;
-  opacity: 0;
-  transform: translateY(20px) scale(0.95);
-  box-shadow: 
-    0 1px 0 var(--glass-highlight) inset,
-    var(--shadow-md);
-  cursor: pointer;
-  min-width: 200px;
-  font-family: var(--font-primary);
-  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  position: relative;
-  overflow: hidden;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.dial-item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    var(--glass-highlight) 0%,
-    transparent 50%
-  );
-  pointer-events: none;
-}
-
-.popup-overlay.anim .speed-dial-list .dial-item:nth-child(3) { transition-delay: 0s; }
-.popup-overlay.anim .speed-dial-list .dial-item:nth-child(2) { transition-delay: 0.06s; }
-.popup-overlay.anim .speed-dial-list .dial-item:nth-child(1) { transition-delay: 0.12s; }
-
-.popup-overlay.anim .speed-dial-list .dial-item {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.dial-item:active {
-  transform: scale(0.96);
-}
-
-.dial-item .material-icons-round {
-  color: var(--text-primary);
-  font-size: 22px;
-  position: relative;
-  z-index: 1;
-}
-
-.dial-item .dial-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  letter-spacing: 1.5px;
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-}
-
-.dial-item .dial-icon-red {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.dial-item .dial-label-red {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
 }
 
 /* ═══════════════════════════════════════════════════════════════
