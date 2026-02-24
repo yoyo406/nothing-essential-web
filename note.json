@@ -1,0 +1,48 @@
+{
+  "name": "Note",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Titre de la note"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenu de la note"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "\u00e9crit",
+        "image",
+        "vocale"
+      ],
+      "default": "\u00e9crit",
+      "description": "Type de note"
+    },
+    "media_url": {
+      "type": "string",
+      "description": "URL du m\u00e9dia (image ou audio)"
+    },
+    "color_key": {
+      "type": "string",
+      "enum": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f"
+      ],
+      "description": "Cl\u00e9 de couleur pour l'accent"
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Note \u00e9pingl\u00e9e"
+    }
+  },
+  "required": [
+    "type"
+  ]
+}
