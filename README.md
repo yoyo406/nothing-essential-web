@@ -1,119 +1,155 @@
-# 🌟 Mind Space (DISCLAIMER : THIS IS A BETA VERSION OF MY WEBSITE/APP SO IF THERE A BUG PLS REPORT !!)
+🌟 Mind Space (DISCLAIMER: THIS IS A BETA VERSION OF MY WEBSITE/APP SO IF THERE IS A BUG PLEASE REPORT IT!!)
 
-**Mind Space** est une application de prise de notes personnelle, progressive (PWA), entièrement côté client — aucun serveur, aucun compte, aucune donnée quittant ton appareil.
+Mind Space is a personal note-taking Progressive Web App (PWA), fully client-side — no server, no account, no data leaving your device.
 
-> Design glassmorphisme · Navigation pill orange · Bento grid · Fonctionne hors-ligne
+> Glassmorphism design · Orange pill navigation · Bento grid · Works offline
 
----
 
-## ✨ Fonctionnalités
 
-- 📝 **Notes écrites** — titre + contenu, avec aperçu dans la grille
-- 🖼️ **Notes image** — photo depuis la galerie ou l'appareil photo, affichage pleine largeur
-- 🎙️ **Notes vocales** — enregistrement microphone, lecture intégrée, visualisation de forme d'onde
-- 📌 **Épingler** — les notes épinglées remontent automatiquement en tête de liste
-- 🔍 **Recherche** — filtre en temps réel sur le titre et le contenu
-- 🏷️ **Chips de filtre** — Tout · Épinglées · Images · Vocales
-- 🌗 **Thème** — Système / Clair / Sombre, mémorisé entre les sessions
-- 📤 **Export JSON** — sauvegarde complète de toutes les notes
-- 📥 **Import JSON** — restauration depuis une sauvegarde
-- 📲 **PWA installable** — fonctionne hors-ligne grâce au Service Worker, installable sur Android et iOS
-- 📳 **Vibrations Pixel-style** — retour haptique sur chaque interaction (tap, confirm, warning)
-- 🗑️ **Menu contextuel** — appui long sur une carte → Ouvrir / Épingler / Dupliquer / Supprimer
 
 ---
 
-## 📸 Aperçu
+✨ Features
 
-| Accueil vide | Notes & bento grid | Speed dial ouvert |
-|:---:|:---:|:---:|
-| *(capture)* | *(capture)* | *(capture)* |
+📝 Written notes — title + content, with preview in the grid
+
+🖼️ Image notes — photo from the gallery or camera, full-width display
+
+🎙️ Voice notes — microphone recording, built-in playback, waveform visualization
+
+📌 Pin — pinned notes automatically move to the top of the list
+
+🔍 Search — real-time filtering by title and content
+
+🏷️ Filter chips — All · Pinned · Images · Voice
+
+🌗 Theme — System / Light / Dark, saved between sessions
+
+📤 JSON Export — full backup of all notes
+
+📥 JSON Import — restore from a backup
+
+📲 Installable PWA — works offline thanks to the Service Worker, installable on Android and iOS
+
+📳 Pixel-style vibrations — haptic feedback on every interaction (tap, confirm, warning)
+
+🗑️ Context menu — long press on a card → Open / Pin / Duplicate / Delete
+
+
 
 ---
 
-## 🚀 Déploiement
+📸 Preview
 
-### Option 1 — Netlify Drop *(le plus simple)*
+Empty Home	Notes & Bento Grid	Speed Dial Open
 
-1. Télécharge et dézippe `mindspace_pwa.zip`
-2. Va sur [app.netlify.com/drop](https://app.netlify.com/drop)
-3. Glisse-dépose le dossier `mindspace/`
-4. Ton app est en ligne en HTTPS en 30 secondes ✅
+(screenshot)	(screenshot)	(screenshot)
 
-### Option 2 — GitHub Pages
 
-```bash
-# Clone ou crée ton repo
+
+---
+
+🚀 Deployment
+
+Option 1 — Netlify Drop (the easiest)
+
+1. Download and unzip mindspace_pwa.zip
+
+
+2. Go to https://app.netlify.com/drop
+
+
+3. Drag and drop the mindspace/ folder
+
+
+4. Your app is live in HTTPS in 30 seconds ✅
+
+
+
+Option 2 — GitHub Pages
+
+# Clone or create your repo
 git init && git add . && git commit -m "Initial commit"
 git branch -M main
-git remote add origin https://github.com/TON_PSEUDO/mind-space.git
+git remote add origin https://github.com/YOUR_USERNAME/mind-space.git
 git push -u origin main
-```
 
-Puis dans **Settings → Pages** → Source : `main` / `/ (root)` → Save.
+Then go to Settings → Pages → Source: main / / (root) → Save.
 
-### Option 3 — Test local
+Option 3 — Local test
 
-```bash
 npx serve ./mindspace
-# ou
+# or
 python3 -m http.server 8080 --directory mindspace
-```
 
-> ⚠️ Le Service Worker nécessite HTTPS (ou `localhost`) pour s'enregistrer.
+> ⚠️ The Service Worker requires HTTPS (or localhost) to register.
+
+
+
 
 ---
 
-## 📁 Structure du projet
+📁 Project Structure
 
-```
 mindspace/
-├── index.html        # App complète (HTML + CSS + JS en un seul fichier)
-├── manifest.json     # Manifeste PWA (nom, icônes, couleurs, orientation)
-├── sw.js             # Service Worker — cache hors-ligne
-├── icon-512.png      # Icône PWA 512×512
-├── icon-192.png      # Icône PWA 192×192
-├── icon-180.png      # Icône Apple Touch
+├── index.html        # Full app (HTML + CSS + JS in a single file)
+├── manifest.json     # PWA manifest (name, icons, colors, orientation)
+├── sw.js             # Service Worker — offline cache
+├── icon-512.png      # PWA icon 512×512
+├── icon-192.png      # PWA icon 192×192
+├── icon-180.png      # Apple Touch icon
 └── icon-64.png       # Favicon
-```
+
 
 ---
 
-## 🛠️ Stack technique
+🛠️ Tech Stack
 
-| Couche | Technologie |
-|--------|-------------|
-| UI | HTML5 + CSS3 (variables, backdrop-filter, grid) |
-| Logique | JavaScript vanilla ES6 (IIFE, pas de framework) |
-| Persistance | `localStorage` (clé `essential_space_v2`) |
-| Offline | Service Worker + Cache API |
-| Fonts | Google Fonts — Google Sans + Google Sans Display |
-| Icônes | Material Icons Round |
-| Installation | Web App Manifest (PWA) |
+Layer	Technology
 
----
+UI	HTML5 + CSS3 (variables, backdrop-filter, grid)
+Logic	Vanilla JavaScript ES6 (IIFE, no framework)
+Persistence	localStorage (key essential_space_v2)
+Offline	Service Worker + Cache API
+Fonts	Google Fonts — Google Sans + Google Sans Display
+Icons	Material Icons Round
+Installation	Web App Manifest (PWA)
 
-## 🎨 Design system
 
-- **Couleur d'accent** : `#F5A623` (orange chaud)
-- **Item actif navbar** : `#3D1F00` (brun profond)
-- **Fond clair** : `#EEEEF8` · **Fond sombre** : `#0D0E18`
-- **Cartes** : glassmorphisme — `backdrop-filter: blur(20px)` + bordures semi-transparentes
-- **Grille** : bento CSS Grid, 2 colonnes → 3 (≥600px) → 4 (≥900px)
-- **Navigation** : pill flottante orange avec item actif allongé + label
 
 ---
 
-## 🔒 Vie privée
+🎨 Design System
 
-Toutes les données (notes, images en base64, enregistrements audio) sont stockées **uniquement dans le `localStorage` du navigateur**. Aucune donnée n'est envoyée à un serveur. L'application fonctionne entièrement hors-ligne après la première visite.
+Accent color: #F5A623 (warm orange)
+
+Active navbar item: #3D1F00 (deep brown)
+
+Light background: #EEEEF8 · Dark background: #0D0E18
+
+Cards: glassmorphism — backdrop-filter: blur(20px) + semi-transparent borders
+
+Grid: CSS Grid bento layout, 2 columns → 3 (≥600px) → 4 (≥900px)
+
+Navigation: floating orange pill with elongated active item + label
+
+
 
 ---
 
-## 📄 Licence
+🔒 Privacy
 
-MIT — libre d'utilisation, modification et distribution.
+All data (notes, base64 images, audio recordings) is stored only in the browser’s localStorage. No data is sent to any server. The application works fully offline after the first visit.
+
 
 ---
 
-<p align="center">Fait avec ☕ et beaucoup de <code>backdrop-filter</code></p>
+📄 License
+
+MIT — free to use, modify, and distribute.
+
+
+---
+
+<p align="center">Made with ☕ and a lot of <code>backdrop-filter</code></p>
+---
