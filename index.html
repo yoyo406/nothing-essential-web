@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Gemini Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --text-dark:  #1a2010;
+      --text-mid:   #3a4830;
+      --text-muted: #8a9880;
+      --send-blue:  #4facfe;
+      --send-blue2: #00f2fe;
+      --danger:     #f05050;
+      --font: 'Instrument Sans', sans-serif;
+    }
+
+    html, body {
+      height: 100%; height: 100dvh;
+      font-family: var(--font);
+      overflow: hidden;
+      background: #d4f5c0;
+    }
+
+    /* ── Fond animé ── */
+    #bg {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, #c8f5a0cc, transparent),
+        radial-gradient(ellipse 60% 70% at 80% 20%, #a0f5c8cc, transparent),
+        radial-gradient(ellipse 70% 50% at 50% 80%, #f0f5a0bb, transparent),
+        radial-gradient(ellipse 50% 60% at 10% 80%, #a8eef0bb, transparent);
+      background-color: #d8f5c0;
+      animation: bgShift 12s ease-in-out infinite alternate;
+    }
+    @keyframes bgShift {
+      0%   { filter: hue-rotate(0deg)   brightness(1); }
+      50%  { filter: hue-rotate(12deg)  brightness(1.04); }
+      100% { filter: hue-rotate(-8deg)  brightness(.97); }
+    }
+
+    /* ── Shell principal ── */
+    #app {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      height: 100%; height: 100dvh;
+      max-width: 480px; margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 52px 22px 14px;
+      padding-top: max(52px, env(safe-area-inset-top, 52px));
+      flex-shrink: 0;
+    }
+    .header-title { display: flex; flex-direction: column; gap: 1px; }
+    .header-greeting { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .header-name { font-size: 22px; font-weight: 700; color: var(--text-dark); letter-spacing: -.03em; line-height: 1.1; }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,.55); backdrop-filter: blur(10px);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: all .2s;
+      box-shadow: 0 2px 10px rgba(100,180,100,.15);
+    }
+    .icon-btn:hover { background: rgba(255,255,255,.8); transform: scale(1.08); }
+
+    /* ── Zone messages ── */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;   /* jamais de scroll horizontal sur la zone entière */
+      padding: 10px 16px 12px;
+      display: flex; flex-direction: column; gap: 10px;
+      -webkit-overflow-scrolling: touch;
+      /* Empêche les enfants de forcer un dépassement horizontal */
+      min-width: 0;
+      width: 100%;
+    }
+    #messages::-webkit-scrollbar { display: none; }
+
+    /* ── État vide ── */
+    #empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; padding: 20px; text-align: center; min-height: 200px;
+    }
+    .orb-static {
+      width: 130px; height: 130px; border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #e8ffa0 0%, #80f0b0 35%, #40c8e0 70%, #a0a0ff 100%);
+      box-shadow: 0 0 60px rgba(120,230,160,.5), 0 0 120px rgba(80,200,200,.25);
+      animation: orbFloat 5s ease-in-out infinite;
+    }
+    @keyframes orbFloat {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-10px) scale(1.03); }
+    }
+    .empty-text { font-size: 15px; color: var(--text-mid); font-weight: 500; opacity: .7; }
+
+    /* ── Bulles de message ── */
+    .msg {
+      display: flex; flex-direction: column; gap: 3px;
+      /* Limité à la largeur du conteneur parent (messages) */
+      min-width: 0;
+      animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(.94) translateY(6px); }
+      to   { opacity: 1; transform: scale(1)   translateY(0); }
+    }
+
+    /* Utilisateur : bulle à droite, max 78% de largeur */
+    .msg.user {
+      align-self: flex-end;
+      align-items: flex-end;
+      max-width: 78%;
+    }
+
+    /* Gemini : bulle pleine largeur pour les longues réponses */
+    .msg.gemini {
+      align-self: stretch;       /* prend toute la largeur disponible */
+      align-items: flex-start;
+      max-width: 100%;
+    }
+
+    .bubble {
+      padding: 11px 15px;
+      border-radius: 20px;
+      font-size: 14.5px;
+      line-height: 1.6;
+      /* Empêche le texte de déborder */
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      /* Empêche la bulle de dépasser le conteneur */
+      min-width: 0;
+      max-width: 100%;
+    }
+    .msg.user .bubble {
+      background: rgba(255,255,255,.72); backdrop-filter: blur(14px);
+      border-bottom-right-radius: 5px; color: var(--text-dark);
+      box-shadow: 0 2px 14px rgba(100,200,120,.18);
+    }
+    .msg.gemini .bubble {
+      background: rgba(255,255,255,.45); backdrop-filter: blur(14px);
+      border-bottom-left-radius: 5px; color: var(--text-dark);
+      box-shadow: 0 2px 12px rgba(100,200,150,.12);
+    }
+    .msg-label {
+      font-size: 10.5px; color: var(--text-muted);
+      font-weight: 600; letter-spacing: .05em;
+      padding: 0 4px; text-transform: uppercase;
+    }
+
+    /* Aperçu image dans la bulle */
+    .bubble img.preview {
+      max-width: 100%; max-height: 220px; border-radius: 12px;
+      display: block; margin-bottom: 8px; object-fit: cover;
+    }
+    /* Badge fichier dans la bulle */
+    .file-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(100,180,120,.18); border: 1px solid rgba(80,160,100,.25);
+      border-radius: 10px; padding: 6px 12px;
+      font-size: 12px; color: var(--text-mid); margin-bottom: 6px;
+      /* Empêche le badge de déborder */
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    /* ── Rendu Markdown ── */
+    .bubble code {
+      background: rgba(80,180,100,.15); padding: 1px 5px;
+      border-radius: 5px; font-family: 'Courier New', monospace;
+      font-size: 12.5px; color: #2a6a40;
+      /* Autoriser le retour à la ligne dans le code inline */
+      word-break: break-all;
+    }
+    .bubble pre {
+      background: rgba(0,0,0,.07); border-radius: 10px;
+      padding: 12px;
+      /* CRITIQUE : scroll horizontal sur les blocs de code, jamais overflow */
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 8px 0; font-size: 12px;
+      /* Empêche le pre de forcer la largeur de la bulle */
+      max-width: 100%;
+      white-space: pre;          /* respecter les indentations */
+    }
+    .bubble pre code {
+      background: none; padding: 0; color: #1a4a2a;
+      word-break: normal;        /* dans un pre, ne pas casser les mots */
+      white-space: pre;
+    }
+    .bubble strong { font-weight: 700; }
+    .bubble em { color: #3a7050; }
+    .bubble h1 { font-size: 1.15em; font-weight: 700; margin: 10px 0 5px; }
+    .bubble h2 { font-size: 1.05em; font-weight: 700; margin: 8px 0 4px; }
+    .bubble h3 { font-size: 1em;    font-weight: 700; margin: 6px 0 3px; }
+    .bubble ul, .bubble ol { padding-left: 16px; margin: 4px 0; }
+    .bubble li { margin: 3px 0; line-height: 1.5; }
+
+    /* ── Orbe de chargement ── */
+    #orb-screen {
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      flex: 1; gap: 20px;
+    }
+    #orb-screen.active { display: flex; }
+    .orb-thinking {
+      width: 160px; height: 160px; border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #f0ffa0 0%, #70f0a0 30%, #40c8e0 65%, #90a0ff 100%);
+      box-shadow: 0 0 80px rgba(100,230,160,.6), 0 0 160px rgba(80,200,220,.3);
+      animation: orbPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes orbPulse {
+      0%,100% { transform: scale(1);    box-shadow: 0 0 80px rgba(100,230,160,.6), 0 0 160px rgba(80,200,220,.3); }
+      50%      { transform: scale(1.08); box-shadow: 0 0 120px rgba(100,230,180,.8), 0 0 200px rgba(80,200,240,.5); }
+    }
+    .orb-label { font-size: 14px; color: var(--text-mid); font-weight: 500; animation: blink 1.5s ease-in-out infinite; }
+    @keyframes blink { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+
+    /* ── Message d'erreur ── */
+    .error-msg {
+      align-self: center;
+      background: rgba(255,100,100,.15); backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,100,100,.3); color: #c03030;
+      font-size: 13px; padding: 10px 16px; border-radius: 14px;
+      max-width: 90%; text-align: center;
+    }
+
+    /* ── Chips fichiers en attente ── */
+    #pending-files {
+      display: none; flex-wrap: wrap; gap: 8px;
+      padding: 8px 14px 0; flex-shrink: 0;
+    }
+    #pending-files.has-files { display: flex; }
+    .pending-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.7); backdrop-filter: blur(10px);
+      border: 1px solid rgba(100,180,120,.3);
+      border-radius: 20px; padding: 5px 10px 5px 8px;
+      font-size: 12px; font-weight: 600; color: var(--text-mid);
+      animation: popIn .2s ease;
+    }
+    .pending-chip img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; }
+    .chip-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 14px; line-height: 1;
+      padding: 0 2px; transition: color .15s;
+    }
+    .chip-remove:hover { color: var(--danger); }
+    .chip-progress {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(100,180,120,.3); border-top-color: #50c080;
+      border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Zone de saisie — animations focus/blur ── */
+    #input-wrap {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      padding-bottom: max(22px, env(safe-area-inset-bottom, 22px));
+    }
+
+    /* État repos : pill compacte */
+    #input-card {
+      background: rgba(255,255,255,.62);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 50px;                       /* pill */
+      box-shadow:
+        0 2px 12px rgba(100,180,120,.12),
+        0 1px 2px rgba(255,255,255,.7) inset;
+      overflow: hidden;
+      /* Transition principale sur border-radius + shadow */
+      transition:
+        border-radius .38s cubic-bezier(.34,1.3,.64,1),
+        box-shadow    .38s cubic-bezier(.34,1.3,.64,1),
+        background    .3s ease;
+      will-change: border-radius, box-shadow;
+    }
+
+    /* État focus : card étendue, coins plus carrés */
+    #input-card.expanded {
+      border-radius: 24px;
+      background: rgba(255,255,255,.82);
+      box-shadow:
+        0 8px 40px rgba(80,180,120,.22),
+        0 1px 3px rgba(255,255,255,.9) inset,
+        0 0 0 1.5px rgba(100,210,140,.35);
+    }
+
+    /* Ligne de texte */
+    #user-input {
+      width: 100%; background: transparent; border: none; outline: none;
+      padding: 14px 18px;
+      font-family: var(--font); font-size: 15px; color: var(--text-dark);
+      resize: none; line-height: 1.5; display: block;
+      /* Hauteur animée : min au repos, max au focus */
+      max-height: 120px;
+      transition: padding .32s ease;
+    }
+    #user-input::placeholder {
+      color: var(--text-muted);
+      transition: opacity .2s ease;
+    }
+
+    /* Divider invisible au repos, visible au focus */
+    .input-divider {
+      height: 1px;
+      background: rgba(100,180,100,.18);
+      margin: 0 16px;
+      transform: scaleX(0);
+      transform-origin: center;
+      opacity: 0;
+      transition: transform .35s cubic-bezier(.34,1.4,.64,1) .05s, opacity .25s ease .05s;
+    }
+    #input-card.expanded .input-divider {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+
+    /* Barre d'actions : cachée au repos */
+    #input-actions {
+      display: flex; align-items: center;
+      padding: 0 14px;
+      gap: 14px;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition:
+        max-height .38s cubic-bezier(.34,1.3,.64,1),
+        padding    .38s cubic-bezier(.34,1.3,.64,1),
+        opacity    .25s ease;
+    }
+    #input-card.expanded #input-actions {
+      max-height: 60px;
+      padding: 6px 14px 12px;
+      opacity: 1;
+    }
+
+    .action-icons { display: flex; gap: 14px; flex: 1; align-items: center; }
+
+    /* Chaque icône entre en stagger */
+    .action-btn {
+      opacity: 0;
+      transform: translateY(6px) scale(.85);
+      transition:
+        opacity   .22s ease,
+        transform .28s cubic-bezier(.34,1.5,.64,1),
+        background .18s ease;
+    }
+    #input-card.expanded .action-btn {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    /* Stagger sur chaque bouton d'action */
+    #input-card.expanded .action-btn:nth-child(1) { transition-delay: .08s; }
+    #input-card.expanded .action-btn:nth-child(2) { transition-delay: .13s; }
+    #input-card.expanded .action-btn:nth-child(3) { transition-delay: .18s; }
+
+    /* Bouton envoyer : entre avec un léger rebond */
+    #send-btn {
+      opacity: 0;
+      transform: scale(.6) rotate(-20deg);
+      transition:
+        opacity   .25s ease .14s,
+        transform .32s cubic-bezier(.34,1.6,.64,1) .14s,
+        box-shadow .2s ease;
+    }
+    #input-card.expanded #send-btn {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+
+    /* Boutons d'action de l'input */
+    .action-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: none; border: none; cursor: pointer;
+      position: relative;
+      /* Les transitions opacity/transform sont gérées par les états expanded */
+    }
+    .action-btn svg { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; transition: stroke .18s; }
+    .action-btn:hover { background: rgba(100,180,120,.14); transform: scale(1.12) !important; }
+    .action-btn:hover svg { stroke: var(--text-dark); }
+
+    /* État micro actif */
+    .action-btn.mic-active { background: rgba(240,80,80,.12); }
+    .action-btn.mic-active svg { stroke: var(--danger); }
+    .action-btn.mic-active::after {
+      content: ''; position: absolute; inset: -3px; border-radius: 50%;
+      border: 2px solid rgba(240,80,80,.5);
+      animation: micPulse 1s ease-in-out infinite;
+    }
+    @keyframes micPulse {
+      0%,100% { transform: scale(1);   opacity: 1; }
+      50%      { transform: scale(1.2); opacity: .5; }
+    }
+
+    /* Bouton envoyer — taille et couleur (les animations entrée/sortie sont dans expanded) */
+    #send-btn {
+      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--send-blue), var(--send-blue2));
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(79,172,254,.45);
+    }
+    #input-card.expanded #send-btn:hover  { transform: scale(1.1) !important; box-shadow: 0 6px 24px rgba(79,172,254,.65); }
+    #input-card.expanded #send-btn:active { transform: scale(.94) !important; }
+    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 100px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: rgba(20,30,20,.88); backdrop-filter: blur(10px);
+      color: #d8f5d8; padding: 8px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 500; z-index: 300;
+      opacity: 0; transition: all .3s ease; pointer-events: none; white-space: nowrap;
+      max-width: calc(100vw - 40px); overflow: hidden; text-overflow: ellipsis;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Modal clé API (plein écran, bloquant) ── */
+    #modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(160,230,160,.3);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      z-index: 200; align-items: center; justify-content: center; padding: 24px;
+    }
+    #modal-overlay.visible { display: flex; }
+
+    #modal {
+      background: rgba(255,255,255,.85); backdrop-filter: blur(24px);
+      border-radius: 30px; padding: 32px 26px 26px;
+      width: 100%; max-width: 360px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 14px; text-align: center;
+      box-shadow: 0 24px 70px rgba(60,160,80,.2);
+      animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .modal-orb {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #e8ffa0, #70f0a0 45%, #40c8e0 80%);
+      box-shadow: 0 0 30px rgba(80,220,150,.5);
+      animation: orbFloat 4s ease-in-out infinite; flex-shrink: 0;
+    }
+    #modal h2 { font-size: 1.35rem; font-weight: 700; color: var(--text-dark); letter-spacing: -.03em; }
+    .modal-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 280px; }
+    .modal-sub strong { color: var(--text-mid); font-weight: 600; }
+
+    .modal-input-wrap { width: 100%; position: relative; display: flex; align-items: center; }
+    #modal-input {
+      width: 100%; background: rgba(200,240,210,.45);
+      border: 1.5px solid rgba(100,200,130,.4); border-radius: 14px;
+      padding: 13px 44px 13px 16px; font-family: var(--font);
+      font-size: 14px; color: var(--text-dark); outline: none;
+      transition: border-color .2s; letter-spacing: .04em;
+    }
+    #modal-input:focus { border-color: rgba(60,180,100,.7); background: rgba(200,240,210,.6); }
+
+    #modal-toggle-vis {
+      position: absolute; right: 12px;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-muted); padding: 4px; transition: color .18s;
+      display: flex; align-items: center;
+    }
+    #modal-toggle-vis:hover { color: var(--text-dark); }
+    #modal-toggle-vis svg { transition: opacity .2s; }
+
+    .security-badge {
+      background: rgba(80,200,120,.15); border: 1px solid rgba(80,200,120,.3);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 11.5px; font-weight: 600; color: #2a8050; letter-spacing: .02em;
+    }
+    #modal-save {
+      width: 100%; background: linear-gradient(135deg, #60d080, #30c0a0);
+      border: none; border-radius: 14px; padding: 14px;
+      font-family: var(--font); font-size: 15px; font-weight: 700;
+      color: #fff; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(60,180,120,.35); transition: all .2s;
+    }
+    #modal-save:hover  { filter: brightness(1.08); transform: translateY(-1px); }
+    #modal-save:active { transform: translateY(0); }
+
+    .modal-link { font-size: 12px; color: var(--text-muted); }
+    .modal-link a { color: #30a070; text-decoration: none; font-weight: 600; }
+    .modal-link a:hover { text-decoration: underline; }
+
+    /* Inputs fichiers (cachés) */
+    #file-img-input, #file-doc-input { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="bg"></div>
+
+<div id="app">
+  <header>
+    <div class="header-title">
+      <span class="header-greeting">Bonjour 👋</span>
+      <span class="header-name">Gemini 2.5 Flash</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="clear-btn" title="Effacer la conversation">🗑</button>
+    </div>
+  </header>
+
+  <div id="messages">
+    <div id="empty-state">
+      <div class="orb-static"></div>
+      <p class="empty-text">Qu'est-ce qui vous préoccupe ?</p>
+    </div>
+  </div>
+
+  <div id="orb-screen">
+    <div class="orb-thinking"></div>
+    <span class="orb-label">Gemini réfléchit…</span>
+  </div>
+
+  <div id="pending-files"></div>
+
+  <div id="input-wrap">
+    <div id="input-card">
+      <textarea id="user-input" rows="1" placeholder="Posez votre question…"></textarea>
+      <div class="input-divider"></div>
+      <div id="input-actions">
+        <div class="action-icons">
+
+          <button class="action-btn" id="btn-img" title="Envoyer une image">
+            <svg viewBox="0 0 24 24" stroke-width="1.8">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </button>
+
+          <button class="action-btn" id="btn-doc" title="Envoyer un document">
+            <svg viewBox="0 0 24 24" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="8" y1="13" x2="16" y2="13"/>
+              <line x1="8" y1="17" x2="12" y2="17"/>
+            </svg>
+          </button>
+
+          <button class="action-btn" id="btn-mic" title="Dictée vocale">
+            <svg viewBox="0 0 24 24" stroke-width="1.8">
+              <rect x="9" y="2" width="6" height="11" rx="3"/>
+              <path d="M5 10a7 7 0 0 0 14 0"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8"  y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+
+        </div>
+        <button id="send-btn" title="Envoyer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"/>
+            <polyline points="5 12 12 5 19 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Inputs fichiers cachés, hors du #app pour éviter tout layout shift -->
+<input type="file" id="file-img-input" accept="image/jpeg,image/png,image/gif,image/webp"/>
+<input type="file" id="file-doc-input" accept="application/pdf,text/plain,text/markdown,text/html,text/csv"/>
+
+<div id="toast"></div>
+
+<!-- Modal clé API — bloquant, aucune fermeture sans clé valide -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-orb"></div>
+    <h2>Gemini 2.5 Flash</h2>
+    <p class="modal-sub">
+      Entrez votre clé API Google AI Studio pour commencer.<br>
+      Elle reste <strong>uniquement en mémoire</strong> et disparaît à la fermeture de l'onglet.
+    </p>
+    <div class="modal-input-wrap">
+      <input id="modal-input" type="password" placeholder="AIza..." autocomplete="off" spellcheck="false"/>
+      <button id="modal-toggle-vis" type="button" title="Afficher / masquer la clé">
+        <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.8" width="18" height="18">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+    <div class="security-badge">🔒 Jamais stockée · Disparaît à la fermeture</div>
+    <button id="modal-save">Commencer →</button>
+    <p class="modal-link">
+      Pas de clé ?
+      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+        Obtenir une clé gratuite ↗
+      </a>
+    </p>
+  </div>
+</div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSTANTES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const UPLOAD_URL   = 'https://generativelanguage.googleapis.com/upload/v1beta/files';
+const LS_KEY_HST   = 'gemini_history';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ÉTAT — clé API JAMAIS persistée, uniquement en RAM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let apiKey      = '';   // En mémoire uniquement
+let history     = JSON.parse(localStorage.getItem(LS_KEY_HST) || '[]');
+let pendingFiles = [];  // { type, name, mimeType, base64?, objectUrl?, fileUri?, uploading? }
+let recognition  = null;
+let isListening  = false;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RÉFÉRENCES DOM (toutes vérifiées à l'init)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const $messages     = document.getElementById('messages');
+const $emptyState   = document.getElementById('empty-state');
+const $orbScreen    = document.getElementById('orb-screen');
+const $input        = document.getElementById('user-input');
+const $sendBtn      = document.getElementById('send-btn');
+const $pendingWrap  = document.getElementById('pending-files');
+const $modalOverlay = document.getElementById('modal-overlay');
+const $modalInput   = document.getElementById('modal-input');
+const $modalSave    = document.getElementById('modal-save');
+const $modalToggle  = document.getElementById('modal-toggle-vis');
+const $eyeIcon      = document.getElementById('eye-icon');
+const $btnMic       = document.getElementById('btn-mic');
+const $btnImg       = document.getElementById('btn-img');
+const $btnDoc       = document.getElementById('btn-doc');
+const $fileImgIn    = document.getElementById('file-img-input');
+const $fileDocIn    = document.getElementById('file-doc-input');
+const $clearBtn     = document.getElementById('clear-btn');
+const $toast        = document.getElementById('toast');
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function init() {
+  // Montrer le modal immédiatement — l'app est inutilisable sans clé
+  openModal();
+
+  // Restaurer l'historique visuel (mais on demandera quand même la clé)
+  restoreHistory();
+
+  // Auto-resize du textarea
+  $input.addEventListener('input', resizeTextarea);
+}
+
+const $inputCard = document.getElementById('input-card');
+
+function resizeTextarea() {
+  $input.style.height = 'auto';
+  $input.style.height = Math.min($input.scrollHeight, 120) + 'px';
+}
+
+// ── Animation focus/blur de la barre ─────────────────────────────────────────
+
+function expandInput() {
+  $inputCard.classList.add('expanded');
+}
+
+function collapseInput() {
+  // Ne replier que si le champ est vide ET qu'on n'est pas en train d'écrire
+  if ($input.value.trim() === '' && document.activeElement !== $input) {
+    $inputCard.classList.remove('expanded');
+  }
+}
+
+$input.addEventListener('focus', expandInput);
+
+$input.addEventListener('blur', () => {
+  // Petit délai pour laisser le temps aux clics sur les boutons d'action de s'exécuter
+  setTimeout(collapseInput, 180);
+});
+
+// Garder expanded si on clique sur les boutons de la barre
+document.getElementById('input-card').addEventListener('mousedown', (e) => {
+  // Empêcher le blur si clic sur la card (hors textarea)
+  if (e.target !== $input) e.preventDefault();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MODAL CLÉ API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function openModal() {
+  // Ne jamais pré-remplir le champ — la clé ne doit pas être récupérable
+  $modalInput.value = '';
+  $modalInput.type  = 'password';
+  $eyeIcon.style.opacity = '1';
+  $modalOverlay.classList.add('visible');
+  setTimeout(() => $modalInput.focus(), 100);
+}
+
+function saveKey() {
+  const v = $modalInput.value.trim();
+  if (!v) {
+    // Animation de secousse si champ vide
+    $modalInput.style.borderColor = 'rgba(240,80,80,.7)';
+    $modalInput.animate(
+      [{ transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }],
+      { duration: 200, iterations: 3 }
+    );
+    return;
+  }
+
+  // Stocker en RAM uniquement
+  apiKey = v;
+
+  // Effacer immédiatement le champ du DOM (bonne pratique sécurité)
+  $modalInput.value = '';
+
+  // Fermer le modal
+  $modalOverlay.classList.remove('visible');
+}
+
+// Toggle visibilité de la clé
+$modalToggle.addEventListener('click', () => {
+  const isHidden = $modalInput.type === 'password';
+  $modalInput.type       = isHidden ? 'text' : 'password';
+  $eyeIcon.style.opacity = isHidden ? '.35' : '1';
+  $modalInput.focus();
+});
+
+$modalSave.addEventListener('click', saveKey);
+$modalInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════════════════════
+
+let toastTimer;
+function showToast(msg, duration = 3000) {
+  clearTimeout(toastTimer);
+  $toast.textContent = msg;
+  $toast.classList.add('show');
+  toastTimer = setTimeout(() => $toast.classList.remove('show'), duration);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DICTÉE VOCALE — Web Speech API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast('⚠️ Dictée non supportée sur ce navigateur (Chrome recommandé)'); return null; }
+
+  const r = new SR();
+  r.lang            = 'fr-FR';
+  r.continuous      = false;  // Un segment à la fois
+  r.interimResults  = true;   // Résultats partiels en temps réel
+
+  let baseText = ''; // Texte présent dans l'input avant le démarrage
+
+  r.onstart = () => {
+    isListening = true;
+    $btnMic.classList.add('mic-active');
+    baseText = $input.value; // Conserver le texte déjà saisi
+    showToast('🎤 Dictée en cours… parlez maintenant', 60000);
+  };
+
+  r.onresult = (e) => {
+    let interim = '';
+    let newFinal = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) newFinal += t;
+      else interim = t;
+    }
+    // Accumuler les résultats finaux dans baseText
+    if (newFinal) baseText = (baseText + ' ' + newFinal).trimStart();
+    $input.value = baseText + (interim ? ' ' + interim : '');
+    resizeTextarea();
+  };
+
+  r.onerror = (e) => {
+    const msgs = {
+      'not-allowed': '⚠️ Permission micro refusée — vérifiez les paramètres du navigateur',
+      'no-speech':   '⚠️ Aucune parole détectée',
+      'network':     '⚠️ Erreur réseau pendant la dictée',
+      'aborted':     '',  // Arrêt volontaire, pas besoin de toast
+    };
+    const msg = msgs[e.error];
+    if (msg === undefined) showToast(`⚠️ Erreur dictée : ${e.error}`);
+    else if (msg) showToast(msg);
+    stopSpeech();
+  };
+
+  r.onend = () => {
+    stopSpeech();
+    // FIX bug #5 : réinitialiser l'instance pour permettre un redémarrage propre
+    recognition = null;
+  };
+
+  return r;
+}
+
+function toggleSpeech() {
+  if (isListening) {
+    recognition?.stop();
+    return;
+  }
+  // Toujours créer une nouvelle instance (évite les erreurs sur instance terminée)
+  recognition = initSpeech();
+  if (!recognition) return;
+  try {
+    recognition.start();
+  } catch (e) {
+    showToast('⚠️ Impossible de démarrer la dictée');
+    recognition = null;
+  }
+}
+
+function stopSpeech() {
+  isListening = false;
+  $btnMic.classList.remove('mic-active');
+  $toast.classList.remove('show');
+}
+
+$btnMic.addEventListener('click', toggleSpeech);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SÉLECTION DE FICHIERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+$btnImg.addEventListener('click', () => $fileImgIn.click());
+$btnDoc.addEventListener('click', () => {
+  if (!apiKey) { openModal(); return; }
+  $fileDocIn.click();
+});
+
+// Image → encodage base64, envoi via inline_data (pas de Files API nécessaire)
+$fileImgIn.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  $fileImgIn.value = ''; // Reset pour permettre re-sélection du même fichier
+
+  if (file.size > 18 * 1024 * 1024) {
+    showToast('⚠️ Image trop grande (max 18 Mo)');
+    return;
+  }
+
+  try {
+    const base64    = await toBase64(file);
+    const objectUrl = URL.createObjectURL(file);
+    const entry     = { type: 'image', name: file.name, mimeType: file.type, base64, objectUrl };
+    pendingFiles.push(entry);
+    renderPendingChip(entry);
+    showToast(`🖼 ${file.name} ajoutée`);
+  } catch {
+    showToast('⚠️ Impossible de lire ce fichier image');
+  }
+});
+
+// Document → upload via Files API (resumable, 2 étapes)
+$fileDocIn.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  $fileDocIn.value = '';
+
+  if (file.size > 50 * 1024 * 1024) {
+    showToast('⚠️ Fichier trop grand (max 50 Mo)');
+    return;
+  }
+
+  const entry  = { type: 'file', name: file.name, mimeType: file.type, fileUri: null, uploading: true };
+  pendingFiles.push(entry);
+  const chipEl = renderPendingChip(entry);
+  showToast(`📤 Upload de « ${file.name} »…`, 30000);
+
+  try {
+    entry.fileUri   = await uploadToFilesAPI(file);
+    entry.uploading = false;
+    // Remplacer le spinner par ✅
+    const spinner = chipEl.querySelector('.chip-progress');
+    if (spinner) spinner.replaceWith(Object.assign(document.createElement('span'), { textContent: '✅' }));
+    showToast(`✅ « ${file.name} » prêt`);
+  } catch (err) {
+    pendingFiles = pendingFiles.filter(f => f !== entry);
+    chipEl.remove();
+    if (!$pendingWrap.children.length) $pendingWrap.classList.remove('has-files');
+    showToast(`⚠️ Échec upload : ${err.message}`);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FILES API — upload resumable (protocole officiel Google, 2 étapes)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function uploadToFilesAPI(file) {
+  // Étape 1 : initiation → récupération de l'URL de session
+  const initRes = await fetch(`${UPLOAD_URL}?uploadType=resumable&key=${apiKey}`, {
+    method: 'POST',
+    headers: {
+      'X-Goog-Upload-Protocol':              'resumable',
+      'X-Goog-Upload-Command':               'start',
+      'X-Goog-Upload-Header-Content-Length': String(file.size),
+      'X-Goog-Upload-Header-Content-Type':   file.type,
+      'Content-Type':                        'application/json',
+    },
+    body: JSON.stringify({ file: { display_name: file.name } }),
+  });
+
+  if (!initRes.ok) {
+    const err = await initRes.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Init upload — HTTP ${initRes.status}`);
+  }
+
+  const sessionUrl = initRes.headers.get('X-Goog-Upload-URL');
+  if (!sessionUrl) throw new Error('URL de session resumable manquante dans la réponse');
+
+  // Étape 2 : envoi des données du fichier
+  const uploadRes = await fetch(sessionUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Length':        String(file.size),
+      'X-Goog-Upload-Offset':  '0',
+      'X-Goog-Upload-Command': 'upload, finalize',
+    },
+    body: file,
+  });
+
+  if (!uploadRes.ok) {
+    const err = await uploadRes.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Upload — HTTP ${uploadRes.status}`);
+  }
+
+  const data = await uploadRes.json();
+  const uri  = data?.file?.uri;
+  if (!uri) throw new Error('URI du fichier absente dans la réponse Files API');
+  return uri;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHIPS FICHIERS EN ATTENTE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function renderPendingChip(entry) {
+  $pendingWrap.classList.add('has-files');
+  const chip = document.createElement('div');
+  chip.className = 'pending-chip';
+
+  const label = entry.name.length > 20 ? entry.name.slice(0, 20) + '…' : entry.name;
+
+  if (entry.type === 'image') {
+    const img  = document.createElement('img');
+    img.src    = entry.objectUrl;
+    img.alt    = entry.name;
+    const span = document.createElement('span');
+    span.textContent = label;
+    chip.append(img, span, makeRemoveBtn(entry, chip));
+  } else {
+    const icon    = document.createElement('span');
+    icon.textContent = '📄';
+    const span    = document.createElement('span');
+    span.textContent = label;
+    const spinner = document.createElement('span');
+    spinner.className = 'chip-progress';
+    chip.append(icon, span, spinner, makeRemoveBtn(entry, chip));
+  }
+
+  $pendingWrap.appendChild(chip);
+  return chip;
+}
+
+function makeRemoveBtn(entry, chip) {
+  const btn = document.createElement('button');
+  btn.className   = 'chip-remove';
+  btn.title       = 'Retirer';
+  btn.textContent = '✕';
+  btn.addEventListener('click', () => {
+    pendingFiles = pendingFiles.filter(f => f !== entry);
+    chip.remove();
+    if (!$pendingWrap.children.length) $pendingWrap.classList.remove('has-files');
+    if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+  });
+  return btn;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENVOI DU MESSAGE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+$input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+$sendBtn.addEventListener('click', sendMessage);
+
+async function sendMessage() {
+  const text = $input.value.trim();
+  if (!text && pendingFiles.length === 0) return;
+
+  // Redemander la clé si elle a disparu (rechargement ou vidée)
+  if (!apiKey) { openModal(); return; }
+
+  // Bloquer l'envoi si un upload est encore en cours
+  if (pendingFiles.some(f => f.uploading)) {
+    showToast('⏳ Upload en cours, patientez…');
+    return;
+  }
+
+  // Snapshot & reset UI
+  const filesToSend = [...pendingFiles];
+  pendingFiles = [];
+  $pendingWrap.innerHTML = '';
+  $pendingWrap.classList.remove('has-files');
+  $input.value = '';
+  $input.style.height = 'auto';
+  $sendBtn.disabled = true;
+
+  // Construire les parts multimodales pour l'API
+  const parts = [];
+  for (const f of filesToSend) {
+    if (f.type === 'image') {
+      parts.push({ inline_data: { mime_type: f.mimeType, data: f.base64 } });
+      if (f.objectUrl) URL.revokeObjectURL(f.objectUrl);
+    } else if (f.type === 'file' && f.fileUri) {
+      parts.push({ file_data: { mime_type: f.mimeType, file_uri: f.fileUri } });
+    }
+  }
+  // Texte toujours en dernier (recommandation Google pour le multimodal)
+  if (text) {
+    parts.push({ text });
+  } else if (filesToSend.some(f => f.type === 'image')) {
+    parts.push({ text: 'Décris et analyse cette image en détail.' });
+  } else {
+    parts.push({ text: 'Analyse et résume ce document.' });
+  }
+
+  // Afficher le message utilisateur dans l'UI
+  appendMessage('user', text, filesToSend);
+
+  // FIX bug #3 : construire l'historique API AVANT d'y ajouter le message courant
+  // pour éviter le doublon. On envoie history (messages précédents) + le message actuel.
+  const apiContents = [
+    ...history,                    // Historique existant
+    { role: 'user', parts }        // Message actuel (parts complets avec fichiers)
+  ];
+
+  // Sauvegarder dans l'historique de session (texte uniquement, pas les binaires)
+  const histParts = parts.filter(p => p.text || p.file_data); // Exclure inline_data (trop lourd)
+  if (!histParts.length) histParts.push({ text: text || '[fichier]' });
+  history.push({ role: 'user', parts: histParts });
+
+  showOrb(true);
+
+  try {
+    const answer = await callAPI(apiContents);
+    showOrb(false);
+    appendMessage('gemini', answer);
+    history.push({ role: 'model', parts: [{ text: answer }] });
+    saveHistory();
+  } catch (err) {
+    showOrb(false);
+    appendError(err.message);
+    // Retirer le dernier message de l'historique si l'appel a échoué
+    history.pop();
+  } finally {
+    $sendBtn.disabled = false;
+    $input.focus();
+    expandInput(); // Garder la barre ouverte après envoi
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// APPEL API GEMINI
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function callAPI(contents) {
+  const res = await fetch(`${GENERATE_URL}?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents,
+      generationConfig: { temperature: 1, maxOutputTokens: 8192 }
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    // Si la clé est invalide, redemander
+    if (res.status === 400 || res.status === 401 || res.status === 403) {
+      apiKey = '';
+      setTimeout(openModal, 400);
+    }
+    throw new Error(err?.error?.message || `Erreur HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  const txt  = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!txt) throw new Error('Réponse vide ou format inattendu de l\'API.');
+  return txt;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AFFICHAGE DES MESSAGES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function appendMessage(role, text, files = []) {
+  if ($emptyState) $emptyState.style.display = 'none';
+
+  const $msg = document.createElement('div');
+  $msg.className = `msg ${role}`;
+
+  // Label
+  const $label = document.createElement('span');
+  $label.className   = 'msg-label';
+  $label.textContent = role === 'user' ? 'Vous' : 'Gemini';
+
+  // Bulle
+  const $bubble = document.createElement('div');
+  $bubble.className = 'bubble';
+
+  // Aperçus des fichiers joints
+  for (const f of files) {
+    if (f.type === 'image' && f.objectUrl) {
+      const img     = document.createElement('img');
+      img.className = 'preview';
+      img.src       = f.objectUrl;
+      img.alt       = f.name;
+      $bubble.appendChild(img);
+    } else if (f.type === 'file') {
+      const badge     = document.createElement('div');
+      badge.className = 'file-badge';
+      badge.textContent = (f.mimeType === 'application/pdf' ? '📄 ' : '📝 ') + f.name;
+      $bubble.appendChild(badge);
+    }
+  }
+
+  // Texte
+  if (text) {
+    const textNode = document.createElement('div');
+    if (role === 'gemini') {
+      textNode.innerHTML = renderMarkdown(text);
+    } else {
+      // Texte utilisateur : échapper l'HTML, convertir les sauts de ligne
+      textNode.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+    }
+    $bubble.appendChild(textNode);
+  }
+
+  $msg.append($label, $bubble);
+  $messages.appendChild($msg);
+  requestAnimationFrame(() => { $messages.scrollTop = $messages.scrollHeight; });
+}
+
+function appendError(msg) {
+  const $el       = document.createElement('div');
+  $el.className   = 'error-msg';
+  $el.textContent = `⚠️ ${msg}`;
+  $messages.appendChild($el);
+  $messages.scrollTop = $messages.scrollHeight;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ORBE DE CHARGEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function showOrb(active) {
+  $messages.style.display = active ? 'none' : '';
+  $orbScreen.classList.toggle('active', active);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RENDU MARKDOWN SIMPLIFIÉ
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function renderMarkdown(text) {
+  return text
+    // Blocs de code (avant tout le reste pour éviter les faux positifs)
+    .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, _lang, code) =>
+      `<pre><code>${escapeHtml(code.trim())}</code></pre>`)
+    // Code inline
+    .replace(/`([^`\n]+)`/g, (_, c) => `<code>${escapeHtml(c)}</code>`)
+    // Titres
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,   '<h1>$1</h1>')
+    // Gras et italique
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,     '<em>$1</em>')
+    // Listes
+    .replace(/^[*\-] (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*?<\/li>\n?)+/gs, match => `<ul>${match}</ul>`)
+    // Sauts de ligne (hors blocs block-level)
+    .replace(/\n(?!<\/?(?:pre|ul|h[1-3]|li))/g, '<br>');
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HISTORIQUE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function saveHistory() {
+  try {
+    localStorage.setItem(LS_KEY_HST, JSON.stringify(history));
+  } catch {
+    // localStorage plein — on continue sans planter
+    showToast('⚠️ Historique non sauvegardé (stockage plein)');
+  }
+}
+
+function restoreHistory() {
+  if (!history.length) return;
+  if ($emptyState) $emptyState.style.display = 'none';
+  for (const entry of history) {
+    const role = entry.role === 'model' ? 'gemini' : 'user';
+    // FIX bug #4 : chercher le premier part de type texte (pas inline_data)
+    const textPart = entry.parts?.find(p => typeof p.text === 'string');
+    appendMessage(role, textPart?.text || '');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UTILITAIRES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader    = new FileReader();
+    reader.onload   = () => resolve(reader.result.split(',')[1]);
+    reader.onerror  = () => reject(new Error('Lecture du fichier échouée'));
+    reader.readAsDataURL(file);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLEAR
+// ═══════════════════════════════════════════════════════════════════════════════
+
+$clearBtn.addEventListener('click', () => {
+  if (!confirm('Effacer toute la conversation ?')) return;
+  history = [];
+  localStorage.removeItem(LS_KEY_HST);
+  pendingFiles = [];
+  $pendingWrap.innerHTML = '';
+  $pendingWrap.classList.remove('has-files');
+  $messages.innerHTML = '';
+  // Remettre l'état vide
+  const es  = document.createElement('div');
+  es.id     = 'empty-state';
+  const orb = document.createElement('div');
+  orb.className = 'orb-static';
+  const p   = document.createElement('p');
+  p.className   = 'empty-text';
+  p.textContent = "Qu'est-ce qui vous préoccupe ?";
+  es.append(orb, p);
+  $messages.appendChild(es);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════════════════════════════
+
+init();
+</script>
+</body>
+</html>
