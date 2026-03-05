@@ -1,1441 +1,686 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Gemini Chat</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Gemini</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d0d;
+  --surface:#1a1a1a;
+  --surface2:#222;
+  --border:#2e2e2e;
+  --text:#e8e8e8;
+  --text-mid:#888;
+  --text-dim:#444;
+  --accent:#20c0d0;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hidden}
+#app{width:100%;max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg)}
 
-    :root {
-      --text-dark:  #1a2010;
-      --text-mid:   #3a4830;
-      --text-muted: #8a9880;
-      --send-blue:  #4facfe;
-      --send-blue2: #00f2fe;
-      --danger:     #f05050;
-      --font: 'Instrument Sans', sans-serif;
+/* ══ VUE HOME ══ */
+#view-home{display:flex;flex-direction:column;height:100%;transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .35s cubic-bezier(.4,0,.2,1)}
+#view-home.hidden{opacity:0;pointer-events:none;transform:translateY(-12px) scale(.97)}
 
-      /* animation tuning */
-      --orb-slow: 14s;
-      --orb-mid: 8s;
-      --orb-fast: 3.2s;
-    }
+.home-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:max(54px,env(safe-area-inset-top,54px)) 18px 12px;
+  flex-shrink:0;
+}
+/* Logo rond gauche */
+.hdr-logo{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background .18s;position:relative;
+}
+.hdr-logo:hover{background:#2a2a2a}
+.hdr-logo svg{width:22px;height:22px}
+.hdr-logo.has-inst::after{content:'';position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
 
-    html, body {
-      height: 100%; height: 100dvh;
-      font-family: var(--font);
-      overflow: hidden;
-      background: #d4f5c0;
-    }
+/* Badge modèle centre */
+.hdr-center{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:999px;padding:8px 16px;
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  transition:background .18s;
+}
+.hdr-center:hover{background:var(--surface2)}
+.hdr-center-text{font-size:13.5px;font-weight:600;color:var(--accent)}
+.hdr-center svg{width:13px;height:13px;stroke:var(--accent);fill:none;stroke-width:2.2;stroke-linecap:round}
 
-    /* ── Fond animé ── */
-    #bg {
-      position: fixed; inset: 0; z-index: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 20% 10%, #c8f5a0cc, transparent),
-        radial-gradient(ellipse 60% 70% at 80% 20%, #a0f5c8cc, transparent),
-        radial-gradient(ellipse 70% 50% at 50% 80%, #f0f5a0bb, transparent),
-        radial-gradient(ellipse 50% 60% at 10% 80%, #a8eef0bb, transparent);
-      background-color: #d8f5c0;
-      animation: bgShift 12s ease-in-out infinite alternate;
-    }
-    @keyframes bgShift {
-      0%   { filter: hue-rotate(0deg)   brightness(1); }
-      50%  { filter: hue-rotate(12deg)  brightness(1.04); }
-      100% { filter: hue-rotate(-8deg)  brightness(.97); }
-    }
 
-    /* ── Shell principal ── */
-    #app {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      height: 100%; height: 100dvh;
-      max-width: 480px; margin: 0 auto;
-    }
 
-    /* ── Header ── */
-    header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 52px 22px 14px;
-      padding-top: max(52px, env(safe-area-inset-top, 52px));
-      flex-shrink: 0;
-    }
-    .header-title { display: flex; flex-direction: column; gap: 1px; }
-    .header-greeting { font-size: 13px; color: var(--text-muted); font-weight: 500; }
-    .header-name { font-size: 22px; font-weight: 700; color: var(--text-dark); letter-spacing: -.03em; line-height: 1.1; }
-    .header-actions { display: flex; gap: 8px; }
-    .icon-btn {
-      width: 38px; height: 38px; border-radius: 50%;
-      background: rgba(255,255,255,.55); backdrop-filter: blur(10px);
-      border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; transition: all .2s;
-      box-shadow: 0 2px 10px rgba(100,180,100,.15);
-    }
-    .icon-btn:hover { background: rgba(255,255,255,.8); transform: scale(1.08); }
+/* Corps home vide */
+.home-body{flex:1}
 
-    /* ── Zone messages ── */
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;   /* jamais de scroll horizontal sur la zone entière */
-      padding: 10px 16px 12px;
-      display: flex; flex-direction: column; gap: 10px;
-      -webkit-overflow-scrolling: touch;
-      /* Empêche les enfants de forcer un dépassement horizontal */
-      min-width: 0;
-      width: 100%;
-    }
-    #messages::-webkit-scrollbar { display: none; }
+/* ══ BARRE PARTAGÉE (home + chat) ══ */
+.bar-area{flex-shrink:0;padding:10px 14px max(28px,env(safe-area-inset-bottom,28px))}
 
-    /* ── État vide ── */
-    #empty-state {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 16px; padding: 20px; text-align: center; min-height: 200px;
-    }
+.perp-bar{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:26px;
+  overflow:visible;
+  transition:border-color .2s,border-radius .25s;
+}
+.perp-bar:focus-within{border-color:#3d3d3d}
 
-    /* ===== IMPROVED ORB — static =====
-       plus de profondeur : anneaux, rotation, hue shift & pulse
-    */
-    .orb-static {
-      width: 130px; height: 130px; border-radius: 50%;
-      position: relative;
-      background: radial-gradient(circle at 34% 32%, #fffde6 0%, #baffe0 22%, #49cdeb 60%, #7a82ff 100%);
-      box-shadow:
-        0 6px 40px rgba(60,220,140,.20),
-        0 0 90px rgba(80,200,200,.15),
-        inset 0 -10px 30px rgba(0,0,0,.06);
-      transform-origin: center;
-      overflow: visible;
-      /* combinaison d'animations : translation lente, rotation douce, teinte cyclique, pulsation d'intensité */
-      animation:
-        orbFloat 6.2s ease-in-out infinite,
-        orbSlowRotate var(--orb-slow) linear infinite,
-        orbHue var(--orb-mid) ease-in-out infinite;
-    }
-    .orb-static::before,
-    .orb-static::after {
-      content: '';
-      position: absolute;
-      inset: -14px;
-      border-radius: 50%;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-    /* halo flou animé (lumière) */
-    .orb-static::before {
-      background: radial-gradient(circle at 36% 36%, rgba(180,255,200,.45), rgba(80,200,220,.18) 30%, transparent 55%);
-      filter: blur(18px);
-      opacity: .9;
-      transform: scale(.98);
-      animation: haloPulse 6.2s ease-in-out infinite;
-    }
-    /* anneau conique rotatif pour donner du mouvement */
-    .orb-static::after {
-      background: conic-gradient(from 0deg, rgba(255,255,255,.08), rgba(80,200,140,.06), rgba(120,180,250,.04), rgba(255,255,255,.02));
-      filter: blur(6px) saturate(1.1);
-      opacity: .85;
-      transform: rotate(0deg) scale(1);
-      animation: ringRotate 14s linear infinite;
-    }
+/* textarea ligne */
+.bar-row{display:flex;align-items:flex-start;padding:14px 16px 8px;gap:8px}
+.bar-ta{
+  flex:1;background:transparent;border:none;outline:none;
+  font-family:var(--sans);font-size:15.5px;color:var(--text);
+  resize:none;max-height:130px;line-height:1.5;min-height:24px;
+}
+.bar-ta::placeholder{color:var(--text-mid)}
 
-    @keyframes orbFloat {
-      0%   { transform: translateY(0)    translateX(0)    scale(1); }
-      25%  { transform: translateY(-8px) translateX(3px)  scale(1.02); }
-      50%  { transform: translateY(-12px) translateX(-4px) scale(1.04); }
-      75%  { transform: translateY(-8px) translateX(2px)   scale(1.02); }
-      100% { transform: translateY(0)    translateX(0)    scale(1); }
-    }
-    @keyframes orbSlowRotate {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-    @keyframes orbHue {
-      0%   { filter: hue-rotate(0deg)  saturate(1); }
-      50%  { filter: hue-rotate(12deg) saturate(1.08) brightness(1.03); }
-      100% { filter: hue-rotate(-6deg) saturate(.98) brightness(.99); }
-    }
-    @keyframes haloPulse {
-      0%   { opacity: .85; transform: scale(.98); }
-      50%  { opacity: 1;    transform: scale(1.06); }
-      100% { opacity: .85; transform: scale(.98); }
-    }
-    @keyframes ringRotate {
-      from { transform: rotate(0deg) scale(1); }
-      to   { transform: rotate(360deg) scale(1); }
-    }
+/* boutons ligne bas */
+.bar-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 10px 10px;
+}
+.bar-foot-left{display:flex;gap:2px}
+.bar-foot-right{display:flex;align-items:center;gap:6px}
 
-    .empty-text { font-size: 15px; color: var(--text-mid); font-weight: 500; opacity: .7; }
+/* bouton rond gris */
+.bb{
+  width:38px;height:38px;border-radius:50%;border:none;
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-mid);
+  transition:background .18s,color .18s,transform .12s;
+}
+.bb:hover{background:var(--surface2);color:var(--text)}
+.bb:active{transform:scale(.9)}
+.bb svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.bb.mic-active{color:#e05050}
+.bb.mic-active::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid rgba(224,80,80,.4);animation:micRing 1s ease-in-out infinite}
+@keyframes micRing{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.18);opacity:.3}}
 
-    /* ── Bulles de message ── */
-    .msg {
-      display: flex; flex-direction: column; gap: 3px;
-      /* Limité à la largeur du conteneur parent (messages) */
-      min-width: 0;
-      animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
-    }
-    @keyframes popIn {
-      from { opacity: 0; transform: scale(.94) translateY(6px); }
-      to   { opacity: 1; transform: scale(1)   translateY(0); }
-    }
+/* bouton turquoise vocal */
+.bb-voice{
+  width:42px;height:42px;border-radius:50%;border:none;
+  background:var(--accent);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:transform .12s,box-shadow .3s;
+  box-shadow:0 0 0 0 rgba(32,192,208,.4);
+}
+.bb-voice:hover{transform:scale(1.07)}
+.bb-voice:active{transform:scale(.91)}
+.bb-voice.mic-active{animation:voicePulse 1.2s ease-in-out infinite}
+@keyframes voicePulse{0%,100%{box-shadow:0 0 0 0 rgba(32,192,208,.5)}50%{box-shadow:0 0 0 12px rgba(32,192,208,0)}}
+.bb-voice svg{width:20px;height:20px;stroke:#0d0d0d;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
 
-    /* Utilisateur : bulle à droite, max 78% de largeur */
-    .msg.user {
-      align-self: flex-end;
-      align-items: flex-end;
-      max-width: 78%;
-    }
+/* bouton envoyer (remplace vocal quand texte) */
+.bb-send{
+  width:42px;height:42px;border-radius:50%;border:none;
+  background:var(--accent);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  opacity:0;transform:scale(.35) rotate(-15deg);pointer-events:none;
+  transition:opacity .22s ease,transform .28s cubic-bezier(.34,1.7,.64,1);
+  position:absolute;
+}
+.bb-send.show{opacity:1;transform:none;pointer-events:auto;position:relative}
+.bb-send:hover{filter:brightness(1.1);transform:scale(1.07)!important}
+.bb-send:active{transform:scale(.91)!important}
+.bb-send svg{width:18px;height:18px;stroke:#0d0d0d;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 
-    /* Gemini : bulle pleine largeur pour les longues réponses */
-    .msg.gemini {
-      align-self: stretch;       /* prend toute la largeur disponible */
-      align-items: flex-start;
-      max-width: 100%;
-    }
+/* wrapper pour superposer send/voice */
+.voice-wrap{position:relative;width:42px;height:42px;flex-shrink:0}
+.voice-wrap .bb-voice,.voice-wrap .bb-send{position:absolute;top:0;left:0}
+.voice-wrap .bb-send.show{position:relative}
 
-    .bubble {
-      padding: 11px 15px;
-      border-radius: 20px;
-      font-size: 14.5px;
-      line-height: 1.6;
-      /* Empêche le texte de déborder */
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      /* Empêche la bulle de dépasser le conteneur */
-      min-width: 0;
-      max-width: 100%;
-    }
-    .msg.user .bubble {
-      background: rgba(255,255,255,.72); backdrop-filter: blur(14px);
-      border-bottom-right-radius: 5px; color: var(--text-dark);
-      box-shadow: 0 2px 14px rgba(100,200,120,.18);
-    }
-    .msg.gemini .bubble {
-      background: rgba(255,255,255,.45); backdrop-filter: blur(14px);
-      border-bottom-left-radius: 5px; color: var(--text-dark);
-      box-shadow: 0 2px 12px rgba(100,200,150,.12);
-    }
-    .msg-label {
-      font-size: 10.5px; color: var(--text-muted);
-      font-weight: 600; letter-spacing: .05em;
-      padding: 0 4px; text-transform: uppercase;
-    }
+/* ══ VUE CHAT ══ */
+#view-chat{display:none;flex-direction:column;height:100%;animation:viewIn .38s cubic-bezier(.4,0,.2,1)}
+#view-chat.active{display:flex}
 
-    /* Aperçu image dans la bulle */
-    .bubble img.preview {
-      max-width: 100%; max-height: 220px; border-radius: 12px;
-      display: block; margin-bottom: 8px; object-fit: cover;
-    }
-    /* Badge fichier dans la bulle */
-    .file-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(100,180,120,.18); border: 1px solid rgba(80,160,100,.25);
-      border-radius: 10px; padding: 6px 12px;
-      font-size: 12px; color: var(--text-mid); margin-bottom: 6px;
-      /* Empêche le badge de déborder */
-      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
+.chat-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:max(54px,env(safe-area-inset-top,54px)) 16px 12px;
+  flex-shrink:0;border-bottom:1px solid var(--border);
+}
+.chat-back{width:36px;height:36px;border-radius:50%;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-mid);transition:background .18s,color .18s}
+.chat-back:hover{background:var(--surface2);color:var(--text)}
+.chat-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.chat-title{text-align:center}
+.chat-title-name{font-size:15px;font-weight:700;color:var(--text)}
+.chat-title-sub{font-size:11px;color:var(--text-mid);margin-top:1px}
 
-    /* ── Rendu Markdown ── */
-    .bubble code {
-      background: rgba(80,180,100,.15); padding: 1px 5px;
-      border-radius: 5px; font-family: 'Courier New', monospace;
-      font-size: 12.5px; color: #2a6a40;
-      /* Autoriser le retour à la ligne dans le code inline */
-      word-break: break-all;
-    }
-    .bubble pre {
-      background: rgba(0,0,0,.07); border-radius: 10px;
-      padding: 12px;
-      /* CRITIQUE : scroll horizontal sur les blocs de code, jamais overflow */
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin: 8px 0; font-size: 12px;
-      /* Empêche le pre de forcer la largeur de la bulle */
-      max-width: 100%;
-      white-space: pre;          /* respecter les indentations */
-    }
-    .bubble pre code {
-      background: none; padding: 0; color: #1a4a2a;
-      word-break: normal;        /* dans un pre, ne pas casser les mots */
-      white-space: pre;
-    }
-    .bubble strong { font-weight: 700; }
-    .bubble em { color: #3a7050; }
-    .bubble h1 { font-size: 1.15em; font-weight: 700; margin: 10px 0 5px; }
-    .bubble h2 { font-size: 1.05em; font-weight: 700; margin: 8px 0 4px; }
-    .bubble h3 { font-size: 1em;    font-weight: 700; margin: 6px 0 3px; }
-    .bubble ul, .bubble ol { padding-left: 16px; margin: 4px 0; }
-    .bubble li { margin: 3px 0; line-height: 1.5; }
+#messages{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 14px 8px;display:flex;flex-direction:column;gap:18px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+#messages::-webkit-scrollbar{display:none}
+.msg{display:flex;flex-direction:column;gap:4px}
+.msg.user{align-items:flex-end}
+.msg.gemini{align-items:flex-start}
+.msg-label{font-size:10.5px;font-weight:600;color:var(--text-dim);padding:0 4px;letter-spacing:.06em;text-transform:uppercase}
+.bubble{max-width:82%;padding:11px 15px;border-radius:20px;font-size:14.5px;line-height:1.65;color:var(--text)}
+.msg.user .bubble{background:var(--surface2);border:1px solid var(--border);border-bottom-right-radius:5px}
+.msg.gemini .bubble{background:transparent;padding:4px 0;max-width:100%}
+.bubble pre{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;overflow-x:auto;font-size:12.5px;margin:8px 0}
+.bubble code{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;font-size:12.5px}
+.bubble pre code{background:none;border:none;padding:0}
+.bubble h1,.bubble h2,.bubble h3{margin:10px 0 5px;color:var(--text)}
+.bubble h1{font-size:18px}.bubble h2{font-size:16px}.bubble h3{font-size:14.5px}
+.bubble ul{padding-left:18px;margin:5px 0}.bubble li{margin:3px 0}
+.bubble strong{color:var(--text);font-weight:600}
+.bubble img.preview{max-width:200px;max-height:200px;border-radius:12px;display:block;margin-bottom:6px}
+.file-badge{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:5px 10px;font-size:12px;color:var(--text-mid);margin-bottom:6px}
+.error-msg{text-align:center;font-size:13px;color:#e05050;background:rgba(224,80,80,.08);border:1px solid rgba(224,80,80,.18);border-radius:12px;padding:10px 14px}
 
-    /* ===== IMPROVED ORB — thinking (big center orb) =====
-       plus d'ampleur : pulsatation rapide + anneaux rotatifs + micro particules via pseudo-element
-    */
-    #orb-screen {
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      flex: 1; gap: 20px;
-    }
-    #orb-screen.active { display: flex; }
-    .orb-thinking {
-      width: 160px; height: 160px; border-radius: 50%;
-      position: relative;
-      background: radial-gradient(circle at 36% 34%, #fffef0 0%, #c8ffd0 20%, #60f0b0 48%, #70a0ff 100%);
-      box-shadow:
-        0 10px 80px rgba(80,230,160,.32),
-        0 0 200px rgba(80,200,220,.28),
-        inset 0 -18px 50px rgba(0,0,0,.08);
-      overflow: visible;
-      animation:
-        orbPulse 2.6s ease-in-out infinite,
-        thinkingRotate calc(var(--orb-slow) * 0.9) linear infinite,
-        thinkingGlow 6s ease-in-out infinite;
-      transform-origin: center;
-    }
-    .orb-thinking::before,
-    .orb-thinking::after {
-      content: '';
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-      mix-blend-mode: screen;
-    }
-    /* grand halo */
-    .orb-thinking::before {
-      inset: -30px;
-      background: radial-gradient(circle at 40% 38%, rgba(140,255,190,.55), rgba(80,200,220,.28) 30%, transparent 60%);
-      filter: blur(30px);
-      opacity: .95;
-      animation: bigHaloBeat 6s ease-in-out infinite;
-    }
-    /* anneau interne fin qui tourne vite */
-    .orb-thinking::after {
-      inset: -8px;
-      background: conic-gradient(from 90deg, rgba(255,255,255,.06), rgba(60,200,150,.06), rgba(120,160,250,.05));
-      filter: blur(8px);
-      animation: ringSpin 9s linear infinite;
-      opacity: .85;
-    }
+#orb-screen{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px}
+#orb-screen.active{display:flex}
+.thinking-text{font-size:14px;font-weight:500;background:linear-gradient(90deg,var(--text-mid),var(--accent),var(--text-mid));background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 2s linear infinite}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+.thinking-dots{display:flex;gap:5px}
+.thinking-dots span{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:dotPulse 1.4s ease-in-out infinite}
+.thinking-dots span:nth-child(2){animation-delay:.2s}
+.thinking-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotPulse{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1.1);opacity:1}}
 
-    @keyframes orbPulse {
-      0%   { transform: scale(1); filter: drop-shadow(0 10px 60px rgba(80,200,160,.22)); }
-      50%  { transform: scale(1.08); filter: drop-shadow(0 18px 100px rgba(80,220,170,.36)); }
-      100% { transform: scale(1); filter: drop-shadow(0 10px 60px rgba(80,200,160,.22)); }
-    }
-    @keyframes thinkingRotate {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(-360deg); }
-    }
-    @keyframes thinkingGlow {
-      0%   { filter: hue-rotate(0deg) brightness(1); }
-      50%  { filter: hue-rotate(10deg) brightness(1.05); }
-      100% { filter: hue-rotate(0deg) brightness(1); }
-    }
-    @keyframes bigHaloBeat {
-      0%   { transform: scale(.98); opacity:.92; }
-      50%  { transform: scale(1.06); opacity:1; }
-      100% { transform: scale(.98); opacity:.92; }
-    }
-    @keyframes ringSpin {
-      from { transform: rotate(0deg) }
-      to   { transform: rotate(360deg) }
-    }
+#pending-files{display:none;flex-wrap:wrap;gap:7px;padding:6px 14px 0;flex-shrink:0}
+#pending-files.has-files{display:flex}
+.pending-chip{display:flex;align-items:center;gap:6px;background:rgba(32,192,208,.1);border:1px solid rgba(32,192,208,.2);border-radius:16px;padding:5px 10px 5px 7px;font-size:12px;font-weight:500;color:var(--accent);animation:fadeUp .2s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.pending-chip img{width:26px;height:26px;border-radius:5px;object-fit:cover}
+.chip-remove{background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:13px;padding:0 2px}
+.chip-remove:hover{color:#e05050}
+.chip-progress{display:inline-block;width:12px;height:12px;border:2px solid rgba(32,192,208,.25);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-    .orb-label { font-size: 14px; color: var(--text-mid); font-weight: 500; animation: blink 1.5s ease-in-out infinite; }
-    @keyframes blink { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(26,26,26,.97);backdrop-filter:blur(16px);color:var(--text);padding:9px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:400;border:1px solid var(--border);opacity:0;transition:all .3s cubic-bezier(.34,1.3,.64,1);pointer-events:none;white-space:nowrap;max-width:calc(100vw - 40px)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-    /* ── Message d'erreur ── */
-    .error-msg {
-      align-self: center;
-      background: rgba(255,100,100,.15); backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,100,100,.3); color: #c03030;
-      font-size: 13px; padding: 10px 16px; border-radius: 14px;
-      max-width: 90%; text-align: center;
-    }
+/* ══ SHEETS ══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.visible{display:flex}
+.sheet{background:#1a1a1a;border:1px solid var(--border);border-radius:28px 28px 0 0;padding:8px 22px max(32px,env(safe-area-inset-bottom,32px));width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px;animation:sheetUp .32s cubic-bezier(.34,1.4,.64,1)}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border);margin:8px auto 4px}
+.sheet h2,.sheet h3{font-size:1.1rem;font-weight:700;color:var(--text);text-align:center}
+.sheet-sub{font-size:13px;color:var(--text-mid);text-align:center;line-height:1.6}
+.api-wrap{width:100%;position:relative;display:flex;align-items:center}
+.api-input{width:100%;padding:13px 46px 13px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;font-family:var(--sans);font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
+.api-input:focus{border-color:var(--accent)}
+.api-input::placeholder{color:var(--text-dim)}
+.eye-btn{position:absolute;right:12px;background:none;border:none;cursor:pointer;color:var(--text-mid);display:flex;padding:4px}
+.eye-btn:hover{color:var(--text)}
+.sec-badge{font-size:12px;color:var(--text-dim);text-align:center}
+.btn-primary{background:var(--accent);border:none;border-radius:14px;padding:14px;font-family:var(--sans);font-size:15px;font-weight:700;color:#0d0d0d;cursor:pointer;transition:filter .2s,transform .15s}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.sheet-link{font-size:12.5px;color:var(--text-dim);text-align:center}
+.sheet-link a{color:var(--accent);text-decoration:none}
+#inst-textarea{width:100%;min-height:110px;max-height:200px;background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;font-family:var(--sans);font-size:13.5px;color:var(--text);line-height:1.6;resize:vertical;outline:none;transition:border-color .2s}
+#inst-textarea:focus{border-color:var(--accent)}
+#inst-textarea::placeholder{color:var(--text-dim)}
+.inst-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);background:rgba(32,192,208,.08);border:1px solid rgba(32,192,208,.15);border-radius:20px;padding:6px 12px;align-self:center}
+.inst-row{display:flex;gap:10px}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:13px 18px;font-family:var(--sans);font-size:14px;font-weight:500;color:var(--text-mid);cursor:pointer}
+.btn-secondary:hover{background:#2a2a2a}
+#file-img-input,#file-doc-input{display:none}
 
-    /* ── Chips fichiers en attente ── */
-    #pending-files {
-      display: none; flex-wrap: wrap; gap: 8px;
-      padding: 8px 14px 0; flex-shrink: 0;
-    }
-    #pending-files.has-files { display: flex; }
-    .pending-chip {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,.7); backdrop-filter: blur(10px);
-      border: 1px solid rgba(100,180,120,.3);
-      border-radius: 20px; padding: 5px 10px 5px 8px;
-      font-size: 12px; font-weight: 600; color: var(--text-mid);
-      animation: popIn .2s ease;
-    }
-    .pending-chip img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; }
-    .chip-remove {
-      background: none; border: none; cursor: pointer;
-      color: var(--text-muted); font-size: 14px; line-height: 1;
-      padding: 0 2px; transition: color .15s;
-    }
-    .chip-remove:hover { color: var(--danger); }
-    .chip-progress {
-      display: inline-block; width: 14px; height: 14px;
-      border: 2px solid rgba(100,180,120,.3); border-top-color: #50c080;
-      border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* ══ ANIMATIONS FLUIDES ══ */
+@keyframes viewIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes msgSlideIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes msgSlideRight{from{opacity:0;transform:translateX(14px) scale(.97)}to{opacity:1;transform:none}}
 
-    /* ── Zone de saisie — animations focus/blur ── */
-    #input-wrap {
-      flex-shrink: 0;
-      padding: 10px 14px;
-      padding-bottom: max(22px, env(safe-area-inset-bottom, 22px));
-    }
+/* Messages animés */
+.msg{animation:msgSlideIn .3s cubic-bezier(.34,1.3,.64,1)}
+.msg.user{animation:msgSlideRight .3s cubic-bezier(.34,1.3,.64,1)}
 
-    /* État repos : pill compacte */
-    #input-card {
-      background: rgba(255,255,255,.62);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 50px;                       /* pill */
-      box-shadow:
-        0 2px 12px rgba(100,180,120,.12),
-        0 1px 2px rgba(255,255,255,.7) inset;
-      overflow: hidden;
-      /* Transition principale sur border-radius + shadow */
-      transition:
-        border-radius .38s cubic-bezier(.34,1.3,.64,1),
-        box-shadow    .38s cubic-bezier(.34,1.3,.64,1),
-        background    .3s ease;
-      will-change: border-radius, box-shadow;
-    }
+/* Barre : glow subtil au focus */
+.perp-bar{
+  transition:border-color .25s ease, box-shadow .3s ease, border-radius .25s ease;
+}
+.perp-bar:focus-within{
+  border-color:#3a3a3a;
+  box-shadow:0 0 0 1px rgba(32,192,208,.08), 0 8px 32px rgba(0,0,0,.4);
+}
 
-    /* État focus : card étendue, coins plus carrés */
-    #input-card.expanded {
-      border-radius: 24px;
-      background: rgba(255,255,255,.82);
-      box-shadow:
-        0 8px 40px rgba(80,180,120,.22),
-        0 1px 3px rgba(255,255,255,.9) inset,
-        0 0 0 1.5px rgba(100,210,140,.35);
-    }
+/* Boutons : spring bounce */
+.bb{transition:background .18s,color .18s,transform .2s cubic-bezier(.34,1.6,.64,1)}
+.bb:active{transform:scale(.86)!important}
 
-    /* Ligne de texte */
-    #user-input {
-      width: 100%; background: transparent; border: none; outline: none;
-      padding: 14px 18px;
-      font-family: var(--font); font-size: 15px; color: var(--text-dark);
-      resize: none; line-height: 1.5; display: block;
-      /* Hauteur animée : min au repos, max au focus */
-      max-height: 120px;
-      transition: padding .32s ease;
-    }
-    #user-input::placeholder {
-      color: var(--text-muted);
-      transition: opacity .2s ease;
-    }
+/* Header : entrée douce */
+.home-header{animation:fadeDown .4s cubic-bezier(.4,0,.2,1)}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
-    /* Divider invisible au repos, visible au focus */
-    .input-divider {
-      height: 1px;
-      background: rgba(100,180,100,.18);
-      margin: 0 16px;
-      transform: scaleX(0);
-      transform-origin: center;
-      opacity: 0;
-      transition: transform .35s cubic-bezier(.34,1.4,.64,1) .05s, opacity .25s ease .05s;
-    }
-    #input-card.expanded .input-divider {
-      transform: scaleX(1);
-      opacity: 1;
-    }
+/* Barre home : monte depuis le bas */
+.bar-area{animation:barUp .45s cubic-bezier(.34,1.2,.64,1)}
+@keyframes barUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 
-    /* Barre d'actions : cachée au repos */
-    #input-actions {
-      display: flex; align-items: center;
-      padding: 0 14px;
-      gap: 14px;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transition:
-        max-height .38s cubic-bezier(.34,1.3,.64,1),
-        padding    .38s cubic-bezier(.34,1.3,.64,1),
-        opacity    .25s ease;
-    }
-    #input-card.expanded #input-actions {
-      max-height: 60px;
-      padding: 6px 14px 12px;
-      opacity: 1;
-    }
+/* Bubble Gemini : apparition mot par mot simulée via fade */
+.msg.gemini .bubble{animation:geminiIn .4s cubic-bezier(.4,0,.2,1)}
+@keyframes geminiIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 
-    .action-icons { display: flex; gap: 14px; flex: 1; align-items: center; }
+/* Chips : spring pop */
+.pending-chip{animation:chipPop .28s cubic-bezier(.34,1.7,.64,1)}
+@keyframes chipPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
 
-    /* Chaque icône entre en stagger */
-    .action-btn {
-      opacity: 0;
-      transform: translateY(6px) scale(.85);
-      transition:
-        opacity   .22s ease,
-        transform .28s cubic-bezier(.34,1.5,.64,1),
-        background .18s ease;
-    }
-    #input-card.expanded .action-btn {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-    /* Stagger sur chaque bouton d'action */
-    #input-card.expanded .action-btn:nth-child(1) { transition-delay: .08s; }
-    #input-card.expanded .action-btn:nth-child(2) { transition-delay: .13s; }
-    #input-card.expanded .action-btn:nth-child(3) { transition-delay: .18s; }
+/* Orb : entrée douce */
+#orb-screen.active{animation:orbIn .3s ease}
+@keyframes orbIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
 
-    /* Bouton envoyer : entre avec un léger rebond */
-    #send-btn {
-      opacity: 0;
-      transform: scale(.6) rotate(-20deg);
-      transition:
-        opacity   .25s ease .14s,
-        transform .32s cubic-bezier(.34,1.6,.64,1) .14s,
-        box-shadow .2s ease;
-    }
-    #input-card.expanded #send-btn {
-      opacity: 1;
-      transform: scale(1) rotate(0deg);
-    }
+/* Send button : spring */
+.bb-send{transition:opacity .22s ease,transform .32s cubic-bezier(.34,1.9,.64,1),filter .2s}
+.bb-send.show{transform:scale(1) rotate(0deg)!important}
 
-    /* Boutons d'action de l'input */
-    .action-btn {
-      display: flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 50%;
-      background: none; border: none; cursor: pointer;
-      position: relative;
-      /* Les transitions opacity/transform sont gérées par les états expanded */
-    }
-    .action-btn svg { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; transition: stroke .18s; }
-    .action-btn:hover { background: rgba(100,180,120,.14); transform: scale(1.12) !important; }
-    .action-btn:hover svg { stroke: var(--text-dark); }
+/* Voice btn hover : subtle lift */
+.bb-voice{transition:transform .22s cubic-bezier(.34,1.6,.64,1),box-shadow .3s,filter .2s}
+.bb-voice:hover{transform:scale(1.1)!important;filter:brightness(1.1)}
 
-    /* État micro actif */
-    .action-btn.mic-active { background: rgba(240,80,80,.12); }
-    .action-btn.mic-active svg { stroke: var(--danger); }
-    .action-btn.mic-active::after {
-      content: ''; position: absolute; inset: -3px; border-radius: 50%;
-      border: 2px solid rgba(240,80,80,.5);
-      animation: micPulse 1s ease-in-out infinite;
-    }
-    @keyframes micPulse {
-      0%,100% { transform: scale(1);   opacity: 1; }
-      50%      { transform: scale(1.2); opacity: .5; }
-    }
+/* Chat header : slide in */
+.chat-header{animation:fadeDown .35s cubic-bezier(.4,0,.2,1)}
 
-    /* Bouton envoyer — taille et couleur (les animations entrée/sortie sont dans expanded) */
-    #send-btn {
-      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
-      background: linear-gradient(135deg, var(--send-blue), var(--send-blue2));
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      box-shadow: 0 4px 16px rgba(79,172,254,.45);
-    }
-    #input-card.expanded #send-btn:hover  { transform: scale(1.1) !important; box-shadow: 0 6px 24px rgba(79,172,254,.65); }
-    #input-card.expanded #send-btn:active { transform: scale(.94) !important; }
-    #send-btn:disabled { opacity: .4; cursor: not-allowed; }
+/* Hdr-logo : rotation au clic */
+.hdr-logo{transition:background .18s,transform .3s cubic-bezier(.34,1.6,.64,1)}
+.hdr-logo:active{transform:rotate(30deg) scale(.9)}
 
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 100px; left: 50%;
-      transform: translateX(-50%) translateY(10px);
-      background: rgba(20,30,20,.88); backdrop-filter: blur(10px);
-      color: #d8f5d8; padding: 8px 18px; border-radius: 20px;
-      font-size: 13px; font-weight: 500; z-index: 300;
-      opacity: 0; transition: all .3s ease; pointer-events: none; white-space: nowrap;
-      max-width: calc(100vw - 40px); overflow: hidden; text-overflow: ellipsis;
-    }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* Sheet overlay : fond animé */
+.overlay{transition:background .3s ease}
+.overlay.visible{animation:overlayIn .25s ease}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
 
-    /* ── Modal clé API (plein écran, bloquant) ── */
-    #modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(160,230,160,.3);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-      z-index: 200; align-items: center; justify-content: center; padding: 24px;
-    }
-    #modal-overlay.visible { display: flex; }
+/* Textarea : transition hauteur douce */
+.bar-ta{transition:height .15s ease}
 
-    #modal {
-      background: rgba(255,255,255,.85); backdrop-filter: blur(24px);
-      border-radius: 30px; padding: 32px 26px 26px;
-      width: 100%; max-width: 360px;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 14px; text-align: center;
-      box-shadow: 0 24px 70px rgba(60,160,80,.2);
-      animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
-    }
+/* Thinking dots : scale plus prononcé */
+.thinking-dots span{width:6px;height:6px;animation:dotBounce 1.2s cubic-bezier(.34,1.7,.64,1) infinite}
+@keyframes dotBounce{0%,60%,100%{transform:translateY(0) scale(.7);opacity:.4}30%{transform:translateY(-6px) scale(1.15);opacity:1}}
+.thinking-dots span:nth-child(2){animation-delay:.15s}
+.thinking-dots span:nth-child(3){animation-delay:.3s}
 
-    /* ===== IMPROVED ORB — modal small orb ===== */
-    .modal-orb {
-      width: 64px; height: 64px; border-radius: 50%;
-      position: relative;
-      background: radial-gradient(circle at 35% 35%, #f8ffb8, #79f0a0 45%, #45c8e0 80%);
-      box-shadow: 0 0 30px rgba(80,220,150,.5), 0 6px 24px rgba(50,180,110,.12);
-      animation: orbFloat 4.2s ease-in-out infinite, modalRing 9s linear infinite, modalHue 7s ease-in-out infinite;
-      flex-shrink: 0;
-      overflow: visible;
-    }
-    .modal-orb::before {
-      content: '';
-      position: absolute;
-      inset: -10px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.12), rgba(60,200,150,.06), transparent 45%);
-      filter: blur(12px);
-      animation: modalHalo 4.2s ease-in-out infinite;
-    }
-    @keyframes modalRing {
-      from { transform: rotate(0deg) }
-      to   { transform: rotate(360deg) }
-    }
-    @keyframes modalHue {
-      0% { filter: hue-rotate(0deg); }
-      50% { filter: hue-rotate(8deg) brightness(1.02); }
-      100% { filter: hue-rotate(0deg); }
-    }
-    @keyframes modalHalo {
-      0% { opacity: .9; transform: scale(.98); }
-      50% { opacity: 1; transform: scale(1.05); }
-      100% { opacity: .9; transform: scale(.98); }
-    }
-
-    .modal-orb { animation-timing-function: cubic-bezier(.2,.9,.1,1); }
-
-    #modal h2 { font-size: 1.35rem; font-weight: 700; color: var(--text-dark); letter-spacing: -.03em; }
-    .modal-sub { font-size: 13px; color: var(--text-muted); line-height: 1.6; max-width: 280px; }
-    .modal-sub strong { color: var(--text-mid); font-weight: 600; }
-
-    .modal-input-wrap { width: 100%; position: relative; display: flex; align-items: center; }
-    #modal-input {
-      width: 100%; background: rgba(200,240,210,.45);
-      border: 1.5px solid rgba(100,200,130,.4); border-radius: 14px;
-      padding: 13px 44px 13px 16px; font-family: var(--font);
-      font-size: 14px; color: var(--text-dark); outline: none;
-      transition: border-color .2s; letter-spacing: .04em;
-    }
-    #modal-input:focus { border-color: rgba(60,180,100,.7); background: rgba(200,240,210,.6); }
-
-    #modal-toggle-vis {
-      position: absolute; right: 12px;
-      background: none; border: none; cursor: pointer;
-      color: var(--text-muted); padding: 4px; transition: color .18s;
-      display: flex; align-items: center;
-    }
-    #modal-toggle-vis:hover { color: var(--text-dark); }
-    #modal-toggle-vis svg { transition: opacity .2s; }
-
-    .security-badge {
-      background: rgba(80,200,120,.15); border: 1px solid rgba(80,200,120,.3);
-      border-radius: 20px; padding: 6px 14px;
-      font-size: 11.5px; font-weight: 600; color: #2a8050; letter-spacing: .02em;
-    }
-    #modal-save {
-      width: 100%; background: linear-gradient(135deg, #60d080, #30c0a0);
-      border: none; border-radius: 14px; padding: 14px;
-      font-family: var(--font); font-size: 15px; font-weight: 700;
-      color: #fff; cursor: pointer;
-      box-shadow: 0 6px 20px rgba(60,180,120,.35); transition: all .2s;
-    }
-    #modal-save:hover  { filter: brightness(1.08); transform: translateY(-1px); }
-    #modal-save:active { transform: translateY(0); }
-
-    .modal-link { font-size: 12px; color: var(--text-muted); }
-    .modal-link a { color: #30a070; text-decoration: none; font-weight: 600; }
-    .modal-link a:hover { text-decoration: underline; }
-
-    /* Inputs fichiers (cachés) */
-    #file-img-input, #file-doc-input { display: none; }
-  </style>
+</style>
 </head>
 <body>
-
-<div id="bg"></div>
-
 <div id="app">
-  <header>
-    <div class="header-title">
-      <span class="header-greeting">Bonjour 👋</span>
-      <span class="header-name">Gemini 2.5 Flash</span>
-    </div>
-    <div class="header-actions">
-      <button class="icon-btn" id="clear-btn" title="Effacer la conversation">🗑</button>
-    </div>
-  </header>
 
-  <div id="messages">
-    <div id="empty-state">
-      <div class="orb-static"></div>
-      <p class="empty-text">Qu'est-ce qui vous préoccupe ?</p>
+<!-- ══ HOME ══ -->
+<div id="view-home">
+  <div class="home-header">
+    <div class="hdr-logo" id="btn-settings" title="Instructions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#20c0d0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
+    <div class="hdr-center">
+      <span class="hdr-center-text">Gemini Flash</span>
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
   </div>
 
-  <div id="orb-screen">
-    <div class="orb-thinking"></div>
-    <span class="orb-label">Gemini réfléchit…</span>
-  </div>
+  <div class="home-body"></div>
 
-  <div id="pending-files"></div>
-
-  <div id="input-wrap">
-    <div id="input-card">
-      <textarea id="user-input" rows="1" placeholder="Posez votre question…"></textarea>
-      <div class="input-divider"></div>
-      <div id="input-actions">
-        <div class="action-icons">
-
-          <button class="action-btn" id="btn-img" title="Envoyer une image">
-            <svg viewBox="0 0 24 24" stroke-width="1.8">
-              <rect x="3" y="3" width="18" height="18" rx="3"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
+  <div class="bar-area">
+    <div class="perp-bar">
+      <div class="bar-row">
+        <textarea id="home-input" class="bar-ta" rows="1" placeholder="Posez une question…"></textarea>
+      </div>
+      <div class="bar-foot">
+        <div class="bar-foot-left">
+          <button class="bb" id="home-btn-plus" title="Joindre un fichier">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
-
-          <button class="action-btn" id="btn-doc" title="Envoyer un document">
-            <svg viewBox="0 0 24 24" stroke-width="1.8">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="8" y1="13" x2="16" y2="13"/>
-              <line x1="8" y1="17" x2="12" y2="17"/>
-            </svg>
+          <button class="bb" id="home-btn-search" title="Recherche web">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
           </button>
-
-          <button class="action-btn" id="btn-mic" title="Dictée vocale">
-            <svg viewBox="0 0 24 24" stroke-width="1.8">
-              <rect x="9" y="2" width="6" height="11" rx="3"/>
-              <path d="M5 10a7 7 0 0 0 14 0"/>
-              <line x1="12" y1="19" x2="12" y2="23"/>
-              <line x1="8"  y1="23" x2="16" y2="23"/>
-            </svg>
-          </button>
-
         </div>
-        <button id="send-btn" title="Envoyer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-               stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"/>
-            <polyline points="5 12 12 5 19 12"/>
-          </svg>
-        </button>
+        <div class="bar-foot-right">
+          <button class="bb" id="home-mic-btn" title="Dictée">
+            <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="voice-wrap">
+            <button class="bb-voice" id="home-voice-btn">
+              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="bb-send" id="home-send-btn">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Inputs fichiers cachés, hors du #app pour éviter tout layout shift -->
+<!-- ══ CHAT ══ -->
+<div id="view-chat">
+  <div class="chat-header">
+    <button class="chat-back" id="chat-back-btn">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="chat-title">
+      <div class="chat-title-name">Gemini 2.5 Flash</div>
+      <div class="chat-title-sub">AI · Google</div>
+    </div>
+    <button class="bb" id="clear-btn" title="Effacer">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </button>
+  </div>
+
+  <div id="messages"></div>
+  <div id="orb-screen">
+    <div class="thinking-text">Gemini réfléchit</div>
+    <div class="thinking-dots"><span></span><span></span><span></span></div>
+  </div>
+  <div id="pending-files"></div>
+
+  <div class="bar-area">
+    <div class="perp-bar">
+      <div class="bar-row">
+        <textarea id="user-input" class="bar-ta" rows="1" placeholder="Posez une question…"></textarea>
+      </div>
+      <div class="bar-foot">
+        <div class="bar-foot-left">
+          <button class="bb" id="btn-img" title="Image">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="bb" id="btn-doc" title="Document">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+          </button>
+        </div>
+        <div class="bar-foot-right">
+          <button class="bb" id="btn-mic" title="Dictée" style="position:relative">
+            <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <div class="voice-wrap">
+            <button class="bb-voice" id="chat-voice-btn">
+              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="bb-send" id="send-btn">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
 <input type="file" id="file-img-input" accept="image/jpeg,image/png,image/gif,image/webp"/>
 <input type="file" id="file-doc-input" accept="application/pdf,text/plain,text/markdown,text/html,text/csv"/>
-
 <div id="toast"></div>
 
-<!-- Modal clé API — bloquant, aucune fermeture sans clé valide -->
-<div id="modal-overlay">
-  <div id="modal">
-    <div class="modal-orb"></div>
-    <h2>Gemini 2.5 Flash</h2>
-    <p class="modal-sub">
-      Entrez votre clé API Google AI Studio pour commencer.<br>
-      Elle reste <strong>uniquement en mémoire</strong> et disparaît à la fermeture de l'onglet.
-    </p>
-    <div class="modal-input-wrap">
-      <input id="modal-input" type="password" placeholder="AIza..." autocomplete="off" spellcheck="false"/>
-      <button id="modal-toggle-vis" type="button" title="Afficher / masquer la clé">
-        <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.8" width="18" height="18">
+<!-- Sheet instructions -->
+<div class="overlay" id="inst-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h3>Instructions personnalisées</h3>
+    <p class="sheet-sub">Contexte permanent pour Gemini</p>
+    <textarea id="inst-textarea" placeholder="Ex : Tu es un expert en marketing. Réponds toujours en français, concis."></textarea>
+    <div class="inst-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      Ctrl+Entrée pour sauvegarder
+    </div>
+    <div class="inst-row">
+      <button class="btn-secondary" id="inst-cancel">Annuler</button>
+      <button class="btn-primary" id="inst-save" style="flex:1">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sheet clé API -->
+<div class="overlay" id="modal-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Gemini</h2>
+    <p class="sheet-sub">Clé API Google AI Studio.<br>Reste <strong style="color:var(--text)">uniquement en mémoire</strong>.</p>
+    <div class="api-wrap">
+      <input class="api-input" id="modal-input" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false"/>
+      <button class="eye-btn" id="modal-toggle-vis">
+        <svg id="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
           <circle cx="12" cy="12" r="3"/>
         </svg>
       </button>
     </div>
-    <div class="security-badge">🔒 Jamais stockée · Disparaît à la fermeture</div>
-    <button id="modal-save">Commencer →</button>
-    <p class="modal-link">
-      Pas de clé ?
-      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
-        Obtenir une clé gratuite ↗
-      </a>
-    </p>
+    <p class="sec-badge">🔒 Jamais stockée · Disparaît à la fermeture</p>
+    <button class="btn-primary" id="modal-save">Commencer →</button>
+    <p class="sheet-link">Pas de clé ? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Obtenir gratuitement ↗</a></p>
   </div>
 </div>
 
 <script>
 'use strict';
-// ═══════════════════════════════════════════════════════════════════════════════
-// CONSTANTES
-// ═══════════════════════════════════════════════════════════════════════════════
+const GENERATE_URL='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+const UPLOAD_URL='https://generativelanguage.googleapis.com/upload/v1beta/files';
+const LS_KEY_HST='gemini_history';const LS_KEY_INST='gemini_instructions';
+let apiKey='',customInst=localStorage.getItem(LS_KEY_INST)||'';
+let history=JSON.parse(localStorage.getItem(LS_KEY_HST)||'[]');
+let pendingFiles=[],recognition=null,isListening=false;
 
-const GENERATE_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
-const UPLOAD_URL   = 'https://generativelanguage.googleapis.com/upload/v1beta/files';
-const LS_KEY_HST   = 'gemini_history';
+const $viewHome=document.getElementById('view-home');
+const $viewChat=document.getElementById('view-chat');
+const $messages=document.getElementById('messages');
+const $orbScreen=document.getElementById('orb-screen');
+const $pendingWrap=document.getElementById('pending-files');
+const $toast=document.getElementById('toast');
+const $homeInput=document.getElementById('home-input');
+const $homeSendBtn=document.getElementById('home-send-btn');
+const $homeVoice=document.getElementById('home-voice-btn');
+const $input=document.getElementById('user-input');
+const $sendBtn=document.getElementById('send-btn');
+const $chatVoice=document.getElementById('chat-voice-btn');
+const $btnMic=document.getElementById('btn-mic');
+const $btnImg=document.getElementById('btn-img');
+const $btnDoc=document.getElementById('btn-doc');
+const $fileImgIn=document.getElementById('file-img-input');
+const $fileDocIn=document.getElementById('file-doc-input');
+const $modalOverlay=document.getElementById('modal-overlay');
+const $modalInput=document.getElementById('modal-input');
+const $modalSave=document.getElementById('modal-save');
+const $modalToggle=document.getElementById('modal-toggle-vis');
+const $eyeIcon=document.getElementById('eye-icon');
+const $instOverlay=document.getElementById('inst-overlay');
+const $instTextarea=document.getElementById('inst-textarea');
+const $instSave=document.getElementById('inst-save');
+const $instCancel=document.getElementById('inst-cancel');
+const $btnSettings=document.getElementById('btn-settings');
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ÉTAT — clé API JAMAIS persistée, uniquement en RAM
-// ═══════════════════════════════════════════════════════════════════════════════
+/* navigation */
+function showChat(){$viewHome.classList.add('hidden');$viewChat.classList.add('active');setTimeout(()=>$input.focus(),300)}
+function showHome(){$viewChat.classList.remove('active');$viewHome.classList.remove('hidden')}
+document.getElementById('chat-back-btn').addEventListener('click',showHome);
 
-let apiKey      = '';   // En mémoire uniquement
-let history     = JSON.parse(localStorage.getItem(LS_KEY_HST) || '[]');
-let pendingFiles = [];  // { type, name, mimeType, base64?, objectUrl?, fileUri?, uploading? }
-let recognition  = null;
-let isListening  = false;
+/* resize textarea */
+function resizeTA(ta){ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,130)+'px'}
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// RÉFÉRENCES DOM (toutes vérifiées à l'init)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const $messages     = document.getElementById('messages');
-const $emptyState   = document.getElementById('empty-state');
-const $orbScreen    = document.getElementById('orb-screen');
-const $input        = document.getElementById('user-input');
-const $sendBtn      = document.getElementById('send-btn');
-const $pendingWrap  = document.getElementById('pending-files');
-const $modalOverlay = document.getElementById('modal-overlay');
-const $modalInput   = document.getElementById('modal-input');
-const $modalSave    = document.getElementById('modal-save');
-const $modalToggle  = document.getElementById('modal-toggle-vis');
-const $eyeIcon      = document.getElementById('eye-icon');
-const $btnMic       = document.getElementById('btn-mic');
-const $btnImg       = document.getElementById('btn-img');
-const $btnDoc       = document.getElementById('btn-doc');
-const $fileImgIn    = document.getElementById('file-img-input');
-const $fileDocIn    = document.getElementById('file-doc-input');
-const $clearBtn     = document.getElementById('clear-btn');
-const $toast        = document.getElementById('toast');
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function init() {
-  // Montrer le modal immédiatement — l'app est inutilisable sans clé
-  openModal();
-
-  // Restaurer l'historique visuel (mais on demandera quand même la clé)
-  restoreHistory();
-
-  // Auto-resize du textarea
-  $input.addEventListener('input', resizeTextarea);
+/* sync bouton envoyer vs vocal */
+function syncSend(ta,sendBtn,voiceBtn){
+  const has=ta.value.trim().length>0;
+  sendBtn.classList.toggle('show',has);
+  voiceBtn.style.opacity=has?'0':'1';
+  voiceBtn.style.pointerEvents=has?'none':'auto';
+  voiceBtn.style.position=has?'absolute':'relative';
 }
 
-const $inputCard = document.getElementById('input-card');
+/* barre home */
+$homeInput.addEventListener('input',()=>{resizeTA($homeInput);syncSend($homeInput,$homeSendBtn,$homeVoice)});
+$homeInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendFromHome()}});
+$homeSendBtn.addEventListener('click',sendFromHome);
+$homeVoice.addEventListener('click',()=>showToast('🎤 Dictée disponible dans le chat'));
+document.getElementById('home-mic-btn').addEventListener('click',()=>showToast('🎤 Dictée disponible dans le chat'));
+document.getElementById('home-btn-plus').addEventListener('click',()=>{if(!apiKey){openModal();return}$fileImgIn.click()});
+document.getElementById('home-btn-search').addEventListener('click',()=>showToast('Recherche web bientôt disponible'));
 
-function resizeTextarea() {
-  $input.style.height = 'auto';
-  $input.style.height = Math.min($input.scrollHeight, 120) + 'px';
+/* PROTECTION : le bouton home-clear-btn n'existe pas dans le DOM — éviter l'erreur si absent */
+const $homeClearBtn = document.getElementById('home-clear-btn');
+if ($homeClearBtn) {
+  $homeClearBtn.addEventListener('click',()=>{
+    if(!history.length&&!pendingFiles.length){showToast('Aucune conversation');return}
+    if(!confirm('Effacer toute la conversation ?'))return;
+    history=[];localStorage.removeItem(LS_KEY_HST);
+    pendingFiles=[];$pendingWrap.innerHTML='';$pendingWrap.classList.remove('has-files');
+    $messages.innerHTML='';showHome();showToast('🗑 Effacée');
+  });
 }
 
-// ── Animation focus/blur de la barre ─────────────────────────────────────────
-
-function expandInput() {
-  $inputCard.classList.add('expanded');
+function sendFromHome(){
+  const txt=$homeInput.value.trim();if(!txt)return;
+  if(!apiKey){openModal();return}
+  $homeInput.value='';$homeInput.style.height='auto';
+  syncSend($homeInput,$homeSendBtn,$homeVoice);
+  showChat();
+  setTimeout(()=>{$input.value=txt;resizeTA($input);syncSend($input,$sendBtn,$chatVoice);sendMessage()},300);
 }
 
-function collapseInput() {
-  // Ne replier que si le champ est vide ET qu'on n'est pas en train d'écrire
-  if ($input.value.trim() === '' && document.activeElement !== $input) {
-    $inputCard.classList.remove('expanded');
+/* barre chat */
+$input.addEventListener('input',()=>{resizeTA($input);syncSend($input,$sendBtn,$chatVoice)});
+$input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
+$sendBtn.addEventListener('click',sendMessage);
+$chatVoice.addEventListener('click',toggleSpeech);
+$btnMic.addEventListener('click',toggleSpeech);
+$btnImg.addEventListener('click',()=>{if(!apiKey){openModal();return}$fileImgIn.click()});
+$btnDoc.addEventListener('click',()=>{if(!apiKey){openModal();return}$fileDocIn.click()});
+document.getElementById('clear-btn').addEventListener('click',()=>{
+  if(!confirm('Effacer ?'))return;
+  history=[];localStorage.removeItem(LS_KEY_HST);
+  pendingFiles=[];$pendingWrap.innerHTML='';$pendingWrap.classList.remove('has-files');
+  $messages.innerHTML='';showHome();
+});
+
+/* envoi */
+async function sendMessage(){
+  const text=$input.value.trim();
+  if(!text&&pendingFiles.length===0)return;
+  if(!apiKey){openModal();return}
+  if(pendingFiles.some(f=>f.uploading)){showToast('⏳ Upload en cours…');return}
+  const filesToSend=[...pendingFiles];
+  pendingFiles=[];$pendingWrap.innerHTML='';$pendingWrap.classList.remove('has-files');
+  $input.value='';$input.style.height='auto';
+  syncSend($input,$sendBtn,$chatVoice);
+  const parts=[];
+  for(const f of filesToSend){
+    if(f.type==='image'){parts.push({inline_data:{mime_type:f.mimeType,data:f.base64}});if(f.objectUrl)URL.revokeObjectURL(f.objectUrl)}
+    else if(f.type==='file'&&f.fileUri)parts.push({file_data:{mime_type:f.mimeType,file_uri:f.fileUri}});
   }
+  if(text)parts.push({text});
+  else if(filesToSend.some(f=>f.type==='image'))parts.push({text:'Décris et analyse cette image.'});
+  else parts.push({text:'Analyse et résume ce document.'});
+  appendMessage('user',text,filesToSend);
+  const apiContents=[...history,{role:'user',parts}];
+  const histParts=parts.filter(p=>p.text||p.file_data);
+  if(!histParts.length)histParts.push({text:text||'[fichier]'});
+  history.push({role:'user',parts:histParts});
+  showOrb(true);
+  try{
+    const answer=await callAPI(apiContents);
+    showOrb(false);appendMessage('gemini',answer);
+    history.push({role:'model',parts:[{text:answer}]});saveHistory();
+  }catch(err){showOrb(false);appendError(err.message);history.pop();}
+  finally{$input.focus();}
 }
 
-$input.addEventListener('focus', expandInput);
-
-$input.addEventListener('blur', () => {
-  // Petit délai pour laisser le temps aux clics sur les boutons d'action de s'exécuter
-  setTimeout(collapseInput, 180);
-});
-
-// Garder expanded si on clique sur les boutons de la barre
-document.getElementById('input-card').addEventListener('mousedown', (e) => {
-  // Empêcher le blur si clic sur la card (hors textarea)
-  if (e.target !== $input) e.preventDefault();
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// MODAL CLÉ API
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function openModal() {
-  // Ne jamais pré-remplir le champ — la clé ne doit pas être récupérable
-  $modalInput.value = '';
-  $modalInput.type  = 'password';
-  $eyeIcon.style.opacity = '1';
-  $modalOverlay.classList.add('visible');
-  setTimeout(() => $modalInput.focus(), 100);
+async function callAPI(contents){
+  const body=Object.assign({contents,generationConfig:{temperature:1,maxOutputTokens:8192}},customInst?{systemInstruction:{parts:[{text:customInst}]}}:{});
+  const res=await fetch(`${GENERATE_URL}?key=${apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!res.ok){const err=await res.json().catch(()=>({}));if([400,401,403].includes(res.status)){apiKey='';setTimeout(openModal,400)}throw new Error(err?.error?.message||`HTTP ${res.status}`);}
+  const data=await res.json();const txt=data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!txt)throw new Error("Réponse vide.");return txt;
 }
 
-function saveKey() {
-  const v = $modalInput.value.trim();
-  if (!v) {
-    // Animation de secousse si champ vide
-    $modalInput.style.borderColor = 'rgba(240,80,80,.7)';
-    $modalInput.animate(
-      [{ transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }],
-      { duration: 200, iterations: 3 }
-    );
-    return;
+function appendMessage(role,text,files=[]){
+  const $msg=document.createElement('div');$msg.className=`msg ${role}`;
+  const $lbl=document.createElement('span');$lbl.className='msg-label';$lbl.textContent=role==='user'?'Vous':'Gemini';
+  const $bub=document.createElement('div');$bub.className='bubble';
+  for(const f of files){
+    if(f.type==='image'&&f.objectUrl){const img=document.createElement('img');img.className='preview';img.src=f.objectUrl;$bub.appendChild(img)}
+    else if(f.type==='file'){const b=document.createElement('div');b.className='file-badge';b.textContent='📄 '+f.name;$bub.appendChild(b)}
   }
-
-  // Stocker en RAM uniquement
-  apiKey = v;
-
-  // Effacer immédiatement le champ du DOM (bonne pratique sécurité)
-  $modalInput.value = '';
-
-  // Fermer le modal
-  $modalOverlay.classList.remove('visible');
+  if(text){const d=document.createElement('div');d.innerHTML=role==='gemini'?renderMD(text):escH(text).replace(/\n/g,'<br>');$bub.appendChild(d)}
+  $msg.append($lbl,$bub);$messages.appendChild($msg);
+  requestAnimationFrame(()=>$messages.scrollTop=$messages.scrollHeight);
 }
+function appendError(msg){const el=document.createElement('div');el.className='error-msg';el.textContent=`⚠️ ${msg}`;$messages.appendChild(el);$messages.scrollTop=$messages.scrollHeight}
+function showOrb(a){$messages.style.display=a?'none':'';$orbScreen.classList.toggle('active',a)}
+function renderMD(t){return t.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,_l,c)=>`<pre><code>${escH(c.trim())}</code></pre>`).replace(/`([^`\n]+)`/g,(_,c)=>`<code>${escH(c)}</code>`).replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^[*\-] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*?<\/li>\n?)+/gs,m=>`<ul>${m}</ul>`).replace(/\n(?!<\/?(?:pre|ul|h[1-3]|li))/g,'<br>')}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function saveHistory(){try{localStorage.setItem(LS_KEY_HST,JSON.stringify(history))}catch{showToast('⚠️ Stockage plein')}}
+function restoreHistory(){for(const e of history){const r=e.role==='model'?'gemini':'user';const tp=e.parts?.find(p=>typeof p.text==='string');appendMessage(r,tp?.text||'')}}
+function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Erreur'));r.readAsDataURL(file)})}
 
-// Toggle visibilité de la clé
-$modalToggle.addEventListener('click', () => {
-  const isHidden = $modalInput.type === 'password';
-  $modalInput.type       = isHidden ? 'text' : 'password';
-  $eyeIcon.style.opacity = isHidden ? '.35' : '1';
-  $modalInput.focus();
+$fileImgIn.addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file)return;$fileImgIn.value='';
+  if(file.size>18*1024*1024){showToast('⚠️ Max 18 Mo');return}
+  try{const base64=await toBase64(file);const entry={type:'image',name:file.name,mimeType:file.type,base64,objectUrl:URL.createObjectURL(file)};pendingFiles.push(entry);renderChip(entry);showToast(`🖼 ${file.name}`)}
+  catch{showToast('⚠️ Erreur')}
 });
+$fileDocIn.addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file)return;$fileDocIn.value='';
+  if(file.size>50*1024*1024){showToast('⚠️ Max 50 Mo');return}
+  const entry={type:'file',name:file.name,mimeType:file.type,fileUri:null,uploading:true};
+  pendingFiles.push(entry);const chip=renderChip(entry);showToast(`📤 Upload…`,30000);
+  try{entry.fileUri=await uploadAPI(file);entry.uploading=false;const sp=chip.querySelector('.chip-progress');if(sp)sp.replaceWith(Object.assign(document.createElement('span'),{textContent:'✅'}));showToast(`✅ ${file.name}`)}
+  catch(err){pendingFiles=pendingFiles.filter(f=>f!==entry);chip.remove();if(!$pendingWrap.children.length)$pendingWrap.classList.remove('has-files');showToast(`⚠️ ${err.message}`)}
+});
+async function uploadAPI(file){
+  const i=await fetch(`${UPLOAD_URL}?uploadType=resumable&key=${apiKey}`,{method:'POST',headers:{'X-Goog-Upload-Protocol':'resumable','X-Goog-Upload-Command':'start','X-Goog-Upload-Header-Content-Length':String(file.size),'X-Goog-Upload-Header-Content-Type':file.type,'Content-Type':'application/json'},body:JSON.stringify({file:{display_name:file.name}})});
+  if(!i.ok){const e=await i.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${i.status}`)}
+  const url=i.headers.get('X-Goog-Upload-URL');if(!url)throw new Error('URL manquante');
+  const u=await fetch(url,{method:'POST',headers:{'Content-Length':String(file.size),'X-Goog-Upload-Offset':'0','X-Goog-Upload-Command':'upload, finalize'},body:file});
+  if(!u.ok){const e=await u.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${u.status}`)}
+  const d=await u.json();const uri=d?.file?.uri;if(!uri)throw new Error('URI manquante');return uri;
+}
+function renderChip(entry){
+  $pendingWrap.classList.add('has-files');
+  const chip=document.createElement('div');chip.className='pending-chip';
+  const label=entry.name.length>20?entry.name.slice(0,20)+'…':entry.name;
+  if(entry.type==='image'){const img=document.createElement('img');img.src=entry.objectUrl;const sp=document.createElement('span');sp.textContent=label;chip.append(img,sp,rmBtn(entry,chip))}
+  else{const ic=document.createElement('span');ic.textContent='📄';const sp=document.createElement('span');sp.textContent=label;const pr=document.createElement('span');pr.className='chip-progress';chip.append(ic,sp,pr,rmBtn(entry,chip))}
+  $pendingWrap.appendChild(chip);return chip;
+}
+function rmBtn(entry,chip){const b=document.createElement('button');b.className='chip-remove';b.textContent='✕';b.addEventListener('click',()=>{pendingFiles=pendingFiles.filter(f=>f!==entry);chip.remove();if(!$pendingWrap.children.length)$pendingWrap.classList.remove('has-files');if(entry.objectUrl)URL.revokeObjectURL(entry.objectUrl)});return b}
 
-$modalSave.addEventListener('click', saveKey);
-$modalInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveKey(); });
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════════════════════════════
+function initSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('⚠️ Dictée non supportée');return null}
+  const r=new SR();r.lang='fr-FR';r.continuous=false;r.interimResults=true;let base='';
+  r.onstart=()=>{isListening=true;$btnMic.classList.add('mic-active');$chatVoice.classList.add('mic-active');base=$input.value;showToast('🎤 Dictée en cours…',60000)};
+  r.onresult=e=>{let interim='',fin='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else interim=t}if(fin)base=(base+' '+fin).trimStart();$input.value=base+(interim?' '+interim:'');resizeTA($input);syncSend($input,$sendBtn,$chatVoice)};
+  r.onerror=e=>{const m={'not-allowed':'⚠️ Micro refusé','no-speech':'⚠️ Aucune parole','network':'⚠️ Réseau','aborted':''};const msg=m[e.error];if(msg===undefined)showToast(`⚠️ ${e.error}`);else if(msg)showToast(msg);stopSpeech()};
+  r.onend=()=>{stopSpeech();recognition=null};return r;
+}
+function toggleSpeech(){if(isListening){recognition?.stop();return}recognition=initSpeech();if(!recognition)return;try{recognition.start()}catch{showToast('⚠️ Impossible');recognition=null}}
+function stopSpeech(){isListening=false;$btnMic.classList.remove('mic-active');$chatVoice.classList.remove('mic-active');$toast.classList.remove('show')}
 
 let toastTimer;
-function showToast(msg, duration = 3000) {
-  clearTimeout(toastTimer);
-  $toast.textContent = msg;
-  $toast.classList.add('show');
-  toastTimer = setTimeout(() => $toast.classList.remove('show'), duration);
+function showToast(msg,dur=3000){clearTimeout(toastTimer);$toast.textContent=msg;$toast.classList.add('show');toastTimer=setTimeout(()=>$toast.classList.remove('show'),dur)}
+
+function openModal(){$modalInput.value='';$modalInput.type='password';$eyeIcon.style.opacity='1';$modalOverlay.classList.add('visible');setTimeout(()=>$modalInput.focus(),150)}
+function saveKey(){
+  const v=$modalInput.value.trim();
+  if(!v){$modalInput.style.borderColor='rgba(224,80,80,.5)';$modalInput.animate([{transform:'translateX(-4px)'},{transform:'translateX(4px)'},{transform:'translateX(0)'}],{duration:180,iterations:3});return}
+  apiKey=v;$modalInput.value='';$modalOverlay.classList.remove('visible');
 }
+$modalToggle.addEventListener('click',()=>{const h=$modalInput.type==='password';$modalInput.type=h?'text':'password';$eyeIcon.style.opacity=h?'.35':'1';$modalInput.focus()});
+$modalSave.addEventListener('click',saveKey);
+$modalInput.addEventListener('keydown',e=>{if(e.key==='Enter')saveKey()});
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// DICTÉE VOCALE — Web Speech API
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function initSpeech() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { showToast('⚠️ Dictée non supportée sur ce navigateur (Chrome recommandé)'); return null; }
-
-  const r = new SR();
-  r.lang            = 'fr-FR';
-  r.continuous      = false;  // Un segment à la fois
-  r.interimResults  = true;   // Résultats partiels en temps réel
-
-  let baseText = ''; // Texte présent dans l'input avant le démarrage
-
-  r.onstart = () => {
-    isListening = true;
-    $btnMic.classList.add('mic-active');
-    baseText = $input.value; // Conserver le texte déjà saisi
-    showToast('🎤 Dictée en cours… parlez maintenant', 60000);
-  };
-
-  r.onresult = (e) => {
-    let interim = '';
-    let newFinal = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) newFinal += t;
-      else interim = t;
-    }
-    // Accumuler les résultats finaux dans baseText
-    if (newFinal) baseText = (baseText + ' ' + newFinal).trimStart();
-    $input.value = baseText + (interim ? ' ' + interim : '');
-    resizeTextarea();
-  };
-
-  r.onerror = (e) => {
-    const msgs = {
-      'not-allowed': '⚠️ Permission micro refusée — vérifiez les paramètres du navigateur',
-      'no-speech':   '⚠️ Aucune parole détectée',
-      'network':     '⚠️ Erreur réseau pendant la dictée',
-      'aborted':     '',  // Arrêt volontaire, pas besoin de toast
-    };
-    const msg = msgs[e.error];
-    if (msg === undefined) showToast(`⚠️ Erreur dictée : ${e.error}`);
-    else if (msg) showToast(msg);
-    stopSpeech();
-  };
-
-  r.onend = () => {
-    stopSpeech();
-    // FIX bug #5 : réinitialiser l'instance pour permettre un redémarrage propre
-    recognition = null;
-  };
-
-  return r;
+function openInst(){$instTextarea.value=customInst;$instOverlay.classList.add('visible');setTimeout(()=>$instTextarea.focus(),100)}
+function closeInst(){$instOverlay.classList.remove('visible')}
+function saveInst(){
+  customInst=$instTextarea.value.trim();
+  if(customInst){localStorage.setItem(LS_KEY_INST,customInst);$btnSettings.classList.add('has-inst');showToast('✅ Instructions enregistrées')}
+  else{localStorage.removeItem(LS_KEY_INST);$btnSettings.classList.remove('has-inst');showToast('Instructions effacées')}
+  closeInst();
 }
-
-function toggleSpeech() {
-  if (isListening) {
-    recognition?.stop();
-    return;
-  }
-  // Toujours créer une nouvelle instance (évite les erreurs sur instance terminée)
-  recognition = initSpeech();
-  if (!recognition) return;
-  try {
-    recognition.start();
-  } catch (e) {
-    showToast('⚠️ Impossible de démarrer la dictée');
-    recognition = null;
-  }
-}
-
-function stopSpeech() {
-  isListening = false;
-  $btnMic.classList.remove('mic-active');
-  $toast.classList.remove('show');
-}
-
-$btnMic.addEventListener('click', toggleSpeech);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SÉLECTION DE FICHIERS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-$btnImg.addEventListener('click', () => $fileImgIn.click());
-$btnDoc.addEventListener('click', () => {
-  if (!apiKey) { openModal(); return; }
-  $fileDocIn.click();
-});
-
-// Image → encodage base64, envoi via inline_data (pas de Files API nécessaire)
-$fileImgIn.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  $fileImgIn.value = ''; // Reset pour permettre re-sélection du même fichier
-
-  if (file.size > 18 * 1024 * 1024) {
-    showToast('⚠️ Image trop grande (max 18 Mo)');
-    return;
-  }
-
-  try {
-    const base64    = await toBase64(file);
-    const objectUrl = URL.createObjectURL(file);
-    const entry     = { type: 'image', name: file.name, mimeType: file.type, base64, objectUrl };
-    pendingFiles.push(entry);
-    renderPendingChip(entry);
-    showToast(`🖼 ${file.name} ajoutée`);
-  } catch {
-    showToast('⚠️ Impossible de lire ce fichier image');
-  }
-});
-
-// Document → upload via Files API (resumable, 2 étapes)
-$fileDocIn.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  $fileDocIn.value = '';
-
-  if (file.size > 50 * 1024 * 1024) {
-    showToast('⚠️ Fichier trop grand (max 50 Mo)');
-    return;
-  }
-
-  const entry  = { type: 'file', name: file.name, mimeType: file.type, fileUri: null, uploading: true };
-  pendingFiles.push(entry);
-  const chipEl = renderPendingChip(entry);
-  showToast(`📤 Upload de « ${file.name} »…`, 30000);
-
-  try {
-    entry.fileUri   = await uploadToFilesAPI(file);
-    entry.uploading = false;
-    // Remplacer le spinner par ✅
-    const spinner = chipEl.querySelector('.chip-progress');
-    if (spinner) spinner.replaceWith(Object.assign(document.createElement('span'), { textContent: '✅' }));
-    showToast(`✅ « ${file.name} » prêt`);
-  } catch (err) {
-    pendingFiles = pendingFiles.filter(f => f !== entry);
-    chipEl.remove();
-    if (!$pendingWrap.children.length) $pendingWrap.classList.remove('has-files');
-    showToast(`⚠️ Échec upload : ${err.message}`);
-  }
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// FILES API — upload resumable (protocole officiel Google, 2 étapes)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-async function uploadToFilesAPI(file) {
-  // Étape 1 : initiation → récupération de l'URL de session
-  const initRes = await fetch(`${UPLOAD_URL}?uploadType=resumable&key=${apiKey}`, {
-    method: 'POST',
-    headers: {
-      'X-Goog-Upload-Protocol':              'resumable',
-      'X-Goog-Upload-Command':               'start',
-      'X-Goog-Upload-Header-Content-Length': String(file.size),
-      'X-Goog-Upload-Header-Content-Type':   file.type,
-      'Content-Type':                        'application/json',
-    },
-    body: JSON.stringify({ file: { display_name: file.name } }),
-  });
-
-  if (!initRes.ok) {
-    const err = await initRes.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Init upload — HTTP ${initRes.status}`);
-  }
-
-  const sessionUrl = initRes.headers.get('X-Goog-Upload-URL');
-  if (!sessionUrl) throw new Error('URL de session resumable manquante dans la réponse');
-
-  // Étape 2 : envoi des données du fichier
-  const uploadRes = await fetch(sessionUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Length':        String(file.size),
-      'X-Goog-Upload-Offset':  '0',
-      'X-Goog-Upload-Command': 'upload, finalize',
-    },
-    body: file,
-  });
-
-  if (!uploadRes.ok) {
-    const err = await uploadRes.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `Upload — HTTP ${uploadRes.status}`);
-  }
-
-  const data = await uploadRes.json();
-  const uri  = data?.file?.uri;
-  if (!uri) throw new Error('URI du fichier absente dans la réponse Files API');
-  return uri;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CHIPS FICHIERS EN ATTENTE
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function renderPendingChip(entry) {
-  $pendingWrap.classList.add('has-files');
-  const chip = document.createElement('div');
-  chip.className = 'pending-chip';
-
-  const label = entry.name.length > 20 ? entry.name.slice(0, 20) + '…' : entry.name;
-
-  if (entry.type === 'image') {
-    const img  = document.createElement('img');
-    img.src    = entry.objectUrl;
-    img.alt    = entry.name;
-    const span = document.createElement('span');
-    span.textContent = label;
-    chip.append(img, span, makeRemoveBtn(entry, chip));
-  } else {
-    const icon    = document.createElement('span');
-    icon.textContent = '📄';
-    const span    = document.createElement('span');
-    span.textContent = label;
-    const spinner = document.createElement('span');
-    spinner.className = 'chip-progress';
-    chip.append(icon, span, spinner, makeRemoveBtn(entry, chip));
-  }
-
-  $pendingWrap.appendChild(chip);
-  return chip;
-}
-
-function makeRemoveBtn(entry, chip) {
-  const btn = document.createElement('button');
-  btn.className   = 'chip-remove';
-  btn.title       = 'Retirer';
-  btn.textContent = '✕';
-  btn.addEventListener('click', () => {
-    pendingFiles = pendingFiles.filter(f => f !== entry);
-    chip.remove();
-    if (!$pendingWrap.children.length) $pendingWrap.classList.remove('has-files');
-    if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
-  });
-  return btn;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ENVOI DU MESSAGE
-// ═══════════════════════════════════════════════════════════════════════════════
-
-$input.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-$sendBtn.addEventListener('click', sendMessage);
-
-async function sendMessage() {
-  const text = $input.value.trim();
-  if (!text && pendingFiles.length === 0) return;
-
-  // Redemander la clé si elle a disparu (rechargement ou vidée)
-  if (!apiKey) { openModal(); return; }
-
-  // Bloquer l'envoi si un upload est encore en cours
-  if (pendingFiles.some(f => f.uploading)) {
-    showToast('⏳ Upload en cours, patientez…');
-    return;
-  }
-
-  // Snapshot & reset UI
-  const filesToSend = [...pendingFiles];
-  pendingFiles = [];
-  $pendingWrap.innerHTML = '';
-  $pendingWrap.classList.remove('has-files');
-  $input.value = '';
-  $input.style.height = 'auto';
-  $sendBtn.disabled = true;
-
-  // Construire les parts multimodales pour l'API
-  const parts = [];
-  for (const f of filesToSend) {
-    if (f.type === 'image') {
-      parts.push({ inline_data: { mime_type: f.mimeType, data: f.base64 } });
-      if (f.objectUrl) URL.revokeObjectURL(f.objectUrl);
-    } else if (f.type === 'file' && f.fileUri) {
-      parts.push({ file_data: { mime_type: f.mimeType, file_uri: f.fileUri } });
-    }
-  }
-  // Texte toujours en dernier (recommandation Google pour le multimodal)
-  if (text) {
-    parts.push({ text });
-  } else if (filesToSend.some(f => f.type === 'image')) {
-    parts.push({ text: 'Décris et analyse cette image en détail.' });
-  } else {
-    parts.push({ text: 'Analyse et résume ce document.' });
-  }
-
-  // Afficher le message utilisateur dans l'UI
-  appendMessage('user', text, filesToSend);
-
-  // FIX bug #3 : construire l'historique API AVANT d'y ajouter le message courant
-  // pour éviter le doublon. On envoie history (messages précédents) + le message actuel.
-  const apiContents = [
-    ...history,                    // Historique existant
-    { role: 'user', parts }        // Message actuel (parts complets avec fichiers)
-  ];
-
-  // Sauvegarder dans l'historique de session (texte uniquement, pas les binaires)
-  const histParts = parts.filter(p => p.text || p.file_data); // Exclure inline_data (trop lourd)
-  if (!histParts.length) histParts.push({ text: text || '[fichier]' });
-  history.push({ role: 'user', parts: histParts });
-
-  showOrb(true);
-
-  try {
-    const answer = await callAPI(apiContents);
-    showOrb(false);
-    appendMessage('gemini', answer);
-    history.push({ role: 'model', parts: [{ text: answer }] });
-    saveHistory();
-  } catch (err) {
-    showOrb(false);
-    appendError(err.message);
-    // Retirer le dernier message de l'historique si l'appel a échoué
-    history.pop();
-  } finally {
-    $sendBtn.disabled = false;
-    $input.focus();
-    expandInput(); // Garder la barre ouverte après envoi
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// APPEL API GEMINI
-// ═══════════════════════════════════════════════════════════════════════════════
-
-async function callAPI(contents) {
-  const res = await fetch(`${GENERATE_URL}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents,
-      generationConfig: { temperature: 1, maxOutputTokens: 8192 }
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    // Si la clé est invalide, redemander
-    if (res.status === 400 || res.status === 401 || res.status === 403) {
-      apiKey = '';
-      setTimeout(openModal, 400);
-    }
-    throw new Error(err?.error?.message || `Erreur HTTP ${res.status}`);
-  }
-
-  const data = await res.json();
-  const txt  = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!txt) throw new Error('Réponse vide ou format inattendu de l\'API.');
-  return txt;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// AFFICHAGE DES MESSAGES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function appendMessage(role, text, files = []) {
-  if ($emptyState) $emptyState.style.display = 'none';
-
-  const $msg = document.createElement('div');
-  $msg.className = `msg ${role}`;
-
-  // Label
-  const $label = document.createElement('span');
-  $label.className   = 'msg-label';
-  $label.textContent = role === 'user' ? 'Vous' : 'Gemini';
-
-  // Bulle
-  const $bubble = document.createElement('div');
-  $bubble.className = 'bubble';
-
-  // Aperçus des fichiers joints
-  for (const f of files) {
-    if (f.type === 'image' && f.objectUrl) {
-      const img     = document.createElement('img');
-      img.className = 'preview';
-      img.src       = f.objectUrl;
-      img.alt       = f.name;
-      $bubble.appendChild(img);
-    } else if (f.type === 'file') {
-      const badge     = document.createElement('div');
-      badge.className = 'file-badge';
-      badge.textContent = (f.mimeType === 'application/pdf' ? '📄 ' : '📝 ') + f.name;
-      $bubble.appendChild(badge);
-    }
-  }
-
-  // Texte
-  if (text) {
-    const textNode = document.createElement('div');
-    if (role === 'gemini') {
-      textNode.innerHTML = renderMarkdown(text);
-    } else {
-      // Texte utilisateur : échapper l'HTML, convertir les sauts de ligne
-      textNode.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
-    }
-    $bubble.appendChild(textNode);
-  }
-
-  $msg.append($label, $bubble);
-  $messages.appendChild($msg);
-  requestAnimationFrame(() => { $messages.scrollTop = $messages.scrollHeight; });
-}
-
-function appendError(msg) {
-  const $el       = document.createElement('div');
-  $el.className   = 'error-msg';
-  $el.textContent = `⚠️ ${msg}`;
-  $messages.appendChild($el);
-  $messages.scrollTop = $messages.scrollHeight;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ORBE DE CHARGEMENT
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function showOrb(active) {
-  $messages.style.display = active ? 'none' : '';
-  $orbScreen.classList.toggle('active', active);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// RENDU MARKDOWN SIMPLIFIÉ
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function renderMarkdown(text) {
-  return text
-    // Blocs de code (avant tout le reste pour éviter les faux positifs)
-    .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, _lang, code) =>
-      `<pre><code>${escapeHtml(code.trim())}</code></pre>`)
-    // Code inline
-    .replace(/`([^`\n]+)`/g, (_, c) => `<code>${escapeHtml(c)}</code>`)
-    // Titres
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
-    .replace(/^# (.+)$/gm,   '<h1>$1</h1>')
-    // Gras et italique
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g,     '<em>$1</em>')
-    // Listes
-    .replace(/^[*\-] (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*?<\/li>\n?)+/gs, match => `<ul>${match}</ul>`)
-    // Sauts de ligne (hors blocs block-level)
-    .replace(/\n(?!<\/?(?:pre|ul|h[1-3]|li))/g, '<br>');
-}
-
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// HISTORIQUE
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function saveHistory() {
-  try {
-    localStorage.setItem(LS_KEY_HST, JSON.stringify(history));
-  } catch {
-    // localStorage plein — on continue sans planter
-    showToast('⚠️ Historique non sauvegardé (stockage plein)');
-  }
-}
-
-function restoreHistory() {
-  if (!history.length) return;
-  if ($emptyState) $emptyState.style.display = 'none';
-  for (const entry of history) {
-    const role = entry.role === 'model' ? 'gemini' : 'user';
-    // FIX bug #4 : chercher le premier part de type texte (pas inline_data)
-    const textPart = entry.parts?.find(p => typeof p.text === 'string');
-    appendMessage(role, textPart?.text || '');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// UTILITAIRES
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function toBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader    = new FileReader();
-    reader.onload   = () => resolve(reader.result.split(',')[1]);
-    reader.onerror  = () => reject(new Error('Lecture du fichier échouée'));
-    reader.readAsDataURL(file);
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CLEAR
-// ═══════════════════════════════════════════════════════════════════════════════
-
-$clearBtn.addEventListener('click', () => {
-  if (!confirm('Effacer toute la conversation ?')) return;
-  history = [];
-  localStorage.removeItem(LS_KEY_HST);
-  pendingFiles = [];
-  $pendingWrap.innerHTML = '';
-  $pendingWrap.classList.remove('has-files');
-  $messages.innerHTML = '';
-  // Remettre l'état vide
-  const es  = document.createElement('div');
-  es.id     = 'empty-state';
-  const orb = document.createElement('div');
-  orb.className = 'orb-static';
-  const p   = document.createElement('p');
-  p.className   = 'empty-text';
-  p.textContent = "Qu'est-ce qui vous préoccupe ?";
-  es.append(orb, p);
-  $messages.appendChild(es);
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// START
-// ═══════════════════════════════════════════════════════════════════════════════
-
-init();
+$btnSettings.addEventListener('click',openInst);
+$instSave.addEventListener('click',saveInst);
+$instCancel.addEventListener('click',closeInst);
+$instOverlay.addEventListener('click',e=>{if(e.target===$instOverlay)closeInst()});
+$instTextarea.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)saveInst()});
+if(customInst)$btnSettings.classList.add('has-inst');
+
+(function init(){
+  openModal();
+  if(history.length){showChat();restoreHistory()}
+})();
 </script>
 </body>
 </html>
