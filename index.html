@@ -138,7 +138,19 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .chat-title-name{font-size:15px;font-weight:700;color:var(--text)}
 .chat-title-sub{font-size:11px;color:var(--text-mid);margin-top:1px}
 
-#messages{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 14px 8px;display:flex;flex-direction:column;gap:18px;-webkit-overflow-scrolling:touch}
+/* ══ MESSAGES : start from top ══ */
+#messages{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:16px 14px 8px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start; /* important: start at top */
+  align-items:stretch;
+  gap:18px;
+  -webkit-overflow-scrolling:touch;
+}
 #messages::-webkit-scrollbar{display:none}
 .msg{display:flex;flex-direction:column;gap:4px}
 .msg.user{align-items:flex-end}
@@ -151,9 +163,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
 .bubble code{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;font-size:12.5px}
 .bubble pre code{background:none;border:none;padding:0}
 .bubble h1,.bubble h2,.bubble h3{margin:10px 0 5px;color:var(--text)}
-.bubble h1{font-size:18px}.bubble h2{font-size:16px}.bubble h3{font-size:14.5px}
-.bubble ul{padding-left:18px;margin:5px 0}.bubble li{margin:3px 0}
-.bubble strong{color:var(--text);font-weight:600}
 .bubble img.preview{max-width:200px;max-height:200px;border-radius:12px;display:block;margin-bottom:6px}
 .file-badge{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:5px 10px;font-size:12px;color:var(--text-mid);margin-bottom:6px}
 .error-msg{text-align:center;font-size:13px;color:#e05050;background:rgba(224,80,80,.08);border:1px solid rgba(224,80,80,.18);border-radius:12px;padding:10px 14px}
@@ -448,6 +457,11 @@ function showChat(){ $viewHome.classList.add('hidden'); $viewChat.classList.add(
 function showHome(){ $viewChat.classList.remove('active'); $viewHome.classList.remove('hidden') }
 document.getElementById('chat-back-btn').addEventListener('click', showHome);
 
+/* ensure messages start at top on load */
+window.addEventListener('load', () => {
+  try { if ($messages) $messages.scrollTop = 0; } catch(e) {}
+});
+
 /* resize textarea */
 function resizeTA(ta){ try{ ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,130)+'px' }catch(e){} }
 
@@ -553,6 +567,7 @@ async function callAPI(contents){
   return txt;
 }
 
+/* appendMessage : n'ajoute PAS de scroll automatique */
 function appendMessage(role, text, files = []){
   const $msg = document.createElement('div'); $msg.className = `msg ${role}`;
   const $lbl = document.createElement('span'); $lbl.className = 'msg-label'; $lbl.textContent = role === 'user' ? 'Vous' : 'Gemini';
@@ -568,14 +583,14 @@ function appendMessage(role, text, files = []){
   }
   $msg.append($lbl, $bub);
   $messages.appendChild($msg);
-  // no automatic scroll: messages start from top; user controls scrolling
+  /* Pas de scroll automatique : l'utilisateur contrôle où il est */
 }
 
 function appendError(msg){
   const el = document.createElement('div'); el.className = 'error-msg'; el.textContent = `⚠️ ${msg}`; $messages.appendChild(el);
-  // no automatic scroll here either
 }
 
+/* orb / loader */
 function showOrb(a){ $messages.style.display = a ? 'none' : ''; $orbScreen.classList.toggle('active', a) }
 
 function renderMD(t){ return t.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,_l,c)=>`<pre><code>${escH(c.trim())}</code></pre>`).replace(/`([^`\n]+)`/g,(_,c)=>`<code>${escH(c)}</code>`).replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/^[*\-] (.+)$/gm,'<li>$1</li>').replace(/(<li>.*?<\/li>\n?)+/gs,m=>`<ul>${m}</ul>`).replace(/\n(?!<\/?(?:pre|ul|h[1-3]|li))/g,'<br>') }
