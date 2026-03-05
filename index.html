@@ -331,9 +331,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
           </button>
         </div>
         <div class="bar-foot-right">
-          <button class="bb" id="home-mic-btn" title="Dictée">
-            <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
           <div class="voice-wrap">
             <button class="bb-voice" id="home-voice-btn">
               <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -385,9 +382,6 @@ html,body{height:100%;width:100%;background:var(--bg);color:var(--text);font-fam
           </button>
         </div>
         <div class="bar-foot-right">
-          <button class="bb" id="btn-mic" title="Dictée" style="position:relative">
-            <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
           <div class="voice-wrap">
             <button class="bb-voice" id="chat-voice-btn">
               <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
@@ -467,7 +461,6 @@ const $homeVoice=document.getElementById('home-voice-btn');
 const $input=document.getElementById('user-input');
 const $sendBtn=document.getElementById('send-btn');
 const $chatVoice=document.getElementById('chat-voice-btn');
-const $btnMic=document.getElementById('btn-mic');
 const $btnImg=document.getElementById('btn-img');
 const $btnDoc=document.getElementById('btn-doc');
 const $fileImgIn=document.getElementById('file-img-input');
@@ -482,6 +475,7 @@ const $instTextarea=document.getElementById('inst-textarea');
 const $instSave=document.getElementById('inst-save');
 const $instCancel=document.getElementById('inst-cancel');
 const $btnSettings=document.getElementById('btn-settings');
+const $btnMic=document.getElementById('btn-mic'); // may be null if removed
 
 /* navigation */
 function showChat(){$viewHome.classList.add('hidden');$viewChat.classList.add('active');setTimeout(()=>$input.focus(),300)}
@@ -504,8 +498,7 @@ function syncSend(ta,sendBtn,voiceBtn){
 $homeInput.addEventListener('input',()=>{resizeTA($homeInput);syncSend($homeInput,$homeSendBtn,$homeVoice)});
 $homeInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendFromHome()}});
 $homeSendBtn.addEventListener('click',sendFromHome);
-$homeVoice.addEventListener('click',()=>showToast('🎤 Dictée disponible dans le chat'));
-document.getElementById('home-mic-btn').addEventListener('click',()=>showToast('🎤 Dictée disponible dans le chat'));
+$homeVoice.addEventListener('click',()=>showToast('Dictée activée dans le chat'));
 document.getElementById('home-btn-plus').addEventListener('click',()=>{if(!apiKey){openModal();return}$fileImgIn.click()});
 document.getElementById('home-btn-search').addEventListener('click',()=>showToast('Recherche web bientôt disponible'));
 
@@ -535,7 +528,7 @@ $input.addEventListener('input',()=>{resizeTA($input);syncSend($input,$sendBtn,$
 $input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});
 $sendBtn.addEventListener('click',sendMessage);
 $chatVoice.addEventListener('click',toggleSpeech);
-$btnMic.addEventListener('click',toggleSpeech);
+// removed standalone btn-mic click hookup to avoid duplicate mic buttons
 $btnImg.addEventListener('click',()=>{if(!apiKey){openModal();return}$fileImgIn.click()});
 $btnDoc.addEventListener('click',()=>{if(!apiKey){openModal();return}$fileDocIn.click()});
 document.getElementById('clear-btn').addEventListener('click',()=>{
@@ -641,13 +634,13 @@ function initSpeech(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){showToast('⚠️ Dictée non supportée');return null}
   const r=new SR();r.lang='fr-FR';r.continuous=false;r.interimResults=true;let base='';
-  r.onstart=()=>{isListening=true;$btnMic.classList.add('mic-active');$chatVoice.classList.add('mic-active');base=$input.value;showToast('🎤 Dictée en cours…',60000)};
+  r.onstart=()=>{isListening=true;$btnMic?.classList.add('mic-active');$chatVoice.classList.add('mic-active');base=$input.value;showToast('🎤 Dictée en cours…',60000)};
   r.onresult=e=>{let interim='',fin='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)fin+=t;else interim=t}if(fin)base=(base+' '+fin).trimStart();$input.value=base+(interim?' '+interim:'');resizeTA($input);syncSend($input,$sendBtn,$chatVoice)};
   r.onerror=e=>{const m={'not-allowed':'⚠️ Micro refusé','no-speech':'⚠️ Aucune parole','network':'⚠️ Réseau','aborted':''};const msg=m[e.error];if(msg===undefined)showToast(`⚠️ ${e.error}`);else if(msg)showToast(msg);stopSpeech()};
   r.onend=()=>{stopSpeech();recognition=null};return r;
 }
 function toggleSpeech(){if(isListening){recognition?.stop();return}recognition=initSpeech();if(!recognition)return;try{recognition.start()}catch{showToast('⚠️ Impossible');recognition=null}}
-function stopSpeech(){isListening=false;$btnMic.classList.remove('mic-active');$chatVoice.classList.remove('mic-active');$toast.classList.remove('show')}
+function stopSpeech(){isListening=false;$btnMic?.classList.remove('mic-active');$chatVoice.classList.remove('mic-active');$toast.classList.remove('show')}
 
 let toastTimer;
 function showToast(msg,dur=3000){clearTimeout(toastTimer);$toast.textContent=msg;$toast.classList.add('show');toastTimer=setTimeout(()=>$toast.classList.remove('show'),dur)}
